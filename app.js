@@ -1,76 +1,37 @@
-// app.js — ASCII-only, no smart quotes, no backticks
+// app.js — Crowdsense game engine
+// Two guesses: instinct, then judgement. Score out of 100 rewards both.
 "use strict";
 
-// ===== sample fallback data =====
-var QUESTIONS = [
-  { question: "Name a bill people most worry about going up",
-    answers: [
-      { text: "Energy", aliases: ["gas","electric","electricity","power","heating"], score: 42 },
-      { text: "Rent", aliases: ["renting"], score: 18 },
-      { text: "Mortgage", aliases: ["mortgages"], score: 14 },
-      { text: "Water", aliases: ["water rates"], score: 10 },
-      { text: "Council Tax", aliases: ["council","local tax"], score: 9 },
-      { text: "Food", aliases: ["groceries","supermarket"], score: 5 }
-    ]
-  }
-];
-
-// ===== state =====
-var idx = 0, score = 0, revealed = new Set(), strikes = 0, endReason = "complete";
-var els = {
-  questionText: document.getElementById("questionText"),
-  board: document.getElementById("board"),
-  input: document.getElementById("guessInput"),
-  guessBtn: document.getElementById("guessBtn"),
-  // legacy (kept for compatibility even if hidden)
-  nextBtn: document.getElementById("nextBtn"),
-  score: document.getElementById("score"),
-  // strike dots
-  strike1: document.getElementById("strike1"),
-  strike2: document.getElementById("strike2"),
-  strike3: document.getElementById("strike3"),
-  // modal
-  modal: document.getElementById("modal"),
-  modalTitle: document.getElementById("modalTitle"),
-  modalBody: document.getElementById("modalBody"),
-  modalClose: document.getElementById("modalClose"),
-  modalBackdrop: document.getElementById("modalBackdrop"),
-  // date
-  dailyDate: document.getElementById("dailyDate"),
-  // email + source + strike toast
-  emailForm: document.getElementById("emailForm"),
-  emailInput: document.getElementById("emailInput"),
-  emailMsg: document.getElementById("emailMsg"),
-  sourceNote: document.getElementById("sourceNote"),
-  strikeToast: document.getElementById("strikeToast")
+// ===== config =====
+var CONFIG = {
+  ANCHOR: "2026-07-08",          // puzzle No. 1 date (London time) — set to launch day
+  SITE_URL: "https://wnekaj.github.io/crowdsense/",
+  TZ: "Europe/London",
+  MAX_GUESSES: 2,
+  BULLSEYE: 2,                   // within this on the FIRST guess ends the game instantly
+  WIN_MARGIN: 5,                 // final guess within this = win (keeps the streak)
+  FIRST_WEIGHT: 0.4,             // how much the first guess counts toward the score
+  FINAL_WEIGHT: 0.6,             // how much the final guess counts
+  // Optional: published Google Sheet with columns date,question,answer,note,source.
+  // Leave empty to use questions.js only (recommended — a published sheet is
+  // publicly readable, so anyone can peek at tomorrow's answer).
+  SHEET_PUBLISHED_URL: ""
 };
 
-function norm(s){ return s.toLowerCase().replace(/[^a-z0-9\s-]/g,"").trim(); }
+// ===== question bank =====
+var QUESTIONS = (typeof CS_QUESTIONS !== "undefined" && CS_QUESTIONS.length) ? CS_QUESTIONS : [
+  { date: "", question: "What percentage of Brits say they trust their neighbours?",
+    answer: 54, note: "Placeholder question — add questions.js.", source: "Public First" }
+];
 
-// ===== Daily Mode =====
-const DAILY_MODE = true;
-const DAILY_TZ   = "Europe/London"; // valid IANA tz
-const MAX_ANSWERS = 5;
-const BLUR_ON_CORRECT = true;
-
-
-
-// Global deterministic daily rotation anchor (everyone same question if no date column)
-const GLOBAL_ANCHOR = "2025-07-09"; // YYYY-MM-DD in Europe/London terms
-
-// Fallback if DAILY_TZ ever gets set to something invalid
+// ===== day / date helpers =====
 function safeTZ(){
-  var tz = DAILY_TZ || "Europe/London";
+  var tz = CONFIG.TZ || "Europe/London";
   try { new Intl.DateTimeFormat("en-GB", { timeZone: tz }).format(new Date()); return tz; }
   catch (e) { return "Europe/London"; }
 }
-
-var DAY_KEY = null;
-
 function getDayKey(){
-  var now = new Date();
-  var fmt = new Intl.DateTimeFormat("en-GB", { timeZone: safeTZ(), year:"numeric", month:"2-digit", day:"2-digit" });
-  var parts = fmt.formatToParts(now);
+  var parts = new Intl.DateTimeFormat("en-GB", { timeZone: safeTZ(), year:"numeric", month:"2-digit", day:"2-digit" }).formatToParts(new Date());
   var y="",m="",d="";
   for (var i=0;i<parts.length;i++){
     if (parts[i].type==="year") y=parts[i].value;
@@ -79,346 +40,392 @@ function getDayKey(){
   }
   return y+"-"+m+"-"+d;
 }
-
 function getYesterdayKey(key){
   var p = key.split("-").map(Number);
   var d = new Date(Date.UTC(p[0], p[1]-1, p[2]));
   d.setUTCDate(d.getUTCDate()-1);
   return d.toISOString().slice(0,10);
 }
-
-function getYesterdayKey(key){
-  var p = key.split("-").map(Number);
-  var d = new Date(Date.UTC(p[0], p[1]-1, p[2]));
-  d.setUTCDate(d.getUTCDate()-1);
-  return d.toISOString().slice(0,10);
+function daysSince(aKey, bKey){
+  var a = aKey.split("-").map(Number), b = bKey.split("-").map(Number);
+  return Math.floor(Date.UTC(b[0],b[1]-1,b[2])/86400000) - Math.floor(Date.UTC(a[0],a[1]-1,a[2])/86400000);
 }
 
-function resetStreakIfSkippedDay(){
-  // requires readStreak()/writeStreak() from the streak patch we added earlier
-  var s = readStreak ? readStreak() : {count:0,last:""};
-  if (!s.count) return;
+var DAY_KEY = getDayKey();
+var PUZZLE_NO = Math.max(1, daysSince(CONFIG.ANCHOR, DAY_KEY) + 1);
 
-  var y = getYesterdayKey(DAY_KEY);
-  // If the last win wasn’t yesterday or today, the run was broken by a skipped day.
-  if (s.last !== DAY_KEY && s.last !== y){
-    writeStreak(0, s.last);
-  }
+// ===== elements =====
+function $(id){ return document.getElementById(id); }
+var els = {
+  puzzleNo: $("puzzleNo"), dailyDate: $("dailyDate"), streakBadge: $("streakBadge"),
+  questionText: $("questionText"), kicker: $("kicker"),
+  guessRow: $("guessRow"), input: $("guessInput"), slider: $("guessSlider"), guessBtn: $("guessBtn"),
+  guessDots: $("guessDots"),
+  track: $("track"), trackWindow: $("trackWindow"), answerMarker: $("answerMarker"),
+  ledger: $("ledger"),
+  reveal: $("reveal"), verdict: $("verdict"), bigAnswer: $("bigAnswer"),
+  scoreLine: $("scoreLine"), answerNote: $("answerNote"), sourceNote: $("sourceNote"),
+  shareBtn: $("shareBtn"), countdown: $("countdown"),
+  toast: $("toast"),
+  helpBtn: $("helpBtn"), statsBtn: $("statsBtn"),
+  helpModal: $("helpModal"), statsModal: $("statsModal"),
+  emailForm: $("emailForm"), emailInput: $("emailInput"), emailMsg: $("emailMsg")
+};
+
+// ===== state =====
+var Q = null;                       // today's question
+var state = { guesses: [], done: false, win: false, score: 0 };
+var minAllowed = 0, maxAllowed = 100;   // the squeeze window
+
+function stateKey(){ return "cs-state-" + DAY_KEY; }
+function saveState(){ try{ localStorage.setItem(stateKey(), JSON.stringify(state)); }catch(_){} }
+function loadState(){
+  try{
+    var raw = localStorage.getItem(stateKey());
+    if (!raw) return null;
+    var s = JSON.parse(raw);
+    if (s && Array.isArray(s.guesses)) return s;
+  }catch(_){}
+  return null;
 }
 
+// ===== heat scale =====
+function heat(err){
+  if (err <= 2)  return { cls:"target", label:"On target", emoji:"🎯" };
+  if (err <= 5)  return { cls:"hot",    label:"Hot",       emoji:"🟩" };
+  if (err <= 10) return { cls:"warm",   label:"Warm",      emoji:"🟨" };
+  if (err <= 20) return { cls:"cool",   label:"Cool",      emoji:"🟧" };
+  return           { cls:"cold",   label:"Cold",      emoji:"🟥" };
+}
 
+// ===== scoring =====
+// Weighted error: the final guess matters most, but a sharp first instinct is rewarded.
+function computeScore(guesses, answer){
+  var err1 = Math.abs(guesses[0] - answer);
+  var errF = Math.abs(guesses[guesses.length-1] - answer);
+  var e = CONFIG.FIRST_WEIGHT * err1 + CONFIG.FINAL_WEIGHT * errF;
+  return Math.max(0, 100 - Math.round(3 * e));
+}
+
+// ===== streak =====
 function readStreak(){
   var c = parseInt(localStorage.getItem("streakCount")||"0",10);
-  var last = localStorage.getItem("lastWinDate")||"";
-  return { count: isFinite(c)?c:0, last:last };
+  return { count: isFinite(c)?c:0, last: localStorage.getItem("lastWinDate")||"" };
 }
 function writeStreak(count, lastDate){
   try{
     localStorage.setItem("streakCount", String(count));
     localStorage.setItem("lastWinDate", lastDate||"");
+    var best = parseInt(localStorage.getItem("bestStreak")||"0",10);
+    if (count > best) localStorage.setItem("bestStreak", String(count));
   }catch(_){}
 }
-
-function updateStreakBadge(){
-  var el = document.getElementById("streakBadge");
-  if (!el) return;
+function resetStreakIfSkippedDay(){
   var s = readStreak();
-  // show streak if you’re on a run (last win was yesterday or today)
-  var show = (s.count>0) && (s.last===DAY_KEY || s.last===getYesterdayKey(DAY_KEY));
-  if (!show){ el.classList.add("hidden"); return; }
-  el.textContent = "🔥 " + s.count;
-  el.classList.remove("hidden");
+  if (!s.count) return;
+  if (s.last !== DAY_KEY && s.last !== getYesterdayKey(DAY_KEY)) writeStreak(0, s.last);
+}
+function updateStreakBadge(){
+  if (!els.streakBadge) return;
+  var s = readStreak();
+  var show = s.count > 0 && (s.last === DAY_KEY || s.last === getYesterdayKey(DAY_KEY));
+  els.streakBadge.classList.toggle("hidden", !show);
+  if (show) els.streakBadge.textContent = "🔥 " + s.count;
 }
 
+// ===== stats =====
+function readStats(){
+  try{
+    var raw = localStorage.getItem("cs-stats");
+    if (raw){ var s = JSON.parse(raw); if (s && typeof s.played === "number") return s; }
+  }catch(_){}
+  return { played:0, wins:0, tiers:{target:0,hot:0,warm:0,cool:0,cold:0}, firstErrSum:0, scoreSum:0 };
+}
+function writeStats(s){ try{ localStorage.setItem("cs-stats", JSON.stringify(s)); }catch(_){} }
+function recordResult(win, firstErr, finalErr, score){
+  var s = readStats();
+  s.played += 1;
+  if (win) s.wins += 1;
+  var t = heat(finalErr).cls;
+  s.tiers[t] = (s.tiers[t]||0) + 1;
+  s.firstErrSum += firstErr;
+  s.scoreSum += score;
+  writeStats(s);
+}
+function renderStats(){
+  var s = readStats();
+  $("stPlayed").textContent = s.played;
+  $("stWin").textContent = s.played ? Math.round(100*s.wins/s.played) + "%" : "0%";
+  $("stStreak").textContent = readStreak().count;
+  $("stMax").textContent = parseInt(localStorage.getItem("bestStreak")||"0",10);
 
-// Live date + time ticker in Europe/London (24h, with seconds)
-var _tickerId = null;
-function startDailyTickerLondon(){
+  var rows = $("distRows");
+  rows.innerHTML = "";
+  var tiers = [
+    { cls:"target", label:"🎯 On target" },
+    { cls:"hot",    label:"Hot"  },
+    { cls:"warm",   label:"Warm" },
+    { cls:"cool",   label:"Cool" },
+    { cls:"cold",   label:"Cold" }
+  ];
+  var max = 1;
+  tiers.forEach(function(t){ max = Math.max(max, s.tiers[t.cls]||0); });
+  tiers.forEach(function(t){
+    var n = s.tiers[t.cls]||0;
+    var row = document.createElement("div");
+    row.className = "distrow";
+    var lab = document.createElement("span"); lab.className = "g"; lab.textContent = t.label;
+    var bar = document.createElement("div"); bar.className = "distbar" + (n ? "" : " zero");
+    bar.style.width = Math.max(9, Math.round(100*n/max)) + "%";
+    bar.textContent = n;
+    row.appendChild(lab); row.appendChild(bar);
+    rows.appendChild(row);
+  });
+
+  var fe = $("firstErr");
+  if (s.played){
+    var avg = (s.firstErrSum / s.played).toFixed(1);
+    var avgScore = Math.round(s.scoreSum / s.played);
+    fe.innerHTML = "Your first instinct is off by <b>" + avg + "</b> points on average, and your average score is <b>" + avgScore + "</b>/100. That's your crowdsense.";
+  } else {
+    fe.textContent = "Play your first game to start measuring your crowdsense.";
+  }
+}
+
+// ===== toast =====
+var _toastTimer = null;
+function toast(msg){
+  if (!els.toast) return;
+  els.toast.textContent = msg;
+  els.toast.classList.add("show");
+  if (_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(function(){ els.toast.classList.remove("show"); }, 2200);
+}
+function shakeInput(){
+  if (!els.input) return;
+  els.input.classList.add("shake");
+  setTimeout(function(){ els.input.classList.remove("shake"); }, 450);
+}
+
+// ===== track (the squeeze) =====
+function updateTrackWindow(){
+  els.trackWindow.style.left = minAllowed + "%";
+  els.trackWindow.style.width = Math.max(0, maxAllowed - minAllowed) + "%";
+}
+function applyGuessToWindow(g){
+  if (Q.answer > g) minAllowed = Math.max(minAllowed, Math.min(100, g + 1));
+  else if (Q.answer < g) maxAllowed = Math.min(maxAllowed, Math.max(0, g - 1));
+  updateTrackWindow();
+}
+
+// ===== rendering =====
+function renderDots(){
+  els.guessDots.innerHTML = "";
+  for (var i=0;i<CONFIG.MAX_GUESSES;i++){
+    var dot = document.createElement("span");
+    dot.className = "gdot" + (i < state.guesses.length ? " used" : "");
+    els.guessDots.appendChild(dot);
+  }
+}
+function renderLedgerRow(n, g){
+  var err = Math.abs(g - Q.answer);
+  var h = heat(err);
+  var row = document.createElement("div");
+  row.className = "lrow";
+  var dir;
+  if (err <= CONFIG.BULLSEYE) dir = "Right on the money";
+  else if (Q.answer > g) dir = "The real figure is higher ▲";
+  else dir = "The real figure is lower ▼";
+  row.innerHTML =
+    '<span class="lnum">' + n + '</span>' +
+    '<span class="lval">' + g + '%</span>' +
+    '<span class="ldir">' + dir + '</span>' +
+    '<span class="chip ' + h.cls + '">' + h.label + '</span>';
+  els.ledger.appendChild(row);
+}
+function setKickerForTurn(){
+  if (!els.kicker) return;
+  if (state.done) { els.kicker.textContent = "Come back tomorrow for question No. " + (PUZZLE_NO + 1) + "."; return; }
+  if (state.guesses.length === 0) els.kicker.textContent = "Guess the percentage. First your instinct…";
+  else els.kicker.textContent = "…now your judgement. One guess left.";
+}
+
+function verdictFor(guesses, answer, win){
+  var err1 = Math.abs(guesses[0] - answer);
+  var errF = Math.abs(guesses[guesses.length-1] - answer);
+  if (guesses.length === 1 && err1 <= CONFIG.BULLSEYE) return { text: "🎯 Bullseye, first time.", win: true };
+  if (errF <= 2)  return { text: "Dead on.", win: win };
+  if (errF <= 5)  return { text: "Sharp. You know the public.", win: win };
+  if (errF <= 10) return { text: "Close — but the public got away.", win: win };
+  if (errF <= 20) return { text: "Warm-ish. The crowd had other ideas.", win: win };
+  return { text: "The public surprised you.", win: win };
+}
+
+function finishGame(alreadyDone){
+  state.done = true;
+  state.score = computeScore(state.guesses, Q.answer);
+  var errF = Math.abs(state.guesses[state.guesses.length-1] - Q.answer);
+  var err1 = Math.abs(state.guesses[0] - Q.answer);
+  state.win = errF <= CONFIG.WIN_MARGIN;
+
+  els.input.disabled = true;
+  els.slider.disabled = true;
+  els.guessBtn.disabled = true;
+
+  var v = verdictFor(state.guesses, Q.answer, state.win);
+  els.verdict.textContent = v.text;
+  els.verdict.className = "verdict " + (state.win ? "win" : "loss");
+  els.bigAnswer.textContent = Q.answer + "%";
+  var breakdown = (state.guesses.length > 1)
+    ? "First guess " + err1 + " off · final " + errF + " off"
+    : "One guess, " + err1 + " off";
+  els.scoreLine.innerHTML = "Crowdsense score: <b>" + state.score + "</b>/100 · " + breakdown;
+  els.answerNote.textContent = Q.note || "";
+  els.sourceNote.textContent = Q.source ? ("Source: " + Q.source) : "";
+  els.reveal.classList.remove("hidden");
+
+  // sweep the true figure onto the track
+  els.answerMarker.setAttribute("data-v", Q.answer + "%");
+  els.answerMarker.classList.remove("hidden");
+  requestAnimationFrame(function(){ els.answerMarker.style.left = Q.answer + "%"; });
+
+  setKickerForTurn();
+  startCountdown();
+
+  if (!alreadyDone){
+    // streak + stats are recorded once, when the game actually ends
+    if (state.win){
+      var s = readStreak();
+      var next = (s.last === getYesterdayKey(DAY_KEY)) ? s.count + 1 : 1;
+      if (s.last === DAY_KEY) next = s.count; // safety: never double-count a day
+      writeStreak(next, DAY_KEY);
+    } else {
+      writeStreak(0, DAY_KEY);
+    }
+    updateStreakBadge();
+    recordResult(state.win, err1, errF, state.score);
+    saveState();
+  }
+}
+
+// ===== guessing =====
+function submitGuess(){
+  if (state.done) return;
+  var raw = String(els.input.value || "").trim();
+  var g = Math.round(Number(raw));
+  if (raw === "" || !isFinite(g) || g < 0 || g > 100){
+    shakeInput();
+    toast("Enter a whole number between 0 and 100");
+    return;
+  }
+  if (g < minAllowed || g > maxAllowed){
+    shakeInput();
+    toast("You already know the answer is between " + minAllowed + "% and " + maxAllowed + "% — don't waste the guess");
+    return;
+  }
+
+  state.guesses.push(g);
+  renderLedgerRow(state.guesses.length, g);
+  applyGuessToWindow(g);
+  renderDots();
+  saveState();
+
+  var err = Math.abs(g - Q.answer);
+  if (err <= CONFIG.BULLSEYE || state.guesses.length >= CONFIG.MAX_GUESSES){
+    finishGame(false);
+    return;
+  }
+
+  setKickerForTurn();
+  els.input.value = "";
+  try{ els.input.focus(); }catch(_){}
+}
+
+// ===== share =====
+function shareText(){
+  var lines = [];
+  lines.push("Crowdsense No. " + PUZZLE_NO + " — " + state.score + "/100");
+  var grid = state.guesses.map(function(g){
+    var err = Math.abs(g - Q.answer);
+    var h = heat(err);
+    if (err <= CONFIG.BULLSEYE) return h.emoji;
+    return h.emoji + (Q.answer > g ? "⬆️" : "⬇️");
+  }).join(" ");
+  lines.push(grid);
+  var s = readStreak();
+  if (state.win && s.count > 1) lines.push("🔥 " + s.count + " day streak");
+  lines.push(CONFIG.SITE_URL);
+  return lines.join("\n");
+}
+function doShare(){
+  var text = shareText();
+  if (navigator.share){
+    navigator.share({ text: text }).catch(function(){});
+    return;
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text)
+      .then(function(){ toast("Result copied — paste it anywhere"); })
+      .catch(function(){ toast("Couldn't copy — select and copy manually"); });
+  } else {
+    toast("Sharing not supported in this browser");
+  }
+}
+
+// ===== countdown to next question (London midnight) =====
+var _countdownTimer = null;
+function startCountdown(){
+  if (_countdownTimer) clearInterval(_countdownTimer);
+  function tick(){
+    var parts = new Intl.DateTimeFormat("en-GB", { timeZone: safeTZ(), hour12:false, hour:"2-digit", minute:"2-digit", second:"2-digit" }).formatToParts(new Date());
+    var h=0,m=0,s=0;
+    for (var i=0;i<parts.length;i++){
+      if (parts[i].type==="hour") h=+parts[i].value;
+      else if (parts[i].type==="minute") m=+parts[i].value;
+      else if (parts[i].type==="second") s=+parts[i].value;
+    }
+    var left = 86400 - (h*3600 + m*60 + s);
+    if (left <= 0){ els.countdown.textContent = "now — refresh!"; return; }
+    var hh = Math.floor(left/3600), mm = Math.floor((left%3600)/60), ss = left%60;
+    els.countdown.textContent = hh + "h " + String(mm).padStart(2,"0") + "m " + String(ss).padStart(2,"0") + "s";
+  }
+  tick();
+  _countdownTimer = setInterval(tick, 1000);
+}
+
+// ===== date ticker =====
+function startDailyTicker(){
   if (!els.dailyDate) return;
-  if (_tickerId) { clearInterval(_tickerId); _tickerId = null; }
-
-  var tz = safeTZ();
-
-  function render(){
-    var now = new Date();
-    var dateStr = new Intl.DateTimeFormat("en-GB", {
-      timeZone: tz, day: "numeric", month: "short", year: "numeric"
-    }).format(now);
-    var timeStr = new Intl.DateTimeFormat("en-GB", {
-      timeZone: tz, hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit"
-    }).format(now);
-    els.dailyDate.textContent = "Daily · " + dateStr + " · " + timeStr;
-  }
-
-  render();
-  _tickerId = setInterval(render, 1000);
+  var dateStr = new Intl.DateTimeFormat("en-GB", { timeZone: safeTZ(), day:"numeric", month:"short", year:"numeric" }).format(new Date());
+  els.dailyDate.textContent = dateStr;
 }
 
-// ----- helpers for deterministic/global pick -----
-function ymdFromKey(key){ var p = key.split("-"); return { y:+p[0], m:+p[1], d:+p[2] }; }
-function daysFromYMD(y,m,d){ return Math.floor(Date.UTC(y, m-1, d) / 86400000); }
-function daysSince(aKey, bKey){
-  var a = ymdFromKey(aKey), b = ymdFromKey(bKey);
-  return daysFromYMD(b.y,b.m,b.d) - daysFromYMD(a.y,a.m,a.d);
-}
-function normalizeId(s){ return String(s||"").trim().toLowerCase(); }
+// ===== modals =====
+function openModal(id){ var m = $(id); if (m) m.classList.remove("hidden"); }
+function closeModal(id){ var m = $(id); if (m) m.classList.add("hidden"); }
+document.addEventListener("click", function(e){
+  var t = e.target.closest("[data-close]");
+  if (t) closeModal(t.getAttribute("data-close"));
+});
+document.addEventListener("keydown", function(e){
+  if (e.key === "Escape"){ closeModal("helpModal"); closeModal("statsModal"); }
+});
+if (els.helpBtn) els.helpBtn.addEventListener("click", function(){ openModal("helpModal"); });
+if (els.statsBtn) els.statsBtn.addEventListener("click", function(){ renderStats(); openModal("statsModal"); });
 
-function buildQuestionMap(){
-  var arr = [];
-  for (var i=0;i<QUESTIONS.length;i++){
-    var id = normalizeId(QUESTIONS[i].question);
-    if (!arr.some(function(x){ return x.id === id; })) arr.push({ id:id, idx:i });
-  }
-  arr.sort(function(a,b){ return a.id < b.id ? -1 : (a.id > b.id ? 1 : 0); });
-  return arr;
-}
-function pickIndexGlobal(qMap, todayKey){
-  var total = qMap.length;
-  if (!total) return 0;
-  var offset = daysSince(GLOBAL_ANCHOR, todayKey);
-  if (offset < 0) offset = -offset;
-  var pos = offset % total;
-  return qMap[pos].idx;
-}
-
-// ===== Modal helpers =====
-function showModal(title, message){
-  if (!els.modal) return;
-  els.modalTitle.textContent = title || "";
-  els.modalBody.textContent = message || "";
-  els.modal.classList.remove("hidden");
-}
-function hideModal(){
-  if (!els.modal) return;
-  els.modal.classList.add("hidden");
-}
-if (els.modalClose) els.modalClose.addEventListener("click", hideModal);
-if (els.modalBackdrop) els.modalBackdrop.addEventListener("click", hideModal);
-document.addEventListener("keydown", function(e){ if (e.key === "Escape") hideModal(); });
-
-// ===== Email capture =====
+// ===== email capture =====
 function handleEmailSubmit(e){
-  if (!els.emailForm) return;
   e.preventDefault();
   var email = (els.emailInput && els.emailInput.value || "").trim();
   if (!email) return;
   els.emailMsg.textContent = "Submitting…";
-  var fd = new FormData(els.emailForm);
-  fetch(els.emailForm.action, { method:"POST", headers:{ "Accept":"application/json" }, body: fd })
-    .then(function(res){
-      if (res.ok) return res.json();
-      throw new Error("Subscribe failed");
-    })
-    .then(function(){
-      els.emailMsg.textContent = "Thanks! Check your inbox to confirm.";
-      try{ els.emailForm.reset(); }catch(_){}
-    })
-    .catch(function(){
-      els.emailMsg.textContent = "Sorry—there was a problem. Please try again.";
-    });
+  fetch(els.emailForm.action, { method:"POST", headers:{ "Accept":"application/json" }, body: new FormData(els.emailForm) })
+    .then(function(res){ if (res.ok) return res.json(); throw new Error("Subscribe failed"); })
+    .then(function(){ els.emailMsg.textContent = "Thanks! Check your inbox to confirm."; try{ els.emailForm.reset(); }catch(_){} })
+    .catch(function(){ els.emailMsg.textContent = "Sorry — there was a problem. Please try again."; });
 }
 
-// ===== UI =====
-function updateStrikes(){
-  var dots = [els.strike1, els.strike2, els.strike3];
-  for (var i=0;i<dots.length;i++){
-    if (!dots[i]) continue;
-    dots[i].classList.toggle("active", strikes > i);
-    dots[i].style.opacity = (strikes > i ? 1 : 0.25);
-  }
-}
-
-function ensureSourceNote(){
-  var note = document.getElementById("sourceNote");
-  if (!note) {
-    note = document.createElement("p");
-    note.id = "sourceNote";
-    note.className = "source-note";
-    note.textContent = "Source: Public First Poll of 2,106 UK Adults from 9th Jul – 14th July 2025";
-  }
-  els.board.insertAdjacentElement("afterend", note);
-  els.sourceNote = note;
-}
-
-// clearer strike feedback
-function strikeFeedback(n){
-  var dots = [els.strike1, els.strike2, els.strike3];
-  var target = dots[n-1];
-
-  if (target){
-    target.classList.add("boom");
-    setTimeout(function(){ target.classList.remove("boom"); }, 600);
-  }
-  if (els.input){
-    els.input.classList.add("shake");
-    setTimeout(function(){ els.input.classList.remove("shake"); }, 450);
-  }
-  var card = document.getElementById("card");
-  if (card){
-    card.classList.add("card-flash");
-    setTimeout(function(){ card.classList.remove("card-flash"); }, 300);
-  }
-  if (els.strikeToast){
-    els.strikeToast.textContent = "Strike " + n + " of 3";
-    els.strikeToast.classList.add("show");
-    setTimeout(function(){ els.strikeToast.classList.remove("show"); }, 1200);
-  }
-}
-
-function renderQuestion(){
-  var q = QUESTIONS[idx];
-  endReason = "complete";
-  els.questionText.textContent = q.question;
-  els.board.innerHTML = "";
-  revealed = new Set();
-  strikes = 0; updateStrikes();
-  if (els.nextBtn) els.nextBtn.classList.add("hidden");
-  els.input.disabled = false; els.guessBtn.disabled = false;
-  els.input.value = ""; try{ els.input.focus(); }catch(_){}
-  if (els.score) els.score.textContent = "0%"; // if present
-
-  var count = Math.min(q.answers.length, MAX_ANSWERS);
-  for (var i=0;i<count;i++){
-    var tile = document.createElement("div");
-    tile.className = "tile";
-    tile.setAttribute("data-index", String(i));
-    tile.innerHTML = '<div class="fill"></div><div class="tile-content"><span class="answer">— — —</span><span class="points">??</span></div>';
-    els.board.appendChild(tile);
-  }
-
-  ensureSourceNote();
-}
-
-function finishRound(reason){
-  els.input.disabled = true; els.guessBtn.disabled = true;
-  if (els.nextBtn) els.nextBtn.classList.add("hidden");
-
-  var q = QUESTIONS[idx];
-
-  if (reason === "failed"){
-    els.questionText.textContent = q.question + " - You're out of guesses!";
-    showModal("You're out of guesses", "You have been defeated by the public. Try again tomorrow.");
-    if (DAILY_MODE){
-      try{ localStorage.setItem("played-"+DAY_KEY, "1") 
-        writeStreak(0, DAY_KEY);
-updateStreakBadge();
-; }catch(_){}
-    }
-    // if you’re using streaks, you probably reset here:
-    // writeStreak(0, DAY_KEY); updateStreakBadge();
-    return;
-  }
-
-  // Success path
-  els.questionText.textContent = q.question + " - All answers revealed!";
-
-  // --- streak logic (assumes readStreak/writeStreak/getYesterdayKey from earlier patch) ---
-  var s = (typeof readStreak === "function") ? readStreak() : { count:0, last:"" };
-  var expectedPrev = (typeof getYesterdayKey === "function") ? getYesterdayKey(DAY_KEY) : "";
-  var nextCount = (s.last === expectedPrev) ? (s.count + 1) : 1;
-  if (typeof writeStreak === "function") writeStreak(nextCount, DAY_KEY);
-  if (typeof updateStreakBadge === "function") updateStreakBadge();
-  // --- end streak logic ---
-
-  // Show modal AFTER we’ve written the streak, so it reflects the new number
-  var baseMsg = "You have Crowdsense. Come back tomorrow for a new question.";
-  showModal("You got them all!", baseMsg);
-
-  // --- add streak badge to modal ---
-  try{
-    if (els.modalBody){
-      var sNow = (typeof readStreak === "function") ? readStreak() : { count: nextCount };
-      // Append a space + badge element inline
-      els.modalBody.appendChild(document.createTextNode(" "));
-      var badge = document.createElement("span");
-      badge.className = "streak-badge-inline";
-badge.textContent = "🔥 Your streak: " + (sNow.count ?? nextCount);
-      els.modalBody.appendChild(badge);
-    }
-  }catch(_){}
-  // --- end add streak badge ---
-
-  if (DAILY_MODE){
-    try{ localStorage.setItem("played-"+DAY_KEY, "1"); }catch(_){}
-  }
-}
-
-function reveal(i){
-  var q = QUESTIONS[idx];
-  var ans = q.answers[i];
-  var tile = els.board.children[i];
-  if (!tile || !ans) return;
-
-  var fill = tile.querySelector(".fill");
-  var answerEl = tile.querySelector(".answer");
-  var pointsEl = tile.querySelector(".points");
-
-  var onDone = function(){
-    tile.classList.add("revealed");
-    answerEl.textContent = ans.text;
-    pointsEl.textContent = ans.score + "%";
-    if (!revealed.has(i)){
-      revealed.add(i);
-      score += ans.score;
-      if (els.score) els.score.textContent = score + "%";
-    }
-    fill.removeEventListener("transitionend", onDone);
-
-    var totalToReveal = Math.min(q.answers.length, els.board.children.length);
-    if (revealed.size >= totalToReveal) finishRound(endReason);
-  };
-
-  fill.addEventListener("transitionend", onDone);
-  requestAnimationFrame(function(){ fill.style.width = ans.score + "%"; });
-}
-
-function handleGuess(){
-  var raw = els.input ? els.input.value : "";
-  var guess = norm(raw);
-  if (!guess) return;
-
-  var q = QUESTIONS[idx];
-  var foundIndex = -1;
-
-  // Find first unrevealed match
-  for (var i=0; i<q.answers.length; i++){
-    if (revealed.has(i)) continue;
-    var ans = q.answers[i];
-    var candidates = [ans.text].concat(ans.aliases||[]).map(norm);
-    if (candidates.indexOf(guess) !== -1){
-      foundIndex = i;
-      break;
-    }
-  }
-
-  if (foundIndex !== -1){
-    // Correct
-    reveal(foundIndex);
-
-    // Hide the keyboard after this event finishes
-    if (BLUR_ON_CORRECT && els.input){
-      setTimeout(function(){ els.input.blur(); }, 0);
-    }
-
-    // Clear the field and STOP — do not fall into strike logic
-    els.input.value = "";
-    return;
-  }
-
-  // Wrong
-  strikes = Math.min(strikes+1, 3);
-  updateStrikes();
-  strikeFeedback(strikes);
-  if (strikes >= 3){
-    endReason = "failed";
-    q.answers.forEach(function(_,i){ if (!revealed.has(i)) reveal(i); });
-  }
-}
-
-
-// ===== Google Sheets loader (CSV first, GViz JSONP fallback) =====
-var SHEET_PUBLISHED_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR6_gEjPFb7k4tHmguxmp_4qHlObR7JAY5V1UtktCGS0BbfoehJd13fYv5iI4qZ1HjlEwkUxGqM0Aod/pubhtml";
-
+// ===== optional Google Sheet loader (columns: date, question, answer, note, source) =====
 function normalizeToCSV(url){
   if (!url) return "";
   var m = /gid=([0-9]+)/.exec(url); var gid = m ? "&gid="+m[1] : "";
@@ -444,161 +451,126 @@ function parseCSV(text){
   if (field.length || row.length){ row.push(field); rows.push(row); }
   return rows;
 }
-function loadViaCSV(publishedUrl){
-  var csvUrl = normalizeToCSV(publishedUrl);
-  return fetch(csvUrl,{cache:"no-store"})
-    .then(function(resp){ if(!resp.ok) throw new Error("HTTP "+resp.status); return resp.text(); })
-    .then(function(text){ var rows=parseCSV(text); if(!rows.length) throw new Error("Empty CSV"); return rows; });
-}
-function loadViaGvizJSONP(publishedUrl,timeoutMs){
-  timeoutMs = timeoutMs || 8000;
-  return new Promise(function(resolve,reject){
-    try{
-      var base = publishedUrl.replace(/\/pubhtml(\?.*)?$/,"");
-      if (!/\/gviz\/tq/.test(base)){
-        base = base.replace(/\/edit(\?.*)?$/,"");
-        if (base.charAt(base.length-1)==="/") base = base.slice(0,-1);
-        base += "/gviz/tq";
-      }
-      var m = /gid=([0-9]+)/.exec(publishedUrl);
-      var gid = m ? m[1] : "";
-      var gvizUrl = base + "?tqx=out:json" + (gid ? "&gid="+gid : "");
-
-      var cbName = "gviz_cb_" + Math.random().toString(36).slice(2);
-      var timer = setTimeout(function(){ cleanup(); reject(new Error("GViz timeout")); }, timeoutMs);
-      function cleanup(){ clearTimeout(timer); if(script && script.parentNode) script.parentNode.removeChild(script); try{ delete window[cbName]; }catch(_){ window[cbName]=undefined; } }
-
-      window[cbName] = function(response){
-        cleanup();
-        try{
-          if (!response || !response.table) throw new Error("No table");
-          var cols = response.table.cols.map(function(c){ return (c && c.label ? String(c.label).trim().toLowerCase() : ""); });
-          var qi = cols.indexOf("question"), ai = cols.indexOf("answer"), si = cols.indexOf("score"), li = cols.indexOf("aliases");
-          if (qi<0 || ai<0 || si<0) throw new Error("Missing headers");
-          var rows = [cols];
-          response.table.rows.forEach(function(r){
-            var vals = r.c.map(function(c){ return (c && c.v != null ? String(c.v) : ""); });
-            rows.push(vals);
-          });
-          resolve(rows);
-        }catch(e){ reject(e); }
-      };
-
-      var script = document.createElement("script");
-      script.src = gvizUrl + "&tq&" + (gid ? "gid="+gid+"&" : "") + "tqx=out:json&callback=" + cbName;
-      script.async = true;
-      script.onerror = function(){ cleanup(); reject(new Error("GViz script error")); };
-      document.head.appendChild(script);
-    }catch(e){ reject(e); }
-  });
-}
-
-// ---- optional date column support ----
 function normalizeDateYMD(s){
   s = String(s||"").trim();
   if (!s) return "";
-  var m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s); // YYYY-MM-DD
+  var m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s);
   if (m) return m[1] + "-" + m[2].padStart(2,"0") + "-" + m[3].padStart(2,"0");
-  m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s);   // DD/MM/YYYY
+  m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s);
   if (m) return m[3] + "-" + m[2].padStart(2,"0") + "-" + m[1].padStart(2,"0");
-  var t = Date.parse(s);                            // e.g. "9 Jul 2025"
-  if (!isNaN(t)){
-    var d = new Date(t);
-    var parts = new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/London",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(d);
-    var y="",m2="",d2="";
-    for (var i=0;i<parts.length;i++){
-      if (parts[i].type==="year") y=parts[i].value;
-      else if (parts[i].type==="month") m2=parts[i].value;
-      else if (parts[i].type==="day") d2=parts[i].value;
-    }
-    return y+"-"+m2+"-"+d2;
-  }
   return "";
 }
-
-function rowsToQA(rows){
+function rowsToQuestions(rows){
   var header = rows[0].map(function(h){ return String(h||"").trim().toLowerCase(); });
-  var di = header.indexOf("date");
-  var qi = header.indexOf("question"), ai = header.indexOf("answer"), si = header.indexOf("score"), li = header.indexOf("aliases");
-  if (qi<0 || ai<0 || si<0) throw new Error("Missing required headers");
-
-  var byKey = new Map();
+  var di = header.indexOf("date"), qi = header.indexOf("question"), ai = header.indexOf("answer");
+  var ni = header.indexOf("note"), si = header.indexOf("source");
+  if (qi < 0 || ai < 0) throw new Error("Sheet needs 'question' and 'answer' columns");
+  var out = [];
   rows.slice(1).forEach(function(row){
     if (!row || !row.length) return;
-    var dt = di>=0 ? normalizeDateYMD(row[di]) : "";
-    var q  = (row[qi]||"").trim();
-    var a  = (row[ai]||"").trim();
-    var sText = String(row[si]==null ? "" : row[si]).trim();
-    var sNum  = Number(sText.replace(/[^0-9.+-]/g,""));
-    var l     = li>=0 ? (row[li]||"") : "";
-    if (!q || !a) return;
-
-    var key = (dt||"") + "||" + q;
-    if (!byKey.has(key)) byKey.set(key, { date: dt, question: q, answers: [] });
-    byKey.get(key).answers.push({
-      text:a,
-      score: isFinite(sNum)?sNum:0,
-      aliases: l.split("|").map(function(x){return x.trim();}).filter(function(x){return !!x;})
+    var q = (row[qi]||"").trim();
+    var a = Math.round(Number(String(row[ai]||"").replace(/[^0-9.+-]/g,"")));
+    if (!q || !isFinite(a) || a < 0 || a > 100) return;
+    out.push({
+      date: di>=0 ? normalizeDateYMD(row[di]) : "",
+      question: q,
+      answer: a,
+      note: ni>=0 ? (row[ni]||"").trim() : "",
+      source: si>=0 ? (row[si]||"").trim() : ""
     });
-  });
-
-  var out = [];
-  byKey.forEach(function(block){
-    block.answers.sort(function(x,y){ return y.score - x.score; });
-    out.push(block); // { date, question, answers }
   });
   if (!out.length) throw new Error("Parsed 0 questions");
   return out;
 }
-
 function loadQuestions(){
-  return loadViaCSV(SHEET_PUBLISHED_URL)
-    .then(function(rows){ var out = rowsToQA(rows); console.log("Loaded "+out.length+" questions via CSV"); return out; })
-    .catch(function(csvErr){
-      console.warn("CSV load failed, trying GViz JSONP...", csvErr);
-      return loadViaGvizJSONP(SHEET_PUBLISHED_URL)
-        .then(function(rows){ var out = rowsToQA(rows); console.log("Loaded "+out.length+" questions via GViz JSONP"); return out; })
-        .catch(function(gvizErr){ console.warn("GViz load failed, using embedded QUESTIONS", gvizErr); return QUESTIONS; });
+  if (!CONFIG.SHEET_PUBLISHED_URL) return Promise.resolve(QUESTIONS);
+  return fetch(normalizeToCSV(CONFIG.SHEET_PUBLISHED_URL), { cache:"no-store" })
+    .then(function(resp){ if(!resp.ok) throw new Error("HTTP "+resp.status); return resp.text(); })
+    .then(function(text){
+      var out = rowsToQuestions(parseCSV(text));
+      console.log("Loaded " + out.length + " questions from sheet");
+      return out;
+    })
+    .catch(function(err){
+      console.warn("Sheet load failed, using embedded questions", err);
+      return QUESTIONS;
     });
+}
+
+// ===== question selection (same question for everyone, everywhere) =====
+function pickTodaysQuestion(bank){
+  var dated = bank.filter(function(q){ return (q.date||"") === DAY_KEY; });
+  if (dated.length) return dated[0];
+  var pool = bank.filter(function(q){ return !(q.date||"").length; });
+  if (!pool.length) pool = bank;
+  // deterministic rotation, stable order
+  var sorted = pool.slice().sort(function(a,b){
+    var x = String(a.question).toLowerCase(), y = String(b.question).toLowerCase();
+    return x < y ? -1 : (x > y ? 1 : 0);
+  });
+  var offset = Math.abs(daysSince(CONFIG.ANCHOR, DAY_KEY)) % sorted.length;
+  return sorted[offset];
+}
+
+// ===== restore a saved game =====
+function restore(saved){
+  state = { guesses: [], done: false, win: false, score: 0 };
+  saved.guesses.forEach(function(g){
+    state.guesses.push(g);
+    renderLedgerRow(state.guesses.length, g);
+    applyGuessToWindow(g);
+  });
+  renderDots();
+  if (saved.done){
+    finishGame(true);
+  } else {
+    setKickerForTurn();
+  }
 }
 
 // ===== init =====
 (function init(){
-  loadQuestions().then(function(data){
-    if (data && data.length){
-      if (data !== QUESTIONS){
-        while (QUESTIONS.length) QUESTIONS.pop();
-        data.forEach(function(q){ QUESTIONS.push(q); });
-      }
-    }
+  loadQuestions().then(function(bank){
+    Q = pickTodaysQuestion(bank);
 
-    DAY_KEY = getDayKey();
     resetStreakIfSkippedDay();
-
-    // Prefer sheet-driven date selection if present
-    var todays = (QUESTIONS || []).filter(function(q){ return (q.date || "") === DAY_KEY; });
-    if (DAILY_MODE && todays.length){
-      QUESTIONS = todays;
-      idx = 0;
-    } else if (DAILY_MODE) {
-      // fallback: deterministic global pick (same for everyone)
-      var qMap = buildQuestionMap();
-      idx = pickIndexGlobal(qMap, DAY_KEY);
-    } else {
-      idx = 0;
-    }
-
-    startDailyTickerLondon();
-    renderQuestion();
+    els.puzzleNo.textContent = "No. " + PUZZLE_NO;
+    startDailyTicker();
+    els.questionText.textContent = Q.question;
+    updateTrackWindow();
+    renderDots();
+    setKickerForTurn();
     updateStreakBadge();
+
+    var saved = loadState();
+    if (saved && saved.guesses.length) restore(saved);
+
+    // first visit: show how-to
+    try{
+      if (!localStorage.getItem("cs-seen-help")){
+        openModal("helpModal");
+        localStorage.setItem("cs-seen-help", "1");
+      }
+    }catch(_){}
   }).catch(function(err){
     console.error("Init failed", err);
-    startDailyTickerLondon();
-    renderQuestion();
+    els.questionText.textContent = "Something went wrong loading today's question — refresh to try again.";
   });
 })();
 
 // ===== events =====
-els.guessBtn.addEventListener("click", handleGuess);
-els.input.addEventListener("keydown", function(e){ if (e.key === "Enter") handleGuess(); });
+els.guessBtn.addEventListener("click", submitGuess);
+els.input.addEventListener("keydown", function(e){ if (e.key === "Enter") submitGuess(); });
+els.input.addEventListener("input", function(){
+  var v = Math.round(Number(els.input.value));
+  if (isFinite(v) && v >= 0 && v <= 100){
+    els.slider.value = v;
+    els.slider.style.setProperty("--fill", v + "%");
+  }
+});
+els.slider.addEventListener("input", function(){
+  els.input.value = els.slider.value;
+  els.slider.style.setProperty("--fill", els.slider.value + "%");
+});
+if (els.shareBtn) els.shareBtn.addEventListener("click", doShare);
 if (els.emailForm) els.emailForm.addEventListener("submit", handleEmailSubmit);

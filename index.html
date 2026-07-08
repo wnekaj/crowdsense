@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Crowdsense — how well do you know the British public?</title>
-  <meta name="description" content="A daily guessing game. We asked the British public. You guess what percentage said yes." />
+  <meta name="description" content="A daily guessing game. We asked the British public. You guess what percentage said yes. Two guesses: instinct, then judgement." />
 
   <!-- Social cards -->
   <meta property="og:title" content="Crowdsense" />
-  <meta property="og:description" content="One real polling question a day. Guess what percentage of the British public said it. Five guesses. Two points of grace." />
+  <meta property="og:description" content="One real polling question a day. Guess what percentage of the British public said it. Two guesses: instinct, then judgement." />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary" />
 
@@ -261,6 +261,11 @@
       color:var(--accent-deep);
       font-variant-numeric:tabular-nums;
     }
+    .scoreline{
+      color:var(--ink); font-size:14.5px; margin:4px 0 0;
+      font-variant-numeric:tabular-nums;
+    }
+    .scoreline b{ font-family:var(--serif); font-size:19px; color:var(--accent-deep) }
     .note{ color:var(--ink); font-size:14.5px; line-height:1.5; margin:10px auto 4px; max-width:44ch }
     .source-note{ color:var(--muted); font-size:12px; margin:8px 0 14px }
     .sharebtn{
@@ -340,7 +345,7 @@
     .stat .l{ color:var(--muted); font-size:10.5px; text-transform:uppercase; letter-spacing:.6px }
     .disthead{ font-size:12px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:8px }
     .distrow{ display:flex; align-items:center; gap:8px; margin-bottom:5px; font-size:12.5px; font-variant-numeric:tabular-nums }
-    .distrow .g{ width:12px; color:var(--muted); font-weight:700 }
+    .distrow .g{ width:86px; color:var(--muted); font-weight:700 }
     .distbar{
       background:var(--accent); color:#fff; font-weight:800;
       border-radius:5px; padding:2px 7px; min-width:20px; text-align:right;
@@ -382,7 +387,7 @@
       </div>
 
       <h1 class="question" id="questionText">Loading today's question…</h1>
-      <p class="kicker">Guess the percentage. Five guesses to land within 2 points.</p>
+      <p class="kicker" id="kicker">Guess the percentage. First your instinct…</p>
 
       <div class="guessrow" id="guessRow">
         <div class="pctwrap">
@@ -410,6 +415,7 @@
       <div class="reveal hidden" id="reveal">
         <p class="verdict" id="verdict"></p>
         <div class="bignum" id="bigAnswer"></div>
+        <p class="scoreline" id="scoreLine"></p>
         <p class="note" id="answerNote"></p>
         <p class="source-note" id="sourceNote"></p>
         <button id="shareBtn" class="sharebtn" type="button">Share your result</button>
@@ -437,15 +443,16 @@
       <h2 class="modal-title" id="helpTitle">How to play</h2>
       <div class="modal-body">
         <p>Each day we take one real question we've polled the British public on — and you guess what percentage said it.</p>
-        <p>You have <b>5 guesses</b> to land within <b>2 points</b> of the real figure. After each guess you'll learn whether the answer is higher or lower, and how close you are:</p>
+        <p>You get <b>two guesses</b>. The first is your <b>instinct</b>. We'll tell you whether the real figure is higher or lower, and how close you are. Then comes your <b>judgement</b>: one final guess.</p>
         <div class="legend">
-          <div class="lg"><span class="chip target">🎯 Within 2</span> You win</div>
+          <div class="lg"><span class="chip target">🎯 On target</span> Within 2</div>
           <div class="lg"><span class="chip hot">Hot</span> Within 5</div>
           <div class="lg"><span class="chip warm">Warm</span> Within 10</div>
           <div class="lg"><span class="chip cool">Cool</span> Within 20</div>
           <div class="lg"><span class="chip cold">Cold</span> More than 20 away</div>
         </div>
-        <p style="margin-top:12px">The window narrows with every guess. So do your options. New question daily at midnight, London time.</p>
+        <p style="margin-top:12px">Your score out of 100 rewards <b>both</b> guesses — a sharp instinct counts, not just a lucky correction. Land within 2 on your first guess for an instant 🎯 bullseye. Finish within 5 to keep your streak.</p>
+        <p>New question daily at midnight, London time.</p>
       </div>
     </div>
   </div>
@@ -463,14 +470,14 @@
           <div class="stat"><div class="v" id="stStreak">0</div><div class="l">Streak</div></div>
           <div class="stat"><div class="v" id="stMax">0</div><div class="l">Best</div></div>
         </div>
-        <div class="disthead">Guess distribution</div>
+        <div class="disthead">How close you get</div>
         <div id="distRows"></div>
         <div class="firsterr" id="firstErr"></div>
       </div>
     </div>
   </div>
 
-  <script src="questions.js?v=1"></script>
-  <script src="app.js?v=1"></script>
+  <script src="questions.js?v=2"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>
