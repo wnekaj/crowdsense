@@ -12,30 +12,36 @@
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary" />
 
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='white'/%3E%3Crect x='14' y='14' width='30' height='12' fill='black'/%3E%3Crect x='38' y='14' width='12' height='30' fill='black'/%3E%3Crect x='14' y='32' width='12' height='12' fill='%23F26522'/%3E%3C/svg%3E" />
+  <meta name="theme-color" content="#f26522" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
   <style>
     :root{
-      --bg:#f8f5f0;
+      /* Public First palette: black ink, white paper, PF orange */
+      --bg:#ffffff;
       --card:#ffffff;
-      --ink:#1c1917;
-      --muted:#8a8178;
-      --line:#e9e4dc;
-      --accent:#f97316;
-      --accent-deep:#ea580c;
-      --accent-soft:#fff3e8;
+      --ink:#0f0f0f;
+      --muted:#6f6f6f;
+      --line:#e4e4e4;
+      --accent:#f26522;
+      --accent-deep:#d5541a;
+      --accent-soft:#fdeee4;
       /* heat scale */
       --cold:#3568c9;
       --cool:#d9a514;
-      --warm:#f97316;
+      --warm:#f26522;
       --hot:#d93025;
       --win:#1a8a3c;
       --win-soft:#e8f6ec;
-      --radius:14px;
-      --serif:"Fraunces", Georgia, serif;
-      --sans:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --radius:8px;
+      --display:"Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      --sans:"Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
     *{ box-sizing:border-box }
     html,body{ height:100% }
@@ -58,11 +64,21 @@
       padding:16px 4px 10px;
     }
     .brand{
-      font-family:var(--serif);
-      font-weight:700; font-size:22px; letter-spacing:.2px;
-      color:var(--accent-deep);
+      font-family:var(--display);
+      font-weight:900; font-size:21px; letter-spacing:-.02em;
+      text-transform:uppercase;
+      color:var(--ink);
+      line-height:1.1;
     }
-    .brand .dot{ color:var(--ink) }
+    .brand .dot{ color:var(--accent) }
+    .byline{
+      display:block;
+      font-size:10px; font-weight:600;
+      letter-spacing:.14em; text-transform:uppercase;
+      color:var(--muted); text-decoration:none;
+      margin-top:2px;
+    }
+    .byline:hover{ color:var(--accent-deep) }
     .iconbtns{ display:flex; gap:6px }
     .iconbtn{
       width:36px; height:36px; border-radius:10px;
@@ -73,16 +89,16 @@
     }
     .iconbtn:hover{ border-color:var(--accent); color:var(--accent-deep) }
     .iconbtn:active{ transform:translateY(1px) }
-    .iconbtn:focus-visible{ outline:3px solid rgba(249,115,22,.35); outline-offset:2px }
+    .iconbtn:focus-visible{ outline:3px solid rgba(242,101,34,.35); outline-offset:2px }
 
     /* ---------- Card ---------- */
     .app{ width:min(560px,94vw) }
     .card{
       background:var(--card);
-      border:1px solid var(--line);
-      border-radius:18px;
+      border:1.5px solid var(--ink);
+      border-radius:10px;
       padding:22px 22px 18px;
-      box-shadow:0 12px 32px rgba(28,25,23,.06);
+      box-shadow:7px 7px 0 var(--accent-soft);
     }
     .datebar{
       display:flex; align-items:center; justify-content:center; gap:10px;
@@ -92,8 +108,8 @@
     .streak{ font-weight:800; color:var(--accent-deep) }
 
     .question{
-      font-family:var(--serif);
-      font-weight:600;
+      font-family:var(--display);
+      font-weight:800; letter-spacing:-.01em;
       font-size:clamp(20px, 4.6vw, 26px);
       line-height:1.3;
       text-align:center;
@@ -118,7 +134,7 @@
       outline:none;
       transition:border-color .15s ease, box-shadow .15s ease;
     }
-    .pctwrap input:focus{ border-color:var(--accent); box-shadow:0 0 0 4px rgba(249,115,22,.14) }
+    .pctwrap input:focus{ border-color:var(--accent); box-shadow:0 0 0 4px rgba(242,101,34,.14) }
     .pctwrap .pct{
       position:absolute; right:10px; top:50%; transform:translateY(-50%);
       color:var(--muted); font-weight:700; font-size:15px; pointer-events:none;
@@ -146,45 +162,45 @@
       background:#fff; border:3px solid var(--accent);
       box-shadow:0 2px 6px rgba(0,0,0,.15); cursor:pointer;
     }
-    input[type=range]:focus-visible{ outline:3px solid rgba(249,115,22,.35); outline-offset:4px }
+    input[type=range]:focus-visible{ outline:3px solid rgba(242,101,34,.35); outline-offset:4px }
 
     .submitbtn{
       flex:0 0 auto;
-      border:none; border-radius:12px; padding:12px 18px;
+      border:none; border-radius:8px; padding:12px 18px;
       font-size:16px; font-weight:800; cursor:pointer;
-      background:var(--accent); color:#fff;
-      box-shadow:0 4px 12px rgba(249,115,22,.30);
+      background:var(--ink); color:#fff;
+      box-shadow:3px 3px 0 var(--accent);
       transition:background .15s ease, transform .05s ease, box-shadow .15s ease;
     }
-    .submitbtn:hover{ background:var(--accent-deep) }
-    .submitbtn:active{ transform:translateY(1px); box-shadow:0 2px 6px rgba(249,115,22,.25) }
+    .submitbtn:hover{ background:var(--accent-deep); box-shadow:3px 3px 0 var(--ink) }
+    .submitbtn:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 var(--accent) }
     .submitbtn:disabled{ background:var(--line); color:var(--muted); box-shadow:none; cursor:default }
-    .submitbtn:focus-visible{ outline:3px solid rgba(249,115,22,.35); outline-offset:2px }
+    .submitbtn:focus-visible{ outline:3px solid rgba(242,101,34,.35); outline-offset:2px }
 
     .guessesleft{
       display:flex; gap:6px; justify-content:center; margin:12px 0 4px;
     }
     .gdot{
-      width:9px; height:9px; border-radius:50%;
+      width:9px; height:9px; border-radius:2px;
       background:var(--line);
       transition:background .2s ease, transform .2s ease;
     }
     .gdot.used{ background:var(--accent); }
-    .gdot.lost{ background:#d1cbc2 }
+    .gdot.lost{ background:#d4d4d4 }
 
     /* ---------- The squeeze track ---------- */
     .trackblock{ margin:14px 0 6px }
     .track{
       position:relative; height:34px; border-radius:10px;
-      background:#efece6;
+      background:#f4f4f4;
       overflow:hidden;
       border:1px solid var(--line);
     }
     .track-window{
       position:absolute; top:0; bottom:0;
-      background:linear-gradient(180deg, #fff7ee, var(--accent-soft));
-      border-left:2px solid rgba(249,115,22,.45);
-      border-right:2px solid rgba(249,115,22,.45);
+      background:linear-gradient(180deg, #ffffff, var(--accent-soft));
+      border-left:2px solid rgba(242,101,34,.45);
+      border-right:2px solid rgba(242,101,34,.45);
       transition:left .5s cubic-bezier(.2,.8,.2,1), width .5s cubic-bezier(.2,.8,.2,1);
     }
     .tick{
@@ -221,7 +237,7 @@
     .ledger{ display:flex; flex-direction:column; gap:8px; margin:12px 0 4px }
     .lrow{
       display:flex; align-items:center; gap:12px;
-      background:#fcfaf7; border:1px solid var(--line); border-radius:12px;
+      background:#fafafa; border:1px solid var(--line); border-radius:12px;
       padding:9px 12px;
       animation:rowin .3s ease;
     }
@@ -248,14 +264,14 @@
       animation:rowin .4s ease;
     }
     .verdict{
-      font-family:var(--serif); font-weight:700;
+      font-family:var(--display); font-weight:700;
       font-size:clamp(18px, 4.5vw, 24px);
       margin:0 0 4px;
     }
     .verdict.win{ color:var(--win) }
     .verdict.loss{ color:var(--hot) }
     .bignum{
-      font-family:var(--serif); font-weight:700;
+      font-family:var(--display); font-weight:700;
       font-size:clamp(40px, 12vw, 64px);
       line-height:1; margin:6px 0 2px;
       color:var(--accent-deep);
@@ -265,23 +281,88 @@
       color:var(--ink); font-size:14.5px; margin:4px 0 0;
       font-variant-numeric:tabular-nums;
     }
-    .scoreline b{ font-family:var(--serif); font-size:19px; color:var(--accent-deep) }
+    .scoreline b{ font-family:var(--display); font-size:19px; color:var(--accent-deep) }
     .note{ color:var(--ink); font-size:14.5px; line-height:1.5; margin:10px auto 4px; max-width:44ch }
     .source-note{ color:var(--muted); font-size:12px; margin:8px 0 14px }
     .sharebtn{
-      border:none; border-radius:12px; padding:13px 26px;
+      border:none; border-radius:8px; padding:13px 26px;
       font-size:16px; font-weight:800; cursor:pointer;
-      background:var(--win); color:#fff;
-      box-shadow:0 4px 12px rgba(26,138,60,.28);
-      transition:filter .15s ease, transform .05s ease;
+      background:var(--accent); color:#fff;
+      box-shadow:3px 3px 0 var(--ink);
+      transition:background .15s ease, transform .05s ease, box-shadow .15s ease;
     }
-    .sharebtn:hover{ filter:brightness(1.07) }
-    .sharebtn:active{ transform:translateY(1px) }
+    .sharebtn:hover{ background:var(--accent-deep) }
+    .sharebtn:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink) }
     .countdown{
       color:var(--muted); font-size:13px; margin-top:12px;
       font-variant-numeric:tabular-nums;
     }
     .countdown b{ color:var(--ink) }
+
+    /* ---------- Practice mode ---------- */
+    .practicebar{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      background:var(--accent-soft); border:1px solid var(--accent);
+      border-radius:8px; padding:8px 12px; margin-bottom:14px;
+      font-size:12px; font-weight:600; color:var(--accent-deep);
+    }
+    .practicebar button{
+      border:none; background:var(--ink); color:#fff; font-weight:800;
+      font-size:12px; padding:6px 10px; border-radius:6px; cursor:pointer;
+      white-space:nowrap;
+    }
+    .practicebar button:hover{ background:var(--accent-deep) }
+
+    /* ---------- Crowd histogram ---------- */
+    .crowd{
+      margin:16px auto 18px; max-width:420px;
+      border:1px solid var(--line); border-radius:10px; padding:14px 14px 10px;
+      text-align:left;
+    }
+    .crowdhead{ font-size:13.5px; margin:0 0 10px; text-align:center }
+    .crowdhead b{ color:var(--accent-deep) }
+    .histo{
+      display:flex; align-items:flex-end; gap:2px; height:64px;
+    }
+    .hbar{
+      flex:1; background:#dcdcdc; border-radius:2px 2px 0 0; min-height:3px;
+      transition:height .4s ease;
+    }
+    .hbar.you{ background:var(--accent) }
+    .hbar.truth{ background:var(--win) }
+    .hbar.you.truth{ background:linear-gradient(180deg, var(--accent) 0 50%, var(--win) 50% 100%) }
+    .histoscale{
+      display:flex; justify-content:space-between;
+      color:var(--muted); font-size:10.5px; margin-top:4px;
+      font-variant-numeric:tabular-nums;
+    }
+    .crowdlegend{
+      display:flex; gap:14px; justify-content:center; margin-top:8px;
+      color:var(--muted); font-size:11.5px;
+    }
+    .lg-item{ display:inline-flex; align-items:center; gap:5px }
+    .sw{ width:10px; height:10px; border-radius:2px; display:inline-block }
+    .crowd-sw{ background:#dcdcdc }
+    .you-sw{ background:var(--accent) }
+    .truth-sw{ background:var(--win) }
+
+    /* ---------- Archive ---------- */
+    .archiverow{
+      display:grid; grid-template-columns:52px 86px 1fr; gap:8px; align-items:center;
+      width:100%; text-align:left; cursor:pointer;
+      background:#fafafa; border:1px solid var(--line); border-radius:8px;
+      padding:10px 12px; margin-bottom:8px;
+      font-size:13px; color:var(--ink);
+      transition:border-color .15s ease, background .15s ease;
+    }
+    .archiverow:hover{ border-color:var(--accent); background:var(--accent-soft) }
+    .archiverow .ano{ font-weight:800; color:var(--accent-deep); font-variant-numeric:tabular-nums }
+    .archiverow .adate{ color:var(--muted); font-size:11.5px; font-variant-numeric:tabular-nums }
+    .archiverow .aq{
+      overflow:hidden; text-overflow:ellipsis; display:-webkit-box;
+      -webkit-line-clamp:2; -webkit-box-orient:vertical;
+    }
+    .archive-empty{ color:var(--muted); font-size:13.5px; text-align:center; padding:10px 0 }
 
     /* ---------- Toast ---------- */
     .toast{
@@ -308,16 +389,18 @@
       padding:11px 14px; font-size:16px; outline:none; background:#fff; color:var(--ink);
       transition:border-color .15s ease, box-shadow .15s ease;
     }
-    .email-form input[type=email]:focus{ border-color:var(--accent); box-shadow:0 0 0 4px rgba(249,115,22,.14) }
+    .email-form input[type=email]:focus{ border-color:var(--accent); box-shadow:0 0 0 4px rgba(242,101,34,.14) }
     .email-btn{
-      border:2px solid var(--accent); border-radius:12px; padding:10px 16px;
+      border:2px solid var(--ink); border-radius:8px; padding:10px 16px;
       font-size:15px; font-weight:800; cursor:pointer;
-      background:#fff; color:var(--accent-deep);
-      transition:background .15s ease;
+      background:#fff; color:var(--ink);
+      transition:background .15s ease, border-color .15s ease, color .15s ease;
     }
-    .email-btn:hover{ background:var(--accent-soft) }
+    .email-btn:hover{ background:var(--accent-soft); border-color:var(--accent-deep); color:var(--accent-deep) }
     .email-msg{ font-size:12px; color:var(--muted); width:100%; margin-top:4px }
     .foot{ color:var(--muted); font-size:11.5px; margin-top:18px }
+    .foot a{ color:var(--ink); font-weight:700; text-decoration:none; border-bottom:2px solid var(--accent) }
+    .foot a:hover{ color:var(--accent-deep) }
 
     /* ---------- Modals ---------- */
     .modal-root{ position:fixed; inset:0; z-index:60 }
@@ -328,7 +411,7 @@
       background:#fff; border:1px solid var(--line); border-radius:16px;
       box-shadow:0 25px 60px rgba(0,0,0,.25); padding:22px;
     }
-    .modal-title{ font-family:var(--serif); font-weight:700; font-size:20px; margin:0 0 10px }
+    .modal-title{ font-family:var(--display); font-weight:700; font-size:20px; margin:0 0 10px }
     .modal-body{ color:#3f3a34; font-size:14.5px; line-height:1.55 }
     .modal-body p{ margin:0 0 10px }
     .modal-close{
@@ -341,7 +424,7 @@
 
     /* Stats */
     .statgrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:6px 0 16px; text-align:center }
-    .stat .v{ font-family:var(--serif); font-weight:700; font-size:26px; font-variant-numeric:tabular-nums }
+    .stat .v{ font-family:var(--display); font-weight:700; font-size:26px; font-variant-numeric:tabular-nums }
     .stat .l{ color:var(--muted); font-size:10.5px; text-transform:uppercase; letter-spacing:.6px }
     .disthead{ font-size:12px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:8px }
     .distrow{ display:flex; align-items:center; gap:8px; margin-bottom:5px; font-size:12.5px; font-variant-numeric:tabular-nums }
@@ -370,8 +453,12 @@
 <body>
 
   <header class="sitebar">
-    <div class="brand">Crowdsense<span class="dot">.</span></div>
+    <div>
+      <div class="brand">Crowdsense<span class="dot">.</span></div>
+      <a class="byline" href="https://www.publicfirst.co.uk/" target="_blank" rel="noopener">A Public First game</a>
+    </div>
     <div class="iconbtns">
+      <button id="archiveBtn" class="iconbtn" title="Previous questions" aria-label="Previous questions">▦</button>
       <button id="statsBtn" class="iconbtn" title="Your stats" aria-label="Your stats">▤</button>
       <button id="helpBtn" class="iconbtn" title="How to play" aria-label="How to play">?</button>
     </div>
@@ -379,6 +466,10 @@
 
   <main class="app">
     <div class="card" id="card">
+      <div class="practicebar hidden" id="practiceBar">
+        <span id="practiceLabel"></span>
+        <button id="backToday" type="button">Today's question →</button>
+      </div>
       <div class="datebar">
         <span id="puzzleNo"></span>
         <span>·</span>
@@ -418,8 +509,20 @@
         <p class="scoreline" id="scoreLine"></p>
         <p class="note" id="answerNote"></p>
         <p class="source-note" id="sourceNote"></p>
+
+        <div class="crowd hidden" id="crowdBlock">
+          <p class="crowdhead" id="crowdHead"></p>
+          <div class="histo" id="histo" aria-label="Distribution of all players' guesses"></div>
+          <div class="histoscale"><span>0%</span><span>50</span><span>100%</span></div>
+          <div class="crowdlegend">
+            <span class="lg-item"><i class="sw crowd-sw"></i>everyone</span>
+            <span class="lg-item"><i class="sw you-sw"></i>you</span>
+            <span class="lg-item"><i class="sw truth-sw"></i>the truth</span>
+          </div>
+        </div>
+
         <button id="shareBtn" class="sharebtn" type="button">Share your result</button>
-        <p class="countdown">Next question in <b id="countdown">—</b></p>
+        <p class="countdown" id="countdownP">Next question in <b id="countdown">—</b></p>
       </div>
     </div>
 
@@ -429,7 +532,7 @@
         <button type="submit" class="email-btn">Subscribe</button>
         <span id="emailMsg" class="email-msg" role="status" aria-live="polite"></span>
       </form>
-      <p class="foot">All figures from original polling of the British public.</p>
+      <p class="foot">Made by <a href="https://www.publicfirst.co.uk/" target="_blank" rel="noopener">Public First</a> · All figures from original polling of the British public.</p>
     </div>
   </main>
 
@@ -457,6 +560,19 @@
     </div>
   </div>
 
+  <!-- Archive -->
+  <div id="archiveModal" class="modal-root hidden" role="dialog" aria-modal="true" aria-labelledby="archiveTitle">
+    <div class="modal-backdrop" data-close="archiveModal"></div>
+    <div class="modal-card">
+      <button class="modal-close" data-close="archiveModal" aria-label="Close">✕</button>
+      <h2 class="modal-title" id="archiveTitle">Previous questions</h2>
+      <div class="modal-body">
+        <p style="margin-bottom:12px">Play any past question in practice mode — it won't touch your streak or stats.</p>
+        <div id="archiveList"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Stats -->
   <div id="statsModal" class="modal-root hidden" role="dialog" aria-modal="true" aria-labelledby="statsTitle">
     <div class="modal-backdrop" data-close="statsModal"></div>
@@ -477,7 +593,20 @@
     </div>
   </div>
 
-  <script src="questions.js?v=2"></script>
-  <script src="app.js?v=2"></script>
+  <script>
+    // Site configuration — overrides the defaults in app.js, so you never
+    // need to edit that file. See worker/README.md for the crowd layer.
+    window.CS_CONFIG = Object.assign({
+      // ANCHOR: "2026-07-08",           // puzzle No. 1 date — set to launch day
+      CROWD_API_URL: ""                  // paste your Cloudflare Worker URL to turn on the crowd layer
+    }, window.CS_CONFIG || {});
+  </script>
+  <script src="questions.js?v=3"></script>
+  <script src="app.js?v=3"></script>
+  <script>
+    if ("serviceWorker" in navigator){
+      window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
+    }
+  </script>
 </body>
 </html>

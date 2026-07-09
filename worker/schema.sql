@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS guesses (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  puzzle INTEGER NOT NULL,
+  guess INTEGER NOT NULL,
+  ts INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_guesses_puzzle ON guesses(puzzle);
