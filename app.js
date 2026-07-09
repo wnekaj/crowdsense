@@ -358,6 +358,21 @@ function renderCrowd(dist, myGuess){
 }
 function updateShareForCrowd(){ /* share text reads state.crowdPct at click time */ }
 
+// ===== presentation: count-up micro-animation =====
+function animateCount(el, to, suffix, duration){
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce || !window.requestAnimationFrame){ el.textContent = to + (suffix || ""); return; }
+  var start = null;
+  function step(ts){
+    if (start === null) start = ts;
+    var t = Math.min(1, (ts - start) / (duration || 1000));
+    var eased = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(eased * to) + (suffix || "");
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
 // ===== finishing =====
 function finishGame(alreadyDone){
   state.done = true;
@@ -373,12 +388,17 @@ function finishGame(alreadyDone){
   var v = verdictFor(state.guesses, Q.answer, state.win);
   els.verdict.textContent = v.text;
   els.verdict.className = "verdict " + (state.win ? "win" : "loss");
-  els.bigAnswer.textContent = Q.answer + "%";
+  if (alreadyDone) els.bigAnswer.textContent = Q.answer + "%";
+  else animateCount(els.bigAnswer, Q.answer, "%", 1000);
   var breakdown = (state.guesses.length > 1)
     ? "First guess " + err1 + " off · final " + errF + " off"
     : "One guess, " + err1 + " off";
   els.scoreLine.innerHTML = "Crowdsense score: <b>" + state.score + "</b>/100 · " + breakdown
     + (MODE === "practice" ? " · practice" : "");
+  if (!alreadyDone){
+    var scoreEl = els.scoreLine.querySelector("b");
+    if (scoreEl) animateCount(scoreEl, state.score, "", 900);
+  }
   els.answerNote.textContent = Q.note || "";
   els.sourceNote.textContent = Q.source ? ("Source: " + Q.source) : "";
   els.reveal.classList.remove("hidden");

@@ -19,16 +19,18 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
   <style>
     :root{
-      /* Public First palette: black ink, white paper, PF orange */
+      /* NYT Games language: white paper, near-black ink, hairline greys.
+         PF orange stays as the single accent, on interactive elements only. */
       --bg:#ffffff;
       --card:#ffffff;
-      --ink:#0f0f0f;
-      --muted:#6f6f6f;
-      --line:#e4e4e4;
+      --ink:#121212;
+      --muted:#787c7e;
+      --line:#d3d6da;
+      --hairline:#e3e5e8;
       --accent:#f26522;
       --accent-deep:#d5541a;
       --accent-soft:#fdeee4;
@@ -39,9 +41,9 @@
       --hot:#d93025;
       --win:#1a8a3c;
       --win-soft:#e8f6ec;
-      --radius:8px;
-      --display:"Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
-      --sans:"Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --radius:4px;
+      --display:"Libre Franklin", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      --sans:"Libre Franklin", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
     *{ box-sizing:border-box }
     html,body{ height:100% }
@@ -81,7 +83,7 @@
     .byline:hover{ color:var(--accent-deep) }
     .iconbtns{ display:flex; gap:6px }
     .iconbtn{
-      width:36px; height:36px; border-radius:10px;
+      width:36px; height:36px; border-radius:4px;
       border:1px solid var(--line); background:var(--card);
       font-size:16px; cursor:pointer; color:var(--muted);
       display:grid; place-items:center;
@@ -95,10 +97,9 @@
     .app{ width:min(560px,94vw) }
     .card{
       background:var(--card);
-      border:1.5px solid var(--ink);
-      border-radius:10px;
+      border:1px solid var(--line);
+      border-radius:4px;
       padding:22px 22px 18px;
-      box-shadow:7px 7px 0 var(--accent-soft);
     }
     .datebar{
       display:flex; align-items:center; justify-content:center; gap:10px;
@@ -130,7 +131,7 @@
       font-size:22px; font-weight:800; font-variant-numeric:tabular-nums;
       text-align:center;
       padding:10px 26px 10px 10px;
-      border-radius:12px; border:1.5px solid var(--line); background:#fff; color:var(--ink);
+      border-radius:4px; border:1px solid var(--line); background:#fff; color:var(--ink);
       outline:none;
       transition:border-color .15s ease, box-shadow .15s ease;
     }
@@ -166,15 +167,14 @@
 
     .submitbtn{
       flex:0 0 auto;
-      border:none; border-radius:8px; padding:12px 18px;
-      font-size:16px; font-weight:800; cursor:pointer;
-      background:var(--ink); color:#fff;
-      box-shadow:3px 3px 0 var(--accent);
-      transition:background .15s ease, transform .05s ease, box-shadow .15s ease;
+      border:none; border-radius:4px; padding:12px 18px;
+      font-size:16px; font-weight:700; cursor:pointer;
+      background:var(--accent); color:#fff;
+      transition:background .15s ease, transform .05s ease;
     }
-    .submitbtn:hover{ background:var(--accent-deep); box-shadow:3px 3px 0 var(--ink) }
-    .submitbtn:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 var(--accent) }
-    .submitbtn:disabled{ background:var(--line); color:var(--muted); box-shadow:none; cursor:default }
+    .submitbtn:hover{ background:var(--accent-deep) }
+    .submitbtn:active{ transform:translateY(1px) }
+    .submitbtn:disabled{ background:var(--hairline); color:var(--muted); cursor:default }
     .submitbtn:focus-visible{ outline:3px solid rgba(242,101,34,.35); outline-offset:2px }
 
     .guessesleft{
@@ -191,7 +191,7 @@
     /* ---------- The squeeze track ---------- */
     .trackblock{ margin:14px 0 6px }
     .track{
-      position:relative; height:34px; border-radius:10px;
+      position:relative; height:34px; border-radius:4px;
       background:#f4f4f4;
       overflow:hidden;
       border:1px solid var(--line);
@@ -234,22 +234,28 @@
     }
 
     /* ---------- Guess ledger ---------- */
-    .ledger{ display:flex; flex-direction:column; gap:8px; margin:12px 0 4px }
+    .ledger{ display:flex; flex-direction:column; margin:12px 0 4px }
     .lrow{
       display:flex; align-items:center; gap:12px;
-      background:#fafafa; border:1px solid var(--line); border-radius:12px;
-      padding:9px 12px;
-      animation:rowin .3s ease;
+      border-bottom:1px solid var(--hairline);
+      padding:11px 4px;
+      animation:popin .22s cubic-bezier(.2,.9,.35,1.2);
     }
+    .lrow:last-child{ border-bottom:none }
     @keyframes rowin{ from{ opacity:0; transform:translateY(-4px) } to{ opacity:1; transform:none } }
+    @keyframes popin{
+      from{ opacity:0; transform:scale(.92) }
+      60%{ opacity:1; transform:scale(1.02) }
+      to{ opacity:1; transform:scale(1) }
+    }
     .lnum{ color:var(--muted); font-size:12px; font-weight:700; width:16px }
     .lval{
       font-weight:800; font-size:18px; font-variant-numeric:tabular-nums; width:56px;
     }
     .ldir{ font-size:14px; font-weight:700; color:var(--muted); flex:1 }
     .chip{
-      font-size:12px; font-weight:800; letter-spacing:.3px;
-      padding:4px 10px; border-radius:999px; color:#fff;
+      font-size:12px; font-weight:700; letter-spacing:.3px;
+      padding:4px 10px; border-radius:4px; color:#fff;
     }
     .chip.cold{ background:var(--cold) }
     .chip.cool{ background:var(--cool) }
@@ -259,7 +265,7 @@
 
     /* ---------- Reveal panel ---------- */
     .reveal{
-      margin-top:14px; border-top:1px dashed var(--line); padding-top:16px;
+      margin-top:14px; border-top:1px solid var(--hairline); padding-top:16px;
       text-align:center;
       animation:rowin .4s ease;
     }
@@ -271,28 +277,27 @@
     .verdict.win{ color:var(--win) }
     .verdict.loss{ color:var(--hot) }
     .bignum{
-      font-family:var(--display); font-weight:700;
+      font-family:var(--display); font-weight:900;
       font-size:clamp(40px, 12vw, 64px);
       line-height:1; margin:6px 0 2px;
-      color:var(--accent-deep);
+      color:var(--ink);
       font-variant-numeric:tabular-nums;
     }
     .scoreline{
       color:var(--ink); font-size:14.5px; margin:4px 0 0;
       font-variant-numeric:tabular-nums;
     }
-    .scoreline b{ font-family:var(--display); font-size:19px; color:var(--accent-deep) }
+    .scoreline b{ font-family:var(--display); font-size:19px; font-weight:800; color:var(--ink) }
     .note{ color:var(--ink); font-size:14.5px; line-height:1.5; margin:10px auto 4px; max-width:44ch }
     .source-note{ color:var(--muted); font-size:12px; margin:8px 0 14px }
     .sharebtn{
-      border:none; border-radius:8px; padding:13px 26px;
-      font-size:16px; font-weight:800; cursor:pointer;
+      border:none; border-radius:4px; padding:13px 26px;
+      font-size:16px; font-weight:700; cursor:pointer;
       background:var(--accent); color:#fff;
-      box-shadow:3px 3px 0 var(--ink);
-      transition:background .15s ease, transform .05s ease, box-shadow .15s ease;
+      transition:background .15s ease, transform .05s ease;
     }
     .sharebtn:hover{ background:var(--accent-deep) }
-    .sharebtn:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink) }
+    .sharebtn:active{ transform:translateY(1px) }
     .countdown{
       color:var(--muted); font-size:13px; margin-top:12px;
       font-variant-numeric:tabular-nums;
@@ -303,12 +308,12 @@
     .practicebar{
       display:flex; align-items:center; justify-content:space-between; gap:10px;
       background:var(--accent-soft); border:1px solid var(--accent);
-      border-radius:8px; padding:8px 12px; margin-bottom:14px;
+      border-radius:4px; padding:8px 12px; margin-bottom:14px;
       font-size:12px; font-weight:600; color:var(--accent-deep);
     }
     .practicebar button{
       border:none; background:var(--ink); color:#fff; font-weight:800;
-      font-size:12px; padding:6px 10px; border-radius:6px; cursor:pointer;
+      font-size:12px; padding:6px 10px; border-radius:4px; cursor:pointer;
       white-space:nowrap;
     }
     .practicebar button:hover{ background:var(--accent-deep) }
@@ -316,7 +321,7 @@
     /* ---------- Crowd histogram ---------- */
     .crowd{
       margin:16px auto 18px; max-width:420px;
-      border:1px solid var(--line); border-radius:10px; padding:14px 14px 10px;
+      border:1px solid var(--hairline); border-radius:4px; padding:14px 14px 10px;
       text-align:left;
     }
     .crowdhead{ font-size:13.5px; margin:0 0 10px; text-align:center }
@@ -350,7 +355,7 @@
     .archiverow{
       display:grid; grid-template-columns:52px 86px 1fr; gap:8px; align-items:center;
       width:100%; text-align:left; cursor:pointer;
-      background:#fafafa; border:1px solid var(--line); border-radius:8px;
+      background:#fff; border:1px solid var(--line); border-radius:4px;
       padding:10px 12px; margin-bottom:8px;
       font-size:13px; color:var(--ink);
       transition:border-color .15s ease, background .15s ease;
@@ -368,7 +373,7 @@
     .toast{
       position:fixed; left:50%; top:18px; transform:translate(-50%,-8px);
       background:var(--ink); color:#fff; font-size:14px; font-weight:600;
-      padding:10px 16px; border-radius:999px;
+      padding:10px 16px; border-radius:4px;
       opacity:0; pointer-events:none; z-index:80;
       transition:opacity .18s ease, transform .18s ease;
       max-width:90vw; text-align:center;
@@ -385,13 +390,13 @@
     .below{ width:min(560px,94vw); margin-top:14px; text-align:center }
     .email-form{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap }
     .email-form input[type=email]{
-      min-width:230px; border:1.5px solid var(--line); border-radius:12px;
+      min-width:230px; border:1px solid var(--line); border-radius:4px;
       padding:11px 14px; font-size:16px; outline:none; background:#fff; color:var(--ink);
       transition:border-color .15s ease, box-shadow .15s ease;
     }
     .email-form input[type=email]:focus{ border-color:var(--accent); box-shadow:0 0 0 4px rgba(242,101,34,.14) }
     .email-btn{
-      border:2px solid var(--ink); border-radius:8px; padding:10px 16px;
+      border:1px solid var(--ink); border-radius:4px; padding:10px 16px;
       font-size:15px; font-weight:800; cursor:pointer;
       background:#fff; color:var(--ink);
       transition:background .15s ease, border-color .15s ease, color .15s ease;
@@ -408,7 +413,7 @@
     .modal-card{
       position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
       width:min(440px,92vw); max-height:86vh; overflow:auto;
-      background:#fff; border:1px solid var(--line); border-radius:16px;
+      background:#fff; border:1px solid var(--line); border-radius:4px;
       box-shadow:0 25px 60px rgba(0,0,0,.25); padding:22px;
     }
     .modal-title{ font-family:var(--display); font-weight:700; font-size:20px; margin:0 0 10px }
@@ -416,7 +421,7 @@
     .modal-body p{ margin:0 0 10px }
     .modal-close{
       position:absolute; top:12px; right:12px;
-      width:32px; height:32px; border-radius:9px;
+      width:32px; height:32px; border-radius:4px;
       border:1px solid var(--line); background:#fff; cursor:pointer; color:var(--muted); font-size:15px;
     }
     .legend{ display:flex; flex-direction:column; gap:6px; margin-top:8px }
@@ -430,11 +435,11 @@
     .distrow{ display:flex; align-items:center; gap:8px; margin-bottom:5px; font-size:12.5px; font-variant-numeric:tabular-nums }
     .distrow .g{ width:86px; color:var(--muted); font-weight:700 }
     .distbar{
-      background:var(--accent); color:#fff; font-weight:800;
-      border-radius:5px; padding:2px 7px; min-width:20px; text-align:right;
+      background:var(--muted); color:#fff; font-weight:700;
+      border-radius:2px; padding:2px 7px; min-width:20px; text-align:right;
       transition:width .4s ease;
     }
-    .distbar.zero{ background:var(--line); color:var(--muted) }
+    .distbar.zero{ background:var(--hairline); color:var(--muted) }
     .firsterr{ margin-top:14px; font-size:13.5px; color:#3f3a34; background:var(--accent-soft); border-radius:10px; padding:10px 12px }
     .firsterr b{ color:var(--accent-deep) }
 
@@ -601,8 +606,8 @@
       CROWD_API_URL: ""                  // paste your Cloudflare Worker URL to turn on the crowd layer
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=3"></script>
-  <script src="app.js?v=3"></script>
+  <script src="questions.js?v=4"></script>
+  <script src="app.js?v=4"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
