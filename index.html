@@ -19,7 +19,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;700&display=swap" rel="stylesheet" />
 
   <style>
     :root{
@@ -67,29 +67,21 @@
     }
     .brand{
       font-family:var(--display);
-      font-weight:900; font-size:21px; letter-spacing:-.02em;
+      font-weight:500; font-size:17px; letter-spacing:.14em;
       text-transform:uppercase;
       color:var(--ink);
       line-height:1.1;
     }
     .brand .dot{ color:var(--accent) }
-    .byline{
-      display:block;
-      font-size:10px; font-weight:600;
-      letter-spacing:.14em; text-transform:uppercase;
-      color:var(--muted); text-decoration:none;
-      margin-top:2px;
-    }
-    .byline:hover{ color:var(--accent-deep) }
-    .iconbtns{ display:flex; gap:6px }
+    .iconbtns{ display:flex; gap:2px }
     .iconbtn{
-      width:36px; height:36px; border-radius:4px;
-      border:1px solid var(--line); background:var(--card);
+      width:34px; height:34px; border-radius:4px;
+      border:none; background:transparent;
       font-size:16px; cursor:pointer; color:var(--muted);
       display:grid; place-items:center;
-      transition:border-color .15s ease, color .15s ease, transform .05s ease;
+      transition:color .15s ease, transform .05s ease;
     }
-    .iconbtn:hover{ border-color:var(--accent); color:var(--accent-deep) }
+    .iconbtn:hover{ color:var(--ink) }
     .iconbtn:active{ transform:translateY(1px) }
     .iconbtn:focus-visible{ outline:3px solid rgba(242,101,34,.35); outline-offset:2px }
 
@@ -97,28 +89,23 @@
     .app{ width:min(560px,94vw) }
     .card{
       background:var(--card);
-      border:1px solid var(--line);
-      border-radius:4px;
-      padding:22px 22px 18px;
+      padding:14px 2px 8px;
     }
     .datebar{
-      display:flex; align-items:center; justify-content:center; gap:10px;
-      color:var(--muted); font-size:12px; margin-bottom:14px;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      color:var(--muted); font-size:12px; letter-spacing:.06em; margin-bottom:16px;
       font-variant-numeric:tabular-nums;
     }
-    .streak{ font-weight:800; color:var(--accent-deep) }
+    .streak{ font-weight:500; color:var(--muted) }
 
     .question{
       font-family:var(--display);
-      font-weight:800; letter-spacing:-.01em;
-      font-size:clamp(20px, 4.6vw, 26px);
+      font-weight:700; letter-spacing:-.01em;
+      font-size:clamp(21px, 5vw, 27px);
       line-height:1.3;
       text-align:center;
-      margin:0 0 6px;
+      margin:0 0 24px;
       text-wrap:balance;
-    }
-    .kicker{
-      text-align:center; color:var(--muted); font-size:13px; margin:0 0 18px;
     }
 
     /* ---------- Input row ---------- */
@@ -148,8 +135,8 @@
     .sliderwrap{ flex:1; display:flex; align-items:center; padding:0 2px }
     input[type=range]{
       width:100%; -webkit-appearance:none; appearance:none;
-      height:6px; border-radius:999px;
-      background:linear-gradient(90deg, var(--accent) var(--fill,50%), var(--line) var(--fill,50%));
+      height:4px; border-radius:999px;
+      background:var(--hairline);
       outline:none;
     }
     input[type=range]::-webkit-slider-thumb{
@@ -167,14 +154,14 @@
 
     .submitbtn{
       flex:0 0 auto;
-      border:none; border-radius:4px; padding:12px 18px;
-      font-size:16px; font-weight:700; cursor:pointer;
-      background:var(--accent); color:#fff;
-      transition:background .15s ease, transform .05s ease;
+      border:none; border-radius:4px; padding:12px 14px;
+      font-size:15px; font-weight:500; letter-spacing:.02em; cursor:pointer;
+      background:transparent; color:var(--accent-deep);
+      transition:color .15s ease, transform .05s ease;
     }
-    .submitbtn:hover{ background:var(--accent-deep) }
+    .submitbtn:hover{ color:var(--ink) }
     .submitbtn:active{ transform:translateY(1px) }
-    .submitbtn:disabled{ background:var(--hairline); color:var(--muted); cursor:default }
+    .submitbtn:disabled{ color:var(--line); cursor:default }
     .submitbtn:focus-visible{ outline:3px solid rgba(242,101,34,.35); outline-offset:2px }
 
     .guessesleft{
@@ -189,18 +176,15 @@
     .gdot.lost{ background:#d4d4d4 }
 
     /* ---------- The squeeze track ---------- */
-    .trackblock{ margin:14px 0 6px }
+    .trackblock{ margin:18px 0 6px }
     .track{
-      position:relative; height:34px; border-radius:4px;
-      background:#f4f4f4;
+      position:relative; height:26px; border-radius:4px;
+      background:var(--line);
       overflow:hidden;
-      border:1px solid var(--line);
     }
     .track-window{
       position:absolute; top:0; bottom:0;
-      background:linear-gradient(180deg, #ffffff, var(--accent-soft));
-      border-left:2px solid rgba(242,101,34,.45);
-      border-right:2px solid rgba(242,101,34,.45);
+      background:#eef0f2;
       transition:left .5s cubic-bezier(.2,.8,.2,1), width .5s cubic-bezier(.2,.8,.2,1);
     }
     .tick{
@@ -215,47 +199,54 @@
       font-variant-numeric:tabular-nums;
     }
     .answer-marker{
-      position:absolute; top:0; bottom:0; width:3px;
-      background:var(--win);
-      transform:translateX(-1.5px);
+      position:absolute; top:0; bottom:0; width:2px;
+      background:var(--ink);
+      transform:translateX(-1px);
       left:0%;
       transition:left 1.2s cubic-bezier(.2,.85,.25,1);
     }
     .answer-marker::after{
       content:attr(data-v);
-      position:absolute; bottom:2px; left:5px;
-      font-size:12px; font-weight:800; color:var(--win);
+      position:absolute; bottom:4px; left:5px;
+      font-size:11px; font-weight:500; color:var(--ink);
       font-variant-numeric:tabular-nums;
     }
     .scale{
       display:flex; justify-content:space-between;
-      color:var(--muted); font-size:11px; margin-top:4px; padding:0 2px;
+      color:var(--muted); font-size:11px; letter-spacing:.04em; margin-top:5px; padding:0 2px;
       font-variant-numeric:tabular-nums;
     }
 
     /* ---------- Guess ledger ---------- */
-    .ledger{ display:flex; flex-direction:column; margin:12px 0 4px }
+    .ledger{ display:flex; flex-direction:column; margin:16px auto 4px; max-width:220px }
     .lrow{
-      display:flex; align-items:center; gap:12px;
-      border-bottom:1px solid var(--hairline);
-      padding:11px 4px;
+      display:flex; align-items:center; gap:14px;
+      padding:6px 2px;
       animation:popin .22s cubic-bezier(.2,.9,.35,1.2);
+      font-variant-numeric:tabular-nums;
     }
-    .lrow:last-child{ border-bottom:none }
     @keyframes rowin{ from{ opacity:0; transform:translateY(-4px) } to{ opacity:1; transform:none } }
     @keyframes popin{
       from{ opacity:0; transform:scale(.92) }
       60%{ opacity:1; transform:scale(1.02) }
       to{ opacity:1; transform:scale(1) }
     }
-    .lnum{ color:var(--muted); font-size:12px; font-weight:700; width:16px }
-    .lval{
-      font-weight:800; font-size:18px; font-variant-numeric:tabular-nums; width:56px;
+    .lnum{ color:var(--muted); font-size:12px; width:14px; text-align:center }
+    .lval{ font-weight:500; font-size:17px; width:44px; text-align:center }
+    .ldir{ font-size:15px; color:var(--muted); flex:1; text-align:center }
+    .hdot{
+      width:8px; height:8px; border-radius:50%; display:inline-block;
+      margin-left:auto;
     }
-    .ldir{ font-size:14px; font-weight:700; color:var(--muted); flex:1 }
+    .hdot.cold{ background:var(--cold) }
+    .hdot.cool{ background:var(--cool) }
+    .hdot.warm{ background:var(--warm) }
+    .hdot.hot{ background:var(--hot) }
+    .hdot.target{ background:var(--win) }
+    /* chips remain for the how-to modal legend only */
     .chip{
-      font-size:12px; font-weight:700; letter-spacing:.3px;
-      padding:4px 10px; border-radius:4px; color:#fff;
+      font-size:12px; font-weight:500; letter-spacing:.3px;
+      padding:3px 9px; border-radius:4px; color:#fff;
     }
     .chip.cold{ background:var(--cold) }
     .chip.cool{ background:var(--cool) }
@@ -270,86 +261,78 @@
       animation:rowin .4s ease;
     }
     .verdict{
-      font-family:var(--display); font-weight:700;
-      font-size:clamp(18px, 4.5vw, 24px);
-      margin:0 0 4px;
+      font-family:var(--display); font-weight:500;
+      font-size:16px; letter-spacing:.01em;
+      margin:0;
+      color:var(--ink);
     }
-    .verdict.win{ color:var(--win) }
-    .verdict.loss{ color:var(--hot) }
+    .verdict.win{ color:var(--ink) }
+    .verdict.loss{ color:var(--ink) }
     .bignum{
-      font-family:var(--display); font-weight:900;
-      font-size:clamp(40px, 12vw, 64px);
-      line-height:1; margin:6px 0 2px;
+      font-family:var(--display); font-weight:300;
+      font-size:clamp(72px, 24vw, 110px);
+      line-height:1; margin:8px 0 6px;
       color:var(--ink);
       font-variant-numeric:tabular-nums;
     }
     .scoreline{
-      color:var(--ink); font-size:14.5px; margin:4px 0 0;
+      color:var(--muted); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
+      margin:0 0 14px;
       font-variant-numeric:tabular-nums;
     }
-    .scoreline b{ font-family:var(--display); font-size:19px; font-weight:800; color:var(--ink) }
-    .note{ color:var(--ink); font-size:14.5px; line-height:1.5; margin:10px auto 4px; max-width:44ch }
-    .source-note{ color:var(--muted); font-size:12px; margin:8px 0 14px }
+    .scoreline b{ font-weight:500; color:var(--ink) }
+    .note{ color:var(--ink); font-size:14px; line-height:1.5; margin:0 auto 6px; max-width:42ch }
+    .source-note{ color:var(--muted); font-size:11px; letter-spacing:.04em; margin:0 0 18px }
     .sharebtn{
-      border:none; border-radius:4px; padding:13px 26px;
-      font-size:16px; font-weight:700; cursor:pointer;
+      border:none; border-radius:4px; padding:13px 32px;
+      font-size:15px; font-weight:500; letter-spacing:.02em; cursor:pointer;
       background:var(--accent); color:#fff;
       transition:background .15s ease, transform .05s ease;
     }
     .sharebtn:hover{ background:var(--accent-deep) }
     .sharebtn:active{ transform:translateY(1px) }
     .countdown{
-      color:var(--muted); font-size:13px; margin-top:12px;
+      color:var(--muted); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+      margin-top:14px;
       font-variant-numeric:tabular-nums;
     }
-    .countdown b{ color:var(--ink) }
+    .countdown b{ color:var(--muted); font-weight:500 }
 
     /* ---------- Practice mode ---------- */
     .practicebar{
       display:flex; align-items:center; justify-content:space-between; gap:10px;
-      background:var(--accent-soft); border:1px solid var(--accent);
-      border-radius:4px; padding:8px 12px; margin-bottom:14px;
-      font-size:12px; font-weight:600; color:var(--accent-deep);
+      border-bottom:1px solid var(--hairline);
+      padding:0 2px 10px; margin-bottom:14px;
+      font-size:11.5px; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--muted);
     }
     .practicebar button{
-      border:none; background:var(--ink); color:#fff; font-weight:800;
-      font-size:12px; padding:6px 10px; border-radius:4px; cursor:pointer;
-      white-space:nowrap;
+      border:none; background:transparent; color:var(--accent-deep); font-weight:500;
+      font-size:12px; padding:2px 2px; cursor:pointer;
+      white-space:nowrap; letter-spacing:.04em;
     }
-    .practicebar button:hover{ background:var(--accent-deep) }
+    .practicebar button:hover{ color:var(--ink) }
 
     /* ---------- Crowd histogram ---------- */
     .crowd{
-      margin:16px auto 18px; max-width:420px;
-      border:1px solid var(--hairline); border-radius:4px; padding:14px 14px 10px;
-      text-align:left;
+      margin:2px auto 18px; max-width:340px;
+      text-align:center;
     }
-    .crowdhead{ font-size:13.5px; margin:0 0 10px; text-align:center }
-    .crowdhead b{ color:var(--accent-deep) }
+    .crowdhead{
+      font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
+      color:var(--muted); margin:10px 0 0;
+    }
+    .crowdhead b{ font-weight:500; color:var(--ink) }
     .histo{
-      display:flex; align-items:flex-end; gap:2px; height:64px;
+      display:flex; align-items:flex-end; gap:2px; height:56px;
     }
     .hbar{
-      flex:1; background:#dcdcdc; border-radius:2px 2px 0 0; min-height:3px;
+      flex:1; background:#eef0f2; border-radius:2px 2px 0 0; min-height:2px;
       transition:height .4s ease;
     }
     .hbar.you{ background:var(--accent) }
-    .hbar.truth{ background:var(--win) }
-    .hbar.you.truth{ background:linear-gradient(180deg, var(--accent) 0 50%, var(--win) 50% 100%) }
-    .histoscale{
-      display:flex; justify-content:space-between;
-      color:var(--muted); font-size:10.5px; margin-top:4px;
-      font-variant-numeric:tabular-nums;
-    }
-    .crowdlegend{
-      display:flex; gap:14px; justify-content:center; margin-top:8px;
-      color:var(--muted); font-size:11.5px;
-    }
-    .lg-item{ display:inline-flex; align-items:center; gap:5px }
-    .sw{ width:10px; height:10px; border-radius:2px; display:inline-block }
-    .crowd-sw{ background:#dcdcdc }
-    .you-sw{ background:var(--accent) }
-    .truth-sw{ background:var(--win) }
+    .hbar.truth{ background:var(--ink) }
+    .hbar.you.truth{ background:linear-gradient(180deg, var(--accent) 0 50%, var(--ink) 50% 100%) }
 
     /* ---------- Archive ---------- */
     .archiverow{
@@ -387,25 +370,26 @@
     .shake{ animation:shake .4s ease }
 
     /* ---------- Email ---------- */
-    .below{ width:min(560px,94vw); margin-top:14px; text-align:center }
-    .email-form{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap }
+    .below{
+      width:min(560px,94vw); margin-top:28px; padding-top:18px;
+      border-top:1px solid var(--hairline);
+      text-align:center;
+    }
+    .email-form{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; align-items:center }
     .email-form input[type=email]{
-      min-width:230px; border:1px solid var(--line); border-radius:4px;
-      padding:11px 14px; font-size:16px; outline:none; background:#fff; color:var(--ink);
-      transition:border-color .15s ease, box-shadow .15s ease;
+      min-width:220px; border:none; border-bottom:1px solid var(--line); border-radius:0;
+      padding:9px 2px; font-size:14px; outline:none; background:transparent; color:var(--ink);
+      transition:border-color .15s ease;
     }
-    .email-form input[type=email]:focus{ border-color:var(--accent); box-shadow:0 0 0 4px rgba(242,101,34,.14) }
+    .email-form input[type=email]:focus{ border-color:var(--ink) }
     .email-btn{
-      border:1px solid var(--ink); border-radius:4px; padding:10px 16px;
-      font-size:15px; font-weight:800; cursor:pointer;
-      background:#fff; color:var(--ink);
-      transition:background .15s ease, border-color .15s ease, color .15s ease;
+      border:none; border-radius:4px; padding:9px 6px;
+      font-size:13px; font-weight:500; letter-spacing:.04em; cursor:pointer;
+      background:transparent; color:var(--muted);
+      transition:color .15s ease;
     }
-    .email-btn:hover{ background:var(--accent-soft); border-color:var(--accent-deep); color:var(--accent-deep) }
+    .email-btn:hover{ color:var(--ink) }
     .email-msg{ font-size:12px; color:var(--muted); width:100%; margin-top:4px }
-    .foot{ color:var(--muted); font-size:11.5px; margin-top:18px }
-    .foot a{ color:var(--ink); font-weight:700; text-decoration:none; border-bottom:2px solid var(--accent) }
-    .foot a:hover{ color:var(--accent-deep) }
 
     /* ---------- Modals ---------- */
     .modal-root{ position:fixed; inset:0; z-index:60 }
@@ -440,8 +424,10 @@
       transition:width .4s ease;
     }
     .distbar.zero{ background:var(--hairline); color:var(--muted) }
-    .firsterr{ margin-top:14px; font-size:13.5px; color:#3f3a34; background:var(--accent-soft); border-radius:10px; padding:10px 12px }
-    .firsterr b{ color:var(--accent-deep) }
+    .lastgame{ margin-top:12px; font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums }
+    .lastgame:empty{ display:none }
+    .firsterr{ margin-top:12px; font-size:13.5px; color:var(--ink); border-top:1px solid var(--hairline); padding-top:12px }
+    .firsterr b{ font-weight:500 }
 
     @media (prefers-reduced-motion: reduce){
       *{ animation:none !important; transition:none !important }
@@ -458,10 +444,7 @@
 <body>
 
   <header class="sitebar">
-    <div>
-      <div class="brand">Crowdsense<span class="dot">.</span></div>
-      <a class="byline" href="https://www.publicfirst.co.uk/" target="_blank" rel="noopener">A Public First game</a>
-    </div>
+    <div class="brand">Crowdsense<span class="dot">.</span></div>
     <div class="iconbtns">
       <button id="archiveBtn" class="iconbtn" title="Previous questions" aria-label="Previous questions">▦</button>
       <button id="statsBtn" class="iconbtn" title="Your stats" aria-label="Your stats">▤</button>
@@ -473,7 +456,7 @@
     <div class="card" id="card">
       <div class="practicebar hidden" id="practiceBar">
         <span id="practiceLabel"></span>
-        <button id="backToday" type="button">Today's question →</button>
+        <button id="backToday" type="button">Today →</button>
       </div>
       <div class="datebar">
         <span id="puzzleNo"></span>
@@ -483,7 +466,6 @@
       </div>
 
       <h1 class="question" id="questionText">Loading today's question…</h1>
-      <p class="kicker" id="kicker">Guess the percentage. First your instinct…</p>
 
       <div class="guessrow" id="guessRow">
         <div class="pctwrap">
@@ -503,7 +485,7 @@
           <div class="track-window" id="trackWindow"></div>
           <div class="answer-marker hidden" id="answerMarker"></div>
         </div>
-        <div class="scale"><span>0%</span><span>25</span><span>50</span><span>75</span><span>100%</span></div>
+        <div class="scale"><span>0</span><span>50</span><span>100</span></div>
       </div>
 
       <div class="ledger" id="ledger"></div>
@@ -516,14 +498,8 @@
         <p class="source-note" id="sourceNote"></p>
 
         <div class="crowd hidden" id="crowdBlock">
-          <p class="crowdhead" id="crowdHead"></p>
           <div class="histo" id="histo" aria-label="Distribution of all players' guesses"></div>
-          <div class="histoscale"><span>0%</span><span>50</span><span>100%</span></div>
-          <div class="crowdlegend">
-            <span class="lg-item"><i class="sw crowd-sw"></i>everyone</span>
-            <span class="lg-item"><i class="sw you-sw"></i>you</span>
-            <span class="lg-item"><i class="sw truth-sw"></i>the truth</span>
-          </div>
+          <p class="crowdhead" id="crowdHead"></p>
         </div>
 
         <button id="shareBtn" class="sharebtn" type="button">Share your result</button>
@@ -537,7 +513,6 @@
         <button type="submit" class="email-btn">Subscribe</button>
         <span id="emailMsg" class="email-msg" role="status" aria-live="polite"></span>
       </form>
-      <p class="foot">Made by <a href="https://www.publicfirst.co.uk/" target="_blank" rel="noopener">Public First</a> · All figures from original polling of the British public.</p>
     </div>
   </main>
 
@@ -561,6 +536,7 @@
         </div>
         <p style="margin-top:12px">Your score out of 100 rewards <b>both</b> guesses — a sharp instinct counts, not just a lucky correction. Land within 2 on your first guess for an instant 🎯 bullseye. Finish within 5 to keep your streak.</p>
         <p>New question daily at midnight, London time.</p>
+        <p style="margin-top:14px"><a href="https://www.publicfirst.co.uk/" target="_blank" rel="noopener" style="color:inherit">A Public First game</a> · all figures from original polling of the British public.</p>
       </div>
     </div>
   </div>
@@ -593,6 +569,7 @@
         </div>
         <div class="disthead">How close you get</div>
         <div id="distRows"></div>
+        <div class="lastgame" id="lastGame"></div>
         <div class="firsterr" id="firstErr"></div>
       </div>
     </div>
@@ -606,8 +583,8 @@
       CROWD_API_URL: ""                  // paste your Cloudflare Worker URL to turn on the crowd layer
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=4"></script>
-  <script src="app.js?v=4"></script>
+  <script src="questions.js?v=5"></script>
+  <script src="app.js?v=5"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
