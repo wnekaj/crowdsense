@@ -209,6 +209,21 @@ function renderStats(){
     rows.appendChild(row);
   });
 
+  // today's guess breakdown lives here, off the game screen
+  var lg = $("lastGame");
+  if (lg){
+    lg.textContent = "";
+    var saved = loadState();
+    if (saved && saved.done && saved.guesses.length){
+      var tq = pickQuestionForKey(DAY_KEY);
+      var e1 = Math.abs(saved.guesses[0] - tq.answer);
+      var eF = Math.abs(saved.guesses[saved.guesses.length-1] - tq.answer);
+      lg.textContent = (saved.guesses.length > 1)
+        ? "Today: first guess " + e1 + " off · final " + eF + " off"
+        : "Today: one guess, " + e1 + " off";
+    }
+  }
+
   var fe = $("firstErr");
   if (s.played){
     var avg = (s.firstErrSum / s.played).toFixed(1);
@@ -260,14 +275,15 @@ function renderLedgerRow(n, g){
   var row = document.createElement("div");
   row.className = "lrow";
   var dir;
-  if (err <= CONFIG.BULLSEYE) dir = "Right on the money";
-  else if (Q.answer > g) dir = "The real figure is higher ▲";
-  else dir = "The real figure is lower ▼";
+  if (err <= CONFIG.BULLSEYE) dir = "·";
+  else if (Q.answer > g) dir = "↑";
+  else dir = "↓";
+  var dirTitle = (dir === "↑") ? "The real figure is higher" : (dir === "↓") ? "The real figure is lower" : "On target";
   row.innerHTML =
     '<span class="lnum">' + n + '</span>' +
-    '<span class="lval">' + g + '%</span>' +
-    '<span class="ldir">' + dir + '</span>' +
-    '<span class="chip ' + h.cls + '">' + h.label + '</span>';
+    '<span class="lval">' + g + '</span>' +
+    '<span class="ldir" title="' + dirTitle + '">' + dir + '</span>' +
+    '<i class="hdot ' + h.cls + '" title="' + h.label + '"></i>';
   els.ledger.appendChild(row);
 }
 function setKickerForTurn(){
@@ -285,11 +301,11 @@ function setKickerForTurn(){
 function verdictFor(guesses, answer, win){
   var err1 = Math.abs(guesses[0] - answer);
   var errF = Math.abs(guesses[guesses.length-1] - answer);
-  if (guesses.length === 1 && err1 <= CONFIG.BULLSEYE) return { text: "🎯 Bullseye, first time." };
+  if (guesses.length === 1 && err1 <= CONFIG.BULLSEYE) return { text: "Bullseye, first time." };
   if (errF <= 2)  return { text: "Dead on." };
-  if (errF <= 5)  return { text: "Sharp. You know the public." };
-  if (errF <= 10) return { text: "Close — but the public got away." };
-  if (errF <= 20) return { text: "Warm-ish. The crowd had other ideas." };
+  if (errF <= 5)  return { text: "Sharp." };
+  if (errF <= 10) return { text: "Close." };
+  if (errF <= 20) return { text: "Warm-ish." };
   return { text: "The public surprised you." };
 }
 
@@ -335,8 +351,8 @@ function renderCrowd(dist, myGuess){
   var pct = Math.round(100 * further / total);
   state.crowdPct = pct;
   els.crowdHead.innerHTML = (total === 1)
-    ? "You're the first player today — the crowd starts with you."
-    : "You were closer than <b>" + pct + "%</b> of today's " + total + " players.";
+    ? "First player today"
+    : "Closer than <b>" + pct + "%</b> of players";
 
   // histogram: 20 bins of 5 points (100 folds into the last bin)
   var bins = new Array(20).fill(0);
@@ -358,6 +374,21 @@ function renderCrowd(dist, myGuess){
 }
 function updateShareForCrowd(){ /* share text reads state.crowdPct at click time */ }
 
+// ===== presentation: count-up micro-animation =====
+function animateCount(el, to, suffix, duration){
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce || !window.requestAnimationFrame){ el.textContent = to + (suffix || ""); return; }
+  var start = null;
+  function step(ts){
+    if (start === null) start = ts;
+    var t = Math.min(1, (ts - start) / (duration || 1000));
+    var eased = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(eased * to) + (suffix || "");
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
 // ===== finishing =====
 function finishGame(alreadyDone){
   state.done = true;
@@ -369,22 +400,26 @@ function finishGame(alreadyDone){
   els.input.disabled = true;
   els.slider.disabled = true;
   els.guessBtn.disabled = true;
+  els.guessRow.classList.add("hidden");
+  els.guessDots.classList.add("hidden");
+  els.track.parentElement.classList.add("hidden");
 
   var v = verdictFor(state.guesses, Q.answer, state.win);
   els.verdict.textContent = v.text;
   els.verdict.className = "verdict " + (state.win ? "win" : "loss");
-  els.bigAnswer.textContent = Q.answer + "%";
-  var breakdown = (state.guesses.length > 1)
-    ? "First guess " + err1 + " off · final " + errF + " off"
-    : "One guess, " + err1 + " off";
-  els.scoreLine.innerHTML = "Crowdsense score: <b>" + state.score + "</b>/100 · " + breakdown
-    + (MODE === "practice" ? " · practice" : "");
+  if (alreadyDone) els.bigAnswer.textContent = Q.answer + "%";
+  else animateCount(els.bigAnswer, Q.answer, "%", 1000);
+  els.scoreLine.innerHTML = "<b>" + state.score + "</b>/100" + (MODE === "practice" ? " · practice" : "");
+  if (!alreadyDone){
+    var scoreEl = els.scoreLine.querySelector("b");
+    if (scoreEl) animateCount(scoreEl, state.score, "", 900);
+  }
   els.answerNote.textContent = Q.note || "";
   els.sourceNote.textContent = Q.source ? ("Source: " + Q.source) : "";
   els.reveal.classList.remove("hidden");
 
-  // sweep the true figure onto the track
-  els.answerMarker.setAttribute("data-v", Q.answer + "%");
+  // sweep the true figure onto the track (line only — the big number carries the value)
+  els.answerMarker.removeAttribute("data-v");
   els.answerMarker.classList.remove("hidden");
   requestAnimationFrame(function(){ els.answerMarker.style.left = Q.answer + "%"; });
 
@@ -510,7 +545,7 @@ function startCountdown(){
 // ===== date ticker =====
 function startDailyTicker(){
   if (!els.dailyDate) return;
-  var dateStr = new Intl.DateTimeFormat("en-GB", { timeZone: safeTZ(), day:"numeric", month:"short", year:"numeric" }).format(new Date());
+  var dateStr = new Intl.DateTimeFormat("en-GB", { timeZone: safeTZ(), day:"numeric", month:"short" }).format(new Date());
   els.dailyDate.textContent = dateStr;
 }
 
@@ -594,6 +629,9 @@ function setupGame(dayKey, mode){
   els.input.disabled = false;
   els.slider.disabled = false;
   els.guessBtn.disabled = false;
+  els.guessRow.classList.remove("hidden");
+  els.guessDots.classList.remove("hidden");
+  els.track.parentElement.classList.remove("hidden");
   els.input.value = "";
   els.slider.value = 50;
   els.slider.style.setProperty("--fill", "50%");
@@ -604,7 +642,7 @@ function setupGame(dayKey, mode){
   var practice = mode === "practice";
   els.practiceBar.classList.toggle("hidden", !practice);
   if (practice){
-    els.practiceLabel.textContent = "Practice · No. " + CUR.puzzleNo + " (" + formatKey(dayKey) + ") — doesn't count towards streaks or stats";
+    els.practiceLabel.textContent = "Practice";
   }
 
   if (!practice){
