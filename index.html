@@ -14,6 +14,8 @@
 
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='white'/%3E%3Crect x='14' y='14' width='30' height='12' fill='black'/%3E%3Crect x='38' y='14' width='12' height='30' fill='black'/%3E%3Crect x='14' y='32' width='12' height='12' fill='%23F26522'/%3E%3C/svg%3E" />
   <meta name="theme-color" content="#f26522" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -297,6 +299,71 @@
     }
     .countdown b{ color:var(--ink) }
 
+    /* ---------- Practice mode ---------- */
+    .practicebar{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      background:var(--accent-soft); border:1px solid var(--accent);
+      border-radius:8px; padding:8px 12px; margin-bottom:14px;
+      font-size:12px; font-weight:600; color:var(--accent-deep);
+    }
+    .practicebar button{
+      border:none; background:var(--ink); color:#fff; font-weight:800;
+      font-size:12px; padding:6px 10px; border-radius:6px; cursor:pointer;
+      white-space:nowrap;
+    }
+    .practicebar button:hover{ background:var(--accent-deep) }
+
+    /* ---------- Crowd histogram ---------- */
+    .crowd{
+      margin:16px auto 18px; max-width:420px;
+      border:1px solid var(--line); border-radius:10px; padding:14px 14px 10px;
+      text-align:left;
+    }
+    .crowdhead{ font-size:13.5px; margin:0 0 10px; text-align:center }
+    .crowdhead b{ color:var(--accent-deep) }
+    .histo{
+      display:flex; align-items:flex-end; gap:2px; height:64px;
+    }
+    .hbar{
+      flex:1; background:#dcdcdc; border-radius:2px 2px 0 0; min-height:3px;
+      transition:height .4s ease;
+    }
+    .hbar.you{ background:var(--accent) }
+    .hbar.truth{ background:var(--win) }
+    .hbar.you.truth{ background:linear-gradient(180deg, var(--accent) 0 50%, var(--win) 50% 100%) }
+    .histoscale{
+      display:flex; justify-content:space-between;
+      color:var(--muted); font-size:10.5px; margin-top:4px;
+      font-variant-numeric:tabular-nums;
+    }
+    .crowdlegend{
+      display:flex; gap:14px; justify-content:center; margin-top:8px;
+      color:var(--muted); font-size:11.5px;
+    }
+    .lg-item{ display:inline-flex; align-items:center; gap:5px }
+    .sw{ width:10px; height:10px; border-radius:2px; display:inline-block }
+    .crowd-sw{ background:#dcdcdc }
+    .you-sw{ background:var(--accent) }
+    .truth-sw{ background:var(--win) }
+
+    /* ---------- Archive ---------- */
+    .archiverow{
+      display:grid; grid-template-columns:52px 86px 1fr; gap:8px; align-items:center;
+      width:100%; text-align:left; cursor:pointer;
+      background:#fafafa; border:1px solid var(--line); border-radius:8px;
+      padding:10px 12px; margin-bottom:8px;
+      font-size:13px; color:var(--ink);
+      transition:border-color .15s ease, background .15s ease;
+    }
+    .archiverow:hover{ border-color:var(--accent); background:var(--accent-soft) }
+    .archiverow .ano{ font-weight:800; color:var(--accent-deep); font-variant-numeric:tabular-nums }
+    .archiverow .adate{ color:var(--muted); font-size:11.5px; font-variant-numeric:tabular-nums }
+    .archiverow .aq{
+      overflow:hidden; text-overflow:ellipsis; display:-webkit-box;
+      -webkit-line-clamp:2; -webkit-box-orient:vertical;
+    }
+    .archive-empty{ color:var(--muted); font-size:13.5px; text-align:center; padding:10px 0 }
+
     /* ---------- Toast ---------- */
     .toast{
       position:fixed; left:50%; top:18px; transform:translate(-50%,-8px);
@@ -391,6 +458,7 @@
       <a class="byline" href="https://www.publicfirst.co.uk/" target="_blank" rel="noopener">A Public First game</a>
     </div>
     <div class="iconbtns">
+      <button id="archiveBtn" class="iconbtn" title="Previous questions" aria-label="Previous questions">▦</button>
       <button id="statsBtn" class="iconbtn" title="Your stats" aria-label="Your stats">▤</button>
       <button id="helpBtn" class="iconbtn" title="How to play" aria-label="How to play">?</button>
     </div>
@@ -398,6 +466,10 @@
 
   <main class="app">
     <div class="card" id="card">
+      <div class="practicebar hidden" id="practiceBar">
+        <span id="practiceLabel"></span>
+        <button id="backToday" type="button">Today's question →</button>
+      </div>
       <div class="datebar">
         <span id="puzzleNo"></span>
         <span>·</span>
@@ -437,8 +509,20 @@
         <p class="scoreline" id="scoreLine"></p>
         <p class="note" id="answerNote"></p>
         <p class="source-note" id="sourceNote"></p>
+
+        <div class="crowd hidden" id="crowdBlock">
+          <p class="crowdhead" id="crowdHead"></p>
+          <div class="histo" id="histo" aria-label="Distribution of all players' guesses"></div>
+          <div class="histoscale"><span>0%</span><span>50</span><span>100%</span></div>
+          <div class="crowdlegend">
+            <span class="lg-item"><i class="sw crowd-sw"></i>everyone</span>
+            <span class="lg-item"><i class="sw you-sw"></i>you</span>
+            <span class="lg-item"><i class="sw truth-sw"></i>the truth</span>
+          </div>
+        </div>
+
         <button id="shareBtn" class="sharebtn" type="button">Share your result</button>
-        <p class="countdown">Next question in <b id="countdown">—</b></p>
+        <p class="countdown" id="countdownP">Next question in <b id="countdown">—</b></p>
       </div>
     </div>
 
@@ -476,6 +560,19 @@
     </div>
   </div>
 
+  <!-- Archive -->
+  <div id="archiveModal" class="modal-root hidden" role="dialog" aria-modal="true" aria-labelledby="archiveTitle">
+    <div class="modal-backdrop" data-close="archiveModal"></div>
+    <div class="modal-card">
+      <button class="modal-close" data-close="archiveModal" aria-label="Close">✕</button>
+      <h2 class="modal-title" id="archiveTitle">Previous questions</h2>
+      <div class="modal-body">
+        <p style="margin-bottom:12px">Play any past question in practice mode — it won't touch your streak or stats.</p>
+        <div id="archiveList"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Stats -->
   <div id="statsModal" class="modal-root hidden" role="dialog" aria-modal="true" aria-labelledby="statsTitle">
     <div class="modal-backdrop" data-close="statsModal"></div>
@@ -496,7 +593,20 @@
     </div>
   </div>
 
-  <script src="questions.js?v=2"></script>
-  <script src="app.js?v=2"></script>
+  <script>
+    // Site configuration — overrides the defaults in app.js, so you never
+    // need to edit that file. See worker/README.md for the crowd layer.
+    window.CS_CONFIG = Object.assign({
+      // ANCHOR: "2026-07-08",           // puzzle No. 1 date — set to launch day
+      CROWD_API_URL: ""                  // paste your Cloudflare Worker URL to turn on the crowd layer
+    }, window.CS_CONFIG || {});
+  </script>
+  <script src="questions.js?v=3"></script>
+  <script src="app.js?v=3"></script>
+  <script>
+    if ("serviceWorker" in navigator){
+      window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
+    }
+  </script>
 </body>
 </html>

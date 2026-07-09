@@ -12,14 +12,22 @@ var CONFIG = {
   WIN_MARGIN: 5,                 // final guess within this = win (keeps the streak)
   FIRST_WEIGHT: 0.4,             // how much the first guess counts toward the score
   FINAL_WEIGHT: 0.6,             // how much the final guess counts
+  // Cloudflare Worker URL for the crowd layer (see worker/README.md).
+  // Empty = crowd layer off.
+  CROWD_API_URL: "",
   // Optional: published Google Sheet with columns date,question,answer,note,source.
   // Leave empty to use questions.js only (recommended — a published sheet is
   // publicly readable, so anyone can peek at tomorrow's answer).
   SHEET_PUBLISHED_URL: ""
 };
+// Site-specific overrides live in index.html (window.CS_CONFIG), so config
+// changes don't require touching this file.
+if (typeof window !== "undefined" && window.CS_CONFIG){
+  for (var _k in window.CS_CONFIG){ if (window.CS_CONFIG[_k] !== undefined) CONFIG[_k] = window.CS_CONFIG[_k]; }
+}
 
 // ===== question bank =====
-var QUESTIONS = (typeof CS_QUESTIONS !== "undefined" && CS_QUESTIONS.length) ? CS_QUESTIONS : [
+var BANK = (typeof CS_QUESTIONS !== "undefined" && CS_QUESTIONS.length) ? CS_QUESTIONS : [
   { date: "", question: "What percentage of Brits say they trust their neighbours?",
     answer: 54, note: "Placeholder question — add questions.js.", source: "Public First" }
 ];
@@ -50,35 +58,54 @@ function daysSince(aKey, bKey){
   var a = aKey.split("-").map(Number), b = bKey.split("-").map(Number);
   return Math.floor(Date.UTC(b[0],b[1]-1,b[2])/86400000) - Math.floor(Date.UTC(a[0],a[1]-1,a[2])/86400000);
 }
+function keyForPuzzle(n){
+  var p = CONFIG.ANCHOR.split("-").map(Number);
+  var d = new Date(Date.UTC(p[0], p[1]-1, p[2]));
+  d.setUTCDate(d.getUTCDate() + (n - 1));
+  return d.toISOString().slice(0,10);
+}
+function puzzleNoForKey(key){ return Math.max(1, daysSince(CONFIG.ANCHOR, key) + 1); }
+function formatKey(key){
+  var p = key.split("-").map(Number);
+  return new Intl.DateTimeFormat("en-GB", { timeZone:"UTC", day:"numeric", month:"short", year:"numeric" })
+    .format(new Date(Date.UTC(p[0], p[1]-1, p[2])));
+}
 
 var DAY_KEY = getDayKey();
-var PUZZLE_NO = Math.max(1, daysSince(CONFIG.ANCHOR, DAY_KEY) + 1);
+var PUZZLE_NO = puzzleNoForKey(DAY_KEY);
 
 // ===== elements =====
 function $(id){ return document.getElementById(id); }
 var els = {
   puzzleNo: $("puzzleNo"), dailyDate: $("dailyDate"), streakBadge: $("streakBadge"),
   questionText: $("questionText"), kicker: $("kicker"),
+  practiceBar: $("practiceBar"), practiceLabel: $("practiceLabel"), backToday: $("backToday"),
   guessRow: $("guessRow"), input: $("guessInput"), slider: $("guessSlider"), guessBtn: $("guessBtn"),
   guessDots: $("guessDots"),
   track: $("track"), trackWindow: $("trackWindow"), answerMarker: $("answerMarker"),
   ledger: $("ledger"),
   reveal: $("reveal"), verdict: $("verdict"), bigAnswer: $("bigAnswer"),
   scoreLine: $("scoreLine"), answerNote: $("answerNote"), sourceNote: $("sourceNote"),
-  shareBtn: $("shareBtn"), countdown: $("countdown"),
+  crowdBlock: $("crowdBlock"), crowdHead: $("crowdHead"), histo: $("histo"),
+  shareBtn: $("shareBtn"), countdownP: $("countdownP"), countdown: $("countdown"),
   toast: $("toast"),
-  helpBtn: $("helpBtn"), statsBtn: $("statsBtn"),
-  helpModal: $("helpModal"), statsModal: $("statsModal"),
+  helpBtn: $("helpBtn"), statsBtn: $("statsBtn"), archiveBtn: $("archiveBtn"),
+  archiveList: $("archiveList"),
   emailForm: $("emailForm"), emailInput: $("emailInput"), emailMsg: $("emailMsg")
 };
 
 // ===== state =====
-var Q = null;                       // today's question
-var state = { guesses: [], done: false, win: false, score: 0 };
+var MODE = "daily";                 // "daily" | "practice"
+var CUR = null;                     // { dayKey, puzzleNo, q }
+var Q = null;                       // current question (alias of CUR.q)
+var state = { guesses: [], done: false, win: false, score: 0, crowdPct: null };
 var minAllowed = 0, maxAllowed = 100;   // the squeeze window
 
 function stateKey(){ return "cs-state-" + DAY_KEY; }
-function saveState(){ try{ localStorage.setItem(stateKey(), JSON.stringify(state)); }catch(_){} }
+function saveState(){
+  if (MODE !== "daily") return;
+  try{ localStorage.setItem(stateKey(), JSON.stringify({ guesses: state.guesses, done: state.done })); }catch(_){}
+}
 function loadState(){
   try{
     var raw = localStorage.getItem(stateKey());
@@ -245,7 +272,12 @@ function renderLedgerRow(n, g){
 }
 function setKickerForTurn(){
   if (!els.kicker) return;
-  if (state.done) { els.kicker.textContent = "Come back tomorrow for question No. " + (PUZZLE_NO + 1) + "."; return; }
+  if (state.done){
+    els.kicker.textContent = (MODE === "practice")
+      ? "Practice round — pick another from the archive, or head back to today."
+      : "Come back tomorrow for question No. " + (PUZZLE_NO + 1) + ".";
+    return;
+  }
   if (state.guesses.length === 0) els.kicker.textContent = "Guess the percentage. First your instinct…";
   else els.kicker.textContent = "…now your judgement. One guess left.";
 }
@@ -253,14 +285,80 @@ function setKickerForTurn(){
 function verdictFor(guesses, answer, win){
   var err1 = Math.abs(guesses[0] - answer);
   var errF = Math.abs(guesses[guesses.length-1] - answer);
-  if (guesses.length === 1 && err1 <= CONFIG.BULLSEYE) return { text: "🎯 Bullseye, first time.", win: true };
-  if (errF <= 2)  return { text: "Dead on.", win: win };
-  if (errF <= 5)  return { text: "Sharp. You know the public.", win: win };
-  if (errF <= 10) return { text: "Close — but the public got away.", win: win };
-  if (errF <= 20) return { text: "Warm-ish. The crowd had other ideas.", win: win };
-  return { text: "The public surprised you.", win: win };
+  if (guesses.length === 1 && err1 <= CONFIG.BULLSEYE) return { text: "🎯 Bullseye, first time." };
+  if (errF <= 2)  return { text: "Dead on." };
+  if (errF <= 5)  return { text: "Sharp. You know the public." };
+  if (errF <= 10) return { text: "Close — but the public got away." };
+  if (errF <= 20) return { text: "Warm-ish. The crowd had other ideas." };
+  return { text: "The public surprised you." };
 }
 
+// ===== crowd layer =====
+function crowdFlow(finalGuess){
+  if (!CONFIG.CROWD_API_URL || MODE !== "daily") return;
+  var base = String(CONFIG.CROWD_API_URL).replace(/\/+$/, "");
+  var sentKey = "cs-crowd-sent-" + DAY_KEY;
+  var already = false;
+  try{ already = !!localStorage.getItem(sentKey); }catch(_){}
+
+  var p;
+  if (already){
+    p = fetch(base + "/dist?puzzle=" + CUR.puzzleNo).then(function(r){
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    });
+  } else {
+    p = fetch(base + "/guess", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ puzzle: CUR.puzzleNo, guess: finalGuess })
+    }).then(function(r){
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      try{ localStorage.setItem(sentKey, "1"); }catch(_){}
+      return r.json();
+    });
+  }
+  p.then(function(dist){ renderCrowd(dist, finalGuess); })
+   .catch(function(err){ console.warn("Crowd layer unavailable", err); });
+}
+
+function renderCrowd(dist, myGuess){
+  if (!dist || !dist.total || !Array.isArray(dist.counts)) return;
+  var counts = dist.counts, total = dist.total;
+  var myErr = Math.abs(myGuess - Q.answer);
+
+  // percentile: share of all recorded players who were further from the truth
+  var further = 0;
+  for (var v=0; v<=100; v++){
+    if (counts[v] && Math.abs(v - Q.answer) > myErr) further += counts[v];
+  }
+  var pct = Math.round(100 * further / total);
+  state.crowdPct = pct;
+  els.crowdHead.innerHTML = (total === 1)
+    ? "You're the first player today — the crowd starts with you."
+    : "You were closer than <b>" + pct + "%</b> of today's " + total + " players.";
+
+  // histogram: 20 bins of 5 points (100 folds into the last bin)
+  var bins = new Array(20).fill(0);
+  function binOf(v){ return Math.min(19, Math.floor(v / 5)); }
+  for (var g=0; g<=100; g++){ if (counts[g]) bins[binOf(g)] += counts[g]; }
+  var maxBin = Math.max.apply(null, bins) || 1;
+
+  els.histo.innerHTML = "";
+  var youBin = binOf(myGuess), truthBin = binOf(Q.answer);
+  for (var b=0; b<20; b++){
+    var bar = document.createElement("div");
+    bar.className = "hbar" + (b === youBin ? " you" : "") + (b === truthBin ? " truth" : "");
+    bar.style.height = Math.max(4, Math.round(100 * bins[b] / maxBin)) + "%";
+    bar.title = (b*5) + "–" + (b === 19 ? 100 : b*5+4) + "%: " + bins[b] + (bins[b] === 1 ? " player" : " players");
+    els.histo.appendChild(bar);
+  }
+  els.crowdBlock.classList.remove("hidden");
+  updateShareForCrowd();
+}
+function updateShareForCrowd(){ /* share text reads state.crowdPct at click time */ }
+
+// ===== finishing =====
 function finishGame(alreadyDone){
   state.done = true;
   state.score = computeScore(state.guesses, Q.answer);
@@ -279,7 +377,8 @@ function finishGame(alreadyDone){
   var breakdown = (state.guesses.length > 1)
     ? "First guess " + err1 + " off · final " + errF + " off"
     : "One guess, " + err1 + " off";
-  els.scoreLine.innerHTML = "Crowdsense score: <b>" + state.score + "</b>/100 · " + breakdown;
+  els.scoreLine.innerHTML = "Crowdsense score: <b>" + state.score + "</b>/100 · " + breakdown
+    + (MODE === "practice" ? " · practice" : "");
   els.answerNote.textContent = Q.note || "";
   els.sourceNote.textContent = Q.source ? ("Source: " + Q.source) : "";
   els.reveal.classList.remove("hidden");
@@ -290,21 +389,29 @@ function finishGame(alreadyDone){
   requestAnimationFrame(function(){ els.answerMarker.style.left = Q.answer + "%"; });
 
   setKickerForTurn();
-  startCountdown();
+  if (MODE === "daily"){
+    els.countdownP.classList.remove("hidden");
+    startCountdown();
+  } else {
+    els.countdownP.classList.add("hidden");
+  }
 
-  if (!alreadyDone){
-    // streak + stats are recorded once, when the game actually ends
-    if (state.win){
-      var s = readStreak();
-      var next = (s.last === getYesterdayKey(DAY_KEY)) ? s.count + 1 : 1;
-      if (s.last === DAY_KEY) next = s.count; // safety: never double-count a day
-      writeStreak(next, DAY_KEY);
-    } else {
-      writeStreak(0, DAY_KEY);
+  if (MODE === "daily"){
+    if (!alreadyDone){
+      // streak + stats are recorded once, when the game actually ends
+      if (state.win){
+        var s = readStreak();
+        var next = (s.last === getYesterdayKey(DAY_KEY)) ? s.count + 1 : 1;
+        if (s.last === DAY_KEY) next = s.count; // safety: never double-count a day
+        writeStreak(next, DAY_KEY);
+      } else {
+        writeStreak(0, DAY_KEY);
+      }
+      updateStreakBadge();
+      recordResult(state.win, err1, errF, state.score);
+      saveState();
     }
-    updateStreakBadge();
-    recordResult(state.win, err1, errF, state.score);
-    saveState();
+    crowdFlow(state.guesses[state.guesses.length-1]);
   }
 }
 
@@ -344,7 +451,9 @@ function submitGuess(){
 // ===== share =====
 function shareText(){
   var lines = [];
-  lines.push("Crowdsense No. " + PUZZLE_NO + " — " + state.score + "/100");
+  var title = "Crowdsense No. " + CUR.puzzleNo + " — " + state.score + "/100";
+  if (MODE === "practice") title += " (practice)";
+  lines.push(title);
   var grid = state.guesses.map(function(g){
     var err = Math.abs(g - Q.answer);
     var h = heat(err);
@@ -352,8 +461,13 @@ function shareText(){
     return h.emoji + (Q.answer > g ? "⬆️" : "⬇️");
   }).join(" ");
   lines.push(grid);
-  var s = readStreak();
-  if (state.win && s.count > 1) lines.push("🔥 " + s.count + " day streak");
+  if (MODE === "daily"){
+    if (state.crowdPct !== null && state.crowdPct !== undefined){
+      lines.push("Closer than " + state.crowdPct + "% of players");
+    }
+    var s = readStreak();
+    if (state.win && s.count > 1) lines.push("🔥 " + s.count + " day streak");
+  }
   lines.push(CONFIG.SITE_URL);
   return lines.join("\n");
 }
@@ -408,10 +522,105 @@ document.addEventListener("click", function(e){
   if (t) closeModal(t.getAttribute("data-close"));
 });
 document.addEventListener("keydown", function(e){
-  if (e.key === "Escape"){ closeModal("helpModal"); closeModal("statsModal"); }
+  if (e.key === "Escape"){ closeModal("helpModal"); closeModal("statsModal"); closeModal("archiveModal"); }
 });
 if (els.helpBtn) els.helpBtn.addEventListener("click", function(){ openModal("helpModal"); });
 if (els.statsBtn) els.statsBtn.addEventListener("click", function(){ renderStats(); openModal("statsModal"); });
+if (els.archiveBtn) els.archiveBtn.addEventListener("click", function(){ renderArchive(); openModal("archiveModal"); });
+
+// ===== archive / practice =====
+function renderArchive(){
+  var list = els.archiveList;
+  list.innerHTML = "";
+  var past = PUZZLE_NO - 1;
+  if (past < 1){
+    var p = document.createElement("p");
+    p.className = "archive-empty";
+    p.textContent = "No past questions yet — today's is No. 1. Come back tomorrow and this shelf starts filling up.";
+    list.appendChild(p);
+    return;
+  }
+  var shown = Math.min(past, 60);
+  for (var n = past; n > past - shown; n--){
+    (function(n){
+      var key = keyForPuzzle(n);
+      var q = pickQuestionForKey(key);
+      var row = document.createElement("button");
+      row.type = "button";
+      row.className = "archiverow";
+      row.innerHTML =
+        '<span class="ano">No. ' + n + '</span>' +
+        '<span class="adate">' + formatKey(key) + '</span>' +
+        '<span class="aq">' + q.question + '</span>';
+      row.addEventListener("click", function(){
+        closeModal("archiveModal");
+        setupGame(key, "practice");
+      });
+      list.appendChild(row);
+    })(n);
+  }
+}
+
+// ===== question selection (same question for everyone, everywhere) =====
+function pickQuestionForKey(key){
+  var dated = BANK.filter(function(q){ return (q.date||"") === key; });
+  if (dated.length) return dated[0];
+  var pool = BANK.filter(function(q){ return !(q.date||"").length; });
+  if (!pool.length) pool = BANK;
+  // deterministic rotation, stable order
+  var sorted = pool.slice().sort(function(a,b){
+    var x = String(a.question).toLowerCase(), y = String(b.question).toLowerCase();
+    return x < y ? -1 : (x > y ? 1 : 0);
+  });
+  var offset = Math.abs(daysSince(CONFIG.ANCHOR, key)) % sorted.length;
+  return sorted[offset];
+}
+
+// ===== game setup (daily or practice) =====
+function setupGame(dayKey, mode){
+  MODE = mode;
+  CUR = { dayKey: dayKey, puzzleNo: puzzleNoForKey(dayKey), q: pickQuestionForKey(dayKey) };
+  Q = CUR.q;
+  state = { guesses: [], done: false, win: false, score: 0, crowdPct: null };
+  minAllowed = 0; maxAllowed = 100;
+
+  els.puzzleNo.textContent = "No. " + CUR.puzzleNo;
+  els.questionText.textContent = Q.question;
+  els.ledger.innerHTML = "";
+  els.reveal.classList.add("hidden");
+  els.crowdBlock.classList.add("hidden");
+  els.answerMarker.classList.add("hidden");
+  els.answerMarker.style.left = "0%";
+  els.input.disabled = false;
+  els.slider.disabled = false;
+  els.guessBtn.disabled = false;
+  els.input.value = "";
+  els.slider.value = 50;
+  els.slider.style.setProperty("--fill", "50%");
+  updateTrackWindow();
+  renderDots();
+  setKickerForTurn();
+
+  var practice = mode === "practice";
+  els.practiceBar.classList.toggle("hidden", !practice);
+  if (practice){
+    els.practiceLabel.textContent = "Practice · No. " + CUR.puzzleNo + " (" + formatKey(dayKey) + ") — doesn't count towards streaks or stats";
+  }
+
+  if (!practice){
+    var saved = loadState();
+    if (saved && saved.guesses.length){
+      saved.guesses.forEach(function(g){
+        state.guesses.push(g);
+        renderLedgerRow(state.guesses.length, g);
+        applyGuessToWindow(g);
+      });
+      renderDots();
+      if (saved.done) finishGame(true);
+      else setKickerForTurn();
+    }
+  }
+}
 
 // ===== email capture =====
 function handleEmailSubmit(e){
@@ -483,7 +692,7 @@ function rowsToQuestions(rows){
   return out;
 }
 function loadQuestions(){
-  if (!CONFIG.SHEET_PUBLISHED_URL) return Promise.resolve(QUESTIONS);
+  if (!CONFIG.SHEET_PUBLISHED_URL) return Promise.resolve(BANK);
   return fetch(normalizeToCSV(CONFIG.SHEET_PUBLISHED_URL), { cache:"no-store" })
     .then(function(resp){ if(!resp.ok) throw new Error("HTTP "+resp.status); return resp.text(); })
     .then(function(text){
@@ -493,57 +702,19 @@ function loadQuestions(){
     })
     .catch(function(err){
       console.warn("Sheet load failed, using embedded questions", err);
-      return QUESTIONS;
+      return BANK;
     });
-}
-
-// ===== question selection (same question for everyone, everywhere) =====
-function pickTodaysQuestion(bank){
-  var dated = bank.filter(function(q){ return (q.date||"") === DAY_KEY; });
-  if (dated.length) return dated[0];
-  var pool = bank.filter(function(q){ return !(q.date||"").length; });
-  if (!pool.length) pool = bank;
-  // deterministic rotation, stable order
-  var sorted = pool.slice().sort(function(a,b){
-    var x = String(a.question).toLowerCase(), y = String(b.question).toLowerCase();
-    return x < y ? -1 : (x > y ? 1 : 0);
-  });
-  var offset = Math.abs(daysSince(CONFIG.ANCHOR, DAY_KEY)) % sorted.length;
-  return sorted[offset];
-}
-
-// ===== restore a saved game =====
-function restore(saved){
-  state = { guesses: [], done: false, win: false, score: 0 };
-  saved.guesses.forEach(function(g){
-    state.guesses.push(g);
-    renderLedgerRow(state.guesses.length, g);
-    applyGuessToWindow(g);
-  });
-  renderDots();
-  if (saved.done){
-    finishGame(true);
-  } else {
-    setKickerForTurn();
-  }
 }
 
 // ===== init =====
 (function init(){
   loadQuestions().then(function(bank){
-    Q = pickTodaysQuestion(bank);
+    BANK = bank;
 
     resetStreakIfSkippedDay();
-    els.puzzleNo.textContent = "No. " + PUZZLE_NO;
     startDailyTicker();
-    els.questionText.textContent = Q.question;
-    updateTrackWindow();
-    renderDots();
-    setKickerForTurn();
     updateStreakBadge();
-
-    var saved = loadState();
-    if (saved && saved.guesses.length) restore(saved);
+    setupGame(DAY_KEY, "daily");
 
     // first visit: show how-to
     try{
@@ -572,5 +743,6 @@ els.slider.addEventListener("input", function(){
   els.input.value = els.slider.value;
   els.slider.style.setProperty("--fill", els.slider.value + "%");
 });
+if (els.backToday) els.backToday.addEventListener("click", function(){ setupGame(DAY_KEY, "daily"); });
 if (els.shareBtn) els.shareBtn.addEventListener("click", doShare);
 if (els.emailForm) els.emailForm.addEventListener("submit", handleEmailSubmit);
