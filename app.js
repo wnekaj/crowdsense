@@ -128,12 +128,13 @@ function heat(err){
 }
 
 // ===== scoring =====
-// Weighted error: the final guess matters most, but a sharp first instinct is rewarded.
+// Golf scoring: your score is simply how many points you were off.
+// 0 is perfect; lower is better. (With multiple guesses the final guess
+// weighs heaviest, per the FIRST/FINAL weights.)
 function computeScore(guesses, answer){
   var err1 = Math.abs(guesses[0] - answer);
   var errF = Math.abs(guesses[guesses.length-1] - answer);
-  var e = CONFIG.FIRST_WEIGHT * err1 + CONFIG.FINAL_WEIGHT * errF;
-  return Math.max(0, 100 - Math.round(3 * e));
+  return Math.round(CONFIG.FIRST_WEIGHT * err1 + CONFIG.FINAL_WEIGHT * errF);
 }
 
 // ===== streak =====
@@ -184,9 +185,9 @@ function recordResult(win, firstErr, finalErr, score){
 function renderStats(){
   var s = readStats();
   $("stPlayed").textContent = s.played;
-  // Crowdsense score: rolling average of daily scores — how well you read
-  // the public over time, out of 100.
-  $("stWin").textContent = s.played ? String(Math.round(s.scoreSum / s.played)) : "–";
+  // Crowdsense score: rolling average of how far off you are each day.
+  // Lower is better; 0 means you read the public perfectly.
+  $("stWin").textContent = s.played ? String(Math.round((s.scoreSum / s.played) * 10) / 10) : "–";
   $("stStreak").textContent = readStreak().count;
   $("stMax").textContent = parseInt(localStorage.getItem("bestStreak")||"0",10);
 
@@ -230,8 +231,7 @@ function renderStats(){
 
   var fe = $("firstErr");
   if (s.played){
-    var avg = (s.firstErrSum / s.played).toFixed(1);
-    fe.innerHTML = "Your instinct is off by <b>" + avg + "</b> points on average. Your Crowdsense score is the average of your daily scores — how well you read the public over time.";
+    fe.innerHTML = "Your Crowdsense score is how far off you are on an average day — <b>lower is better</b>, and 0 means you read the public perfectly.";
   } else {
     fe.textContent = "Play your first game to start measuring your crowdsense.";
   }
@@ -426,7 +426,7 @@ function finishGame(alreadyDone){
   var v = verdictFor(state.guesses, Q.answer, state.win);
   els.verdict.textContent = v.text;
   els.verdict.className = "verdict " + (state.win ? "win" : "loss");
-  els.scoreLine.innerHTML = "<b>" + state.score + "</b>/100" + (MODE === "practice" ? " · practice" : "");
+  els.scoreLine.innerHTML = "<b>" + state.score + "</b> off" + (MODE === "practice" ? " · practice" : "");
   els.bigAnswer.textContent = Q.answer + "%";
   var finalGuessVal = state.guesses[state.guesses.length-1];
   els.youMarker.style.left = finalGuessVal + "%";
@@ -528,7 +528,7 @@ function submitGuess(){
 // ===== share =====
 function shareText(){
   var lines = [];
-  var title = "Crowdsense No. " + CUR.puzzleNo + " — " + state.score + "/100";
+  var title = "Crowdsense No. " + CUR.puzzleNo + " — " + state.score + " off";
   if (MODE === "practice") title += " (practice)";
   lines.push(title);
   var grid = state.guesses.map(function(g){

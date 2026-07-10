@@ -6,11 +6,16 @@
   <title>Crowdsense — how well do you know the British public?</title>
   <meta name="description" content="A daily guessing game. We asked the British public. You guess what percentage said yes. Two guesses: instinct, then judgement." />
 
-  <!-- Social cards -->
+  <!-- Social cards. Update og:url + og:image host when the custom domain lands. -->
   <meta property="og:title" content="Crowdsense" />
-  <meta property="og:description" content="One real polling question a day. Guess what percentage of the British public said it. Two guesses: instinct, then judgement." />
+  <meta property="og:description" content="One real polling question a day. Guess what percentage of the British public said it. One guess — pure instinct." />
   <meta property="og:type" content="website" />
-  <meta name="twitter:card" content="summary" />
+  <meta property="og:url" content="https://wnekaj.github.io/crowdsense/" />
+  <meta property="og:image" content="https://wnekaj.github.io/crowdsense/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://wnekaj.github.io/crowdsense/og-image.png" />
 
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='white'/%3E%3Crect x='14' y='14' width='30' height='12' fill='black'/%3E%3Crect x='38' y='14' width='12' height='30' fill='black'/%3E%3Crect x='14' y='32' width='12' height='12' fill='%23F26522'/%3E%3C/svg%3E" />
   <meta name="theme-color" content="#f26522" />
@@ -574,7 +579,7 @@
           <div class="lg"><span class="chip cool">Cool</span> Within 20</div>
           <div class="lg"><span class="chip cold">Cold</span> More than 20 away</div>
         </div>
-        <p style="margin-top:12px">Your score out of 100 reflects how close you got. Within 2 is a bullseye; land within 5 to keep your streak.</p>
+        <p style="margin-top:12px">Your score is simply how many points you were off — <b>0 is perfect</b>, lower is better. Within 2 is a bullseye; land within 5 to keep your streak.</p>
         <p>New question daily at midnight, London time.</p>
         <p style="margin-top:14px"><a href="https://www.publicfirst.co.uk/" target="_blank" rel="noopener" style="color:inherit">A Public First game</a> · all figures from original polling of the British public.</p>
       </div>
@@ -623,8 +628,8 @@
       CROWD_API_URL: ""                  // paste your Cloudflare Worker URL to turn on the crowd layer
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=10"></script>
-  <script src="app.js?v=10"></script>
+  <script src="questions.js?v=11"></script>
+  <script src="app.js?v=11"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
