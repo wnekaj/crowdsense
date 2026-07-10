@@ -207,7 +207,7 @@ function renderStats(){
     var row = document.createElement("div");
     row.className = "distrow";
     var lab = document.createElement("span"); lab.className = "g"; lab.textContent = t.label;
-    var bar = document.createElement("div"); bar.className = "distbar" + (n ? "" : " zero");
+    var bar = document.createElement("div"); bar.className = "distbar " + t.cls + (n ? "" : " zero");
     bar.style.width = Math.max(9, Math.round(100*n/max)) + "%";
     bar.textContent = n;
     row.appendChild(lab); row.appendChild(bar);
