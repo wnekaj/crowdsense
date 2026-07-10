@@ -260,9 +260,25 @@
       text-align:center;
       animation:rowin .4s ease;
     }
-    /* Pointless-style reveal: while the big number falls, hold everything back */
+    /* Pointless-style reveal: while the bar fills, hold everything else back */
     .reveal > *{ transition:opacity .45s ease }
-    .reveal.staging > :not(.bignum){ opacity:0; pointer-events:none }
+    .reveal.staging > :not(.revealbar-wrap){ opacity:0; pointer-events:none }
+
+    .revealbar-wrap{ margin:6px 0 18px }
+    .revealbar{
+      position:relative; height:14px; border-radius:4px;
+      background:var(--hairline);
+      overflow:hidden;
+    }
+    .revealfill{
+      position:absolute; left:0; top:0; bottom:0; width:0;
+      background:var(--ink);
+    }
+    .youmark{
+      position:absolute; top:0; bottom:0; width:2px;
+      background:var(--accent);
+      transform:translateX(-1px);
+    }
     .verdict{
       font-family:var(--display); font-weight:500;
       font-size:16px; letter-spacing:.01em;
@@ -494,6 +510,13 @@
       <div class="ledger" id="ledger"></div>
 
       <div class="reveal hidden" id="reveal">
+        <div class="revealbar-wrap" id="revealBarWrap">
+          <div class="revealbar">
+            <div class="revealfill" id="revealFill"></div>
+            <div class="youmark" id="youMarker" title="Your guess"></div>
+          </div>
+          <div class="scale"><span>0</span><span>50</span><span>100</span></div>
+        </div>
         <p class="verdict" id="verdict"></p>
         <div class="bignum" id="bigAnswer"></div>
         <p class="scoreline" id="scoreLine"></p>
@@ -586,8 +609,8 @@
       CROWD_API_URL: ""                  // paste your Cloudflare Worker URL to turn on the crowd layer
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=7"></script>
-  <script src="app.js?v=7"></script>
+  <script src="questions.js?v=8"></script>
+  <script src="app.js?v=8"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
