@@ -86,7 +86,7 @@ var els = {
   track: $("track"), trackWindow: $("trackWindow"), answerMarker: $("answerMarker"),
   ledger: $("ledger"),
   reveal: $("reveal"), verdict: $("verdict"), bigAnswer: $("bigAnswer"),
-  revealFill: $("revealFill"), youMarker: $("youMarker"),
+  revealFill: $("revealFill"), youMarker: $("youMarker"), youLabel: $("youLabel"),
   scoreLine: $("scoreLine"), answerNote: $("answerNote"), sourceNote: $("sourceNote"),
   crowdBlock: $("crowdBlock"), crowdHead: $("crowdHead"), histo: $("histo"),
   shareBtn: $("shareBtn"), countdownP: $("countdownP"), countdown: $("countdown"),
@@ -273,6 +273,7 @@ function renderDots(){
   }
 }
 function renderLedgerRow(n, g){
+  if (CONFIG.MAX_GUESSES < 2) return; // single-guess mode: the reveal bar carries the guess
   var err = Math.abs(g - Q.answer);
   var h = heat(err);
   var row = document.createElement("div");
@@ -426,23 +427,34 @@ function finishGame(alreadyDone){
   els.verdict.className = "verdict " + (state.win ? "win" : "loss");
   els.scoreLine.innerHTML = "<b>" + state.score + "</b>/100" + (MODE === "practice" ? " · practice" : "");
   els.bigAnswer.textContent = Q.answer + "%";
-  els.youMarker.style.left = state.guesses[state.guesses.length-1] + "%";
+  var finalGuessVal = state.guesses[state.guesses.length-1];
+  els.youMarker.style.left = finalGuessVal + "%";
+  els.youLabel.style.left = finalGuessVal + "%";
+  els.youLabel.textContent = finalGuessVal;
+  function showGuessMark(){
+    els.youMarker.classList.add("on");
+    els.youLabel.classList.add("on");
+  }
+  els.youMarker.classList.remove("on");
+  els.youLabel.classList.remove("on");
   if (alreadyDone){
     els.revealFill.style.width = Q.answer + "%";
+    showGuessMark();
   } else {
     // Pointless-style reveal: the bar crawls along the 0-100 scale toward
-    // the true figure, decelerating as it closes in. Your guess sits on the
-    // bar as an orange line. Everything else — number, verdict, and the
-    // ledger row with its tell-tale heat dot — holds back until it stops.
+    // the true figure, decelerating as it closes in. Your guess mark stays
+    // hidden until the fill reaches it — or the fill stops short of it.
+    // Everything else holds back until the bar stops.
+    var marked = false;
     els.reveal.classList.add("staging");
-    els.ledger.classList.add("hidden");
     els.revealFill.style.width = "0%";
     animateValue(0, Q.answer, CONFIG.REVEAL_MS, function(v){
       els.revealFill.style.width = v + "%";
+      if (!marked && v >= finalGuessVal){ marked = true; showGuessMark(); }
     }, function(){
+      if (!marked) showGuessMark();
       setTimeout(function(){
         els.reveal.classList.remove("staging");
-        els.ledger.classList.remove("hidden");
         var scoreEl = els.scoreLine.querySelector("b");
         if (scoreEl) animateCount(scoreEl, state.score, "", 800, 0);
       }, 350);
