@@ -603,7 +603,7 @@
       <div class="modal-body">
         <div class="statgrid">
           <div class="stat"><div class="v" id="stPlayed">0</div><div class="l">Played</div></div>
-          <div class="stat"><div class="v" id="stWin">0%</div><div class="l">Win rate</div></div>
+          <div class="stat"><div class="v" id="stWin">–</div><div class="l">Crowdsense</div></div>
           <div class="stat"><div class="v" id="stStreak">0</div><div class="l">Streak</div></div>
           <div class="stat"><div class="v" id="stMax">0</div><div class="l">Best</div></div>
         </div>
@@ -623,8 +623,8 @@
       CROWD_API_URL: ""                  // paste your Cloudflare Worker URL to turn on the crowd layer
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=9"></script>
-  <script src="app.js?v=9"></script>
+  <script src="questions.js?v=10"></script>
+  <script src="app.js?v=10"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
