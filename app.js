@@ -7,11 +7,12 @@ var CONFIG = {
   ANCHOR: "2026-07-08",          // puzzle No. 1 date (London time) — set to launch day
   SITE_URL: "https://wnekaj.github.io/crowdsense/",
   TZ: "Europe/London",
-  MAX_GUESSES: 2,
-  BULLSEYE: 2,                   // within this on the FIRST guess ends the game instantly
-  WIN_MARGIN: 5,                 // final guess within this = win (keeps the streak)
-  FIRST_WEIGHT: 0.4,             // how much the first guess counts toward the score
-  FINAL_WEIGHT: 0.6,             // how much the final guess counts
+  MAX_GUESSES: 1,
+  BULLSEYE: 2,                   // within this = bullseye
+  WIN_MARGIN: 5,                 // within this = win (keeps the streak)
+  FIRST_WEIGHT: 0.4,             // weighting only applies if MAX_GUESSES > 1
+  FINAL_WEIGHT: 0.6,
+  REVEAL_MS: 3400,               // Pointless-style countdown duration on reveal
   // Cloudflare Worker URL for the crowd layer (see worker/README.md).
   // Empty = crowd layer off.
   CROWD_API_URL: "",
@@ -263,6 +264,7 @@ function applyGuessToWindow(g){
 // ===== rendering =====
 function renderDots(){
   els.guessDots.innerHTML = "";
+  if (CONFIG.MAX_GUESSES < 2) return; // dots are meaningless with a single guess
   for (var i=0;i<CONFIG.MAX_GUESSES;i++){
     var dot = document.createElement("span");
     dot.className = "gdot" + (i < state.guesses.length ? " used" : "");
@@ -374,17 +376,25 @@ function renderCrowd(dist, myGuess){
 }
 function updateShareForCrowd(){ /* share text reads state.crowdPct at click time */ }
 
-// ===== presentation: count-up micro-animation =====
-function animateCount(el, to, suffix, duration){
+// ===== presentation: count animation =====
+// Counts el from `from` to `to`, decelerating as it approaches — the
+// Pointless-tower effect when from=100: fast at first, agonising at the end.
+function animateCount(el, to, suffix, duration, from, onDone){
+  from = (from === undefined || from === null) ? 0 : from;
   var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduce || !window.requestAnimationFrame){ el.textContent = to + (suffix || ""); return; }
+  if (reduce || !window.requestAnimationFrame){
+    el.textContent = to + (suffix || "");
+    if (onDone) onDone();
+    return;
+  }
   var start = null;
   function step(ts){
     if (start === null) start = ts;
     var t = Math.min(1, (ts - start) / (duration || 1000));
-    var eased = 1 - Math.pow(1 - t, 3);
-    el.textContent = Math.round(eased * to) + (suffix || "");
+    var eased = 1 - Math.pow(1 - t, 4);
+    el.textContent = Math.round(from + eased * (to - from)) + (suffix || "");
     if (t < 1) requestAnimationFrame(step);
+    else if (onDone) onDone();
   }
   requestAnimationFrame(step);
 }
@@ -407,12 +417,23 @@ function finishGame(alreadyDone){
   var v = verdictFor(state.guesses, Q.answer, state.win);
   els.verdict.textContent = v.text;
   els.verdict.className = "verdict " + (state.win ? "win" : "loss");
-  if (alreadyDone) els.bigAnswer.textContent = Q.answer + "%";
-  else animateCount(els.bigAnswer, Q.answer, "%", 1000);
   els.scoreLine.innerHTML = "<b>" + state.score + "</b>/100" + (MODE === "practice" ? " · practice" : "");
-  if (!alreadyDone){
-    var scoreEl = els.scoreLine.querySelector("b");
-    if (scoreEl) animateCount(scoreEl, state.score, "", 900);
+  if (alreadyDone){
+    els.bigAnswer.textContent = Q.answer + "%";
+  } else {
+    // Pointless-style reveal: the big number falls slowly from 100 toward
+    // the true figure; everything else — including the ledger row with its
+    // tell-tale heat dot — holds back until it lands.
+    els.reveal.classList.add("staging");
+    els.ledger.classList.add("hidden");
+    animateCount(els.bigAnswer, Q.answer, "%", CONFIG.REVEAL_MS, 100, function(){
+      setTimeout(function(){
+        els.reveal.classList.remove("staging");
+        els.ledger.classList.remove("hidden");
+        var scoreEl = els.scoreLine.querySelector("b");
+        if (scoreEl) animateCount(scoreEl, state.score, "", 800, 0);
+      }, 350);
+    });
   }
   els.answerNote.textContent = Q.note || "";
   els.sourceNote.textContent = Q.source ? ("Source: " + Q.source) : "";
@@ -611,9 +632,26 @@ function pickQuestionForKey(key){
   return sorted[offset];
 }
 
+// ===== pre-launch holding screen =====
+function isPreLaunch(dayKey){ return daysSince(CONFIG.ANCHOR, dayKey) < 0; }
+function renderPreLaunch(){
+  var p = CONFIG.ANCHOR.split("-").map(Number);
+  var launchStr = new Intl.DateTimeFormat("en-GB", { timeZone:"UTC", weekday:"long", day:"numeric", month:"long" })
+    .format(new Date(Date.UTC(p[0], p[1]-1, p[2])));
+  els.puzzleNo.textContent = "Coming soon";
+  els.questionText.textContent = "One real polling question a day. Launches " + launchStr + ".";
+  els.guessRow.classList.add("hidden");
+  els.guessDots.classList.add("hidden");
+  els.track.parentElement.classList.add("hidden");
+  els.ledger.innerHTML = "";
+  els.reveal.classList.add("hidden");
+  els.practiceBar.classList.add("hidden");
+}
+
 // ===== game setup (daily or practice) =====
 function setupGame(dayKey, mode){
   MODE = mode;
+  if (mode === "daily" && isPreLaunch(dayKey)){ renderPreLaunch(); return; }
   CUR = { dayKey: dayKey, puzzleNo: puzzleNoForKey(dayKey), q: pickQuestionForKey(dayKey) };
   Q = CUR.q;
   state = { guesses: [], done: false, win: false, score: 0, crowdPct: null };
@@ -631,7 +669,8 @@ function setupGame(dayKey, mode){
   els.guessBtn.disabled = false;
   els.guessRow.classList.remove("hidden");
   els.guessDots.classList.remove("hidden");
-  els.track.parentElement.classList.remove("hidden");
+  // the squeeze track only earns its place when there is a second guess to aim
+  els.track.parentElement.classList.toggle("hidden", CONFIG.MAX_GUESSES < 2);
   els.input.value = "";
   els.slider.value = 50;
   els.slider.style.setProperty("--fill", "50%");
