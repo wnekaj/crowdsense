@@ -446,7 +446,8 @@
       border:1px solid var(--line); background:#fff; cursor:pointer; color:var(--muted); font-size:15px;
     }
     .legend{ display:flex; flex-direction:column; gap:6px; margin-top:8px }
-    .legend .lg{ display:flex; align-items:center; gap:10px; font-size:13.5px }
+    .legend .lg{ display:flex; align-items:center; gap:12px; font-size:13.5px }
+    .legend .chip{ flex:0 0 108px; text-align:center }
 
     /* Stats */
     .statgrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:6px 0 16px; text-align:center }
@@ -570,8 +571,8 @@
       <button class="modal-close" data-close="helpModal" aria-label="Close">✕</button>
       <h2 class="modal-title" id="helpTitle">How to play</h2>
       <div class="modal-body">
-        <p>Each day we take one real question we've polled the British public on — and you guess what percentage said it.</p>
-        <p><b>One guess.</b> No second chances — pure instinct against the real figure.</p>
+        <p>Each day we take one real question the British public have been polled on, and you guess what they said.</p>
+        <p>You have <b>one guess</b>. Use your instinct to estimate what the public think. Do you have crowdsense?</p>
         <div class="legend">
           <div class="lg"><span class="chip target">🎯 On target</span> Within 2</div>
           <div class="lg"><span class="chip hot">Hot</span> Within 5</div>
@@ -579,8 +580,8 @@
           <div class="lg"><span class="chip cool">Cool</span> Within 20</div>
           <div class="lg"><span class="chip cold">Cold</span> More than 20 away</div>
         </div>
-        <p style="margin-top:12px">Your score is simply how many points you were off — <b>0 is perfect</b>, lower is better. Within 2 is a bullseye; land within 5 to keep your streak.</p>
-        <p>New question daily at midnight, London time.</p>
+        <p style="margin-top:12px">Your score is simply how many points you were off. <b>0 is perfect</b>, lower is better. Within 2 is a bullseye; score within 5 to keep your streak.</p>
+        <p>New question daily at midnight, GMT.</p>
         <p style="margin-top:14px"><a href="https://www.publicfirst.co.uk/" target="_blank" rel="noopener" style="color:inherit">A Public First game</a> · all figures from original polling of the British public.</p>
       </div>
     </div>
