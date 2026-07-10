@@ -184,7 +184,9 @@ function recordResult(win, firstErr, finalErr, score){
 function renderStats(){
   var s = readStats();
   $("stPlayed").textContent = s.played;
-  $("stWin").textContent = s.played ? Math.round(100*s.wins/s.played) + "%" : "0%";
+  // Crowdsense score: rolling average of daily scores — how well you read
+  // the public over time, out of 100.
+  $("stWin").textContent = s.played ? String(Math.round(s.scoreSum / s.played)) : "–";
   $("stStreak").textContent = readStreak().count;
   $("stMax").textContent = parseInt(localStorage.getItem("bestStreak")||"0",10);
 
@@ -229,8 +231,7 @@ function renderStats(){
   var fe = $("firstErr");
   if (s.played){
     var avg = (s.firstErrSum / s.played).toFixed(1);
-    var avgScore = Math.round(s.scoreSum / s.played);
-    fe.innerHTML = "Your first instinct is off by <b>" + avg + "</b> points on average, and your average score is <b>" + avgScore + "</b>/100. That's your crowdsense.";
+    fe.innerHTML = "Your instinct is off by <b>" + avg + "</b> points on average. Your Crowdsense score is the average of your daily scores — how well you read the public over time.";
   } else {
     fe.textContent = "Play your first game to start measuring your crowdsense.";
   }
