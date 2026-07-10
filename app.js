@@ -313,7 +313,7 @@ function verdictFor(guesses, answer, win){
 
 // ===== crowd layer =====
 function crowdFlow(finalGuess){
-  if (!CONFIG.CROWD_API_URL || MODE !== "daily") return;
+  if (!CONFIG.CROWD_API_URL || MODE !== "daily" || isPreLaunch(DAY_KEY)) return;
   var base = String(CONFIG.CROWD_API_URL).replace(/\/+$/, "");
   var sentKey = "cs-crowd-sent-" + DAY_KEY;
   var already = false;
@@ -632,26 +632,13 @@ function pickQuestionForKey(key){
   return sorted[offset];
 }
 
-// ===== pre-launch holding screen =====
+// Before launch day the dummy question runs; it plays normally but must not
+// feed the crowd data for puzzle No. 1.
 function isPreLaunch(dayKey){ return daysSince(CONFIG.ANCHOR, dayKey) < 0; }
-function renderPreLaunch(){
-  var p = CONFIG.ANCHOR.split("-").map(Number);
-  var launchStr = new Intl.DateTimeFormat("en-GB", { timeZone:"UTC", weekday:"long", day:"numeric", month:"long" })
-    .format(new Date(Date.UTC(p[0], p[1]-1, p[2])));
-  els.puzzleNo.textContent = "Coming soon";
-  els.questionText.textContent = "One real polling question a day. Launches " + launchStr + ".";
-  els.guessRow.classList.add("hidden");
-  els.guessDots.classList.add("hidden");
-  els.track.parentElement.classList.add("hidden");
-  els.ledger.innerHTML = "";
-  els.reveal.classList.add("hidden");
-  els.practiceBar.classList.add("hidden");
-}
 
 // ===== game setup (daily or practice) =====
 function setupGame(dayKey, mode){
   MODE = mode;
-  if (mode === "daily" && isPreLaunch(dayKey)){ renderPreLaunch(); return; }
   CUR = { dayKey: dayKey, puzzleNo: puzzleNoForKey(dayKey), q: pickQuestionForKey(dayKey) };
   Q = CUR.q;
   state = { guesses: [], done: false, win: false, score: 0, crowdPct: null };
