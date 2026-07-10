@@ -19,6 +19,18 @@
 
 var CS_QUESTIONS = [
 
+  /* ---------- PRE-LAUNCH DUMMY ----------
+     Undated, so it runs on any day without a dated question — i.e. every
+     day before launch. Remove it (or leave it; it's harmless) once the
+     bank extends past 3 Aug, or it will resurface when the dates run out. */
+  {
+    date: "",
+    question: "What percentage of Brits say they would rather give up alcohol than their phone? (test question)",
+    answer: 46,
+    note: "Dummy question for pre-launch design work. The real thing starts Monday 20 July.",
+    source: "Not real polling — placeholder"
+  },
+
   /* ---------- LAUNCH WEEK: leadership race (perishable) ---------- */
   {
     date: "2026-07-20",
