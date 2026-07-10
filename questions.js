@@ -19,16 +19,16 @@
 
 var CS_QUESTIONS = [
 
-  /* ---------- PRE-LAUNCH DUMMY ----------
+  /* ---------- PRE-LAUNCH TASTER ----------
      Undated, so it runs on any day without a dated question — i.e. every
-     day before launch. Remove it (or leave it; it's harmless) once the
-     bank extends past 3 Aug, or it will resurface when the dates run out. */
+     day before launch. Swap or remove once the bank extends past 3 Aug,
+     or it will resurface when the dates run out. */
   {
     date: "",
-    question: "What percentage of Brits say they would rather give up alcohol than their phone? (test question)",
-    answer: 46,
-    note: "Dummy question for pre-launch design work. The real thing starts Monday 20 July.",
-    source: "Not real polling — placeholder"
+    question: "What percentage of Brits agreed Andy Burnham would be an improvement on Keir Starmer as Prime Minister?",
+    answer: 49,
+    note: "A pre-launch taster — the daily game proper starts Monday 20 July.",
+    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
   },
 
   /* ---------- LAUNCH WEEK: leadership race (perishable) ---------- */
