@@ -86,6 +86,7 @@ var els = {
   track: $("track"), trackWindow: $("trackWindow"), answerMarker: $("answerMarker"),
   ledger: $("ledger"),
   reveal: $("reveal"), verdict: $("verdict"), bigAnswer: $("bigAnswer"),
+  revealFill: $("revealFill"), youMarker: $("youMarker"),
   scoreLine: $("scoreLine"), answerNote: $("answerNote"), sourceNote: $("sourceNote"),
   crowdBlock: $("crowdBlock"), crowdHead: $("crowdHead"), histo: $("histo"),
   shareBtn: $("shareBtn"), countdownP: $("countdownP"), countdown: $("countdown"),
@@ -376,14 +377,15 @@ function renderCrowd(dist, myGuess){
 }
 function updateShareForCrowd(){ /* share text reads state.crowdPct at click time */ }
 
-// ===== presentation: count animation =====
-// Counts el from `from` to `to`, decelerating as it approaches — the
-// Pointless-tower effect when from=100: fast at first, agonising at the end.
-function animateCount(el, to, suffix, duration, from, onDone){
-  from = (from === undefined || from === null) ? 0 : from;
-  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduce || !window.requestAnimationFrame){
-    el.textContent = to + (suffix || "");
+// ===== presentation: reveal animations =====
+function reducedMotion(){
+  return (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) || !window.requestAnimationFrame;
+}
+// Eased value animation, decelerating hard as it approaches the target —
+// the Pointless effect: fast at first, agonising at the end.
+function animateValue(from, to, duration, onFrame, onDone){
+  if (reducedMotion()){
+    onFrame(to);
     if (onDone) onDone();
     return;
   }
@@ -392,11 +394,16 @@ function animateCount(el, to, suffix, duration, from, onDone){
     if (start === null) start = ts;
     var t = Math.min(1, (ts - start) / (duration || 1000));
     var eased = 1 - Math.pow(1 - t, 4);
-    el.textContent = Math.round(from + eased * (to - from)) + (suffix || "");
+    onFrame(from + eased * (to - from));
     if (t < 1) requestAnimationFrame(step);
     else if (onDone) onDone();
   }
   requestAnimationFrame(step);
+}
+function animateCount(el, to, suffix, duration, from, onDone){
+  animateValue((from === undefined || from === null) ? 0 : from, to, duration, function(v){
+    el.textContent = Math.round(v) + (suffix || "");
+  }, onDone);
 }
 
 // ===== finishing =====
@@ -418,15 +425,21 @@ function finishGame(alreadyDone){
   els.verdict.textContent = v.text;
   els.verdict.className = "verdict " + (state.win ? "win" : "loss");
   els.scoreLine.innerHTML = "<b>" + state.score + "</b>/100" + (MODE === "practice" ? " · practice" : "");
+  els.bigAnswer.textContent = Q.answer + "%";
+  els.youMarker.style.left = state.guesses[state.guesses.length-1] + "%";
   if (alreadyDone){
-    els.bigAnswer.textContent = Q.answer + "%";
+    els.revealFill.style.width = Q.answer + "%";
   } else {
-    // Pointless-style reveal: the big number falls slowly from 100 toward
-    // the true figure; everything else — including the ledger row with its
-    // tell-tale heat dot — holds back until it lands.
+    // Pointless-style reveal: the bar crawls along the 0-100 scale toward
+    // the true figure, decelerating as it closes in. Your guess sits on the
+    // bar as an orange line. Everything else — number, verdict, and the
+    // ledger row with its tell-tale heat dot — holds back until it stops.
     els.reveal.classList.add("staging");
     els.ledger.classList.add("hidden");
-    animateCount(els.bigAnswer, Q.answer, "%", CONFIG.REVEAL_MS, 100, function(){
+    els.revealFill.style.width = "0%";
+    animateValue(0, Q.answer, CONFIG.REVEAL_MS, function(v){
+      els.revealFill.style.width = v + "%";
+    }, function(){
       setTimeout(function(){
         els.reveal.classList.remove("staging");
         els.ledger.classList.remove("hidden");
@@ -438,11 +451,6 @@ function finishGame(alreadyDone){
   els.answerNote.textContent = Q.note || "";
   els.sourceNote.textContent = Q.source ? ("Source: " + Q.source) : "";
   els.reveal.classList.remove("hidden");
-
-  // sweep the true figure onto the track (line only — the big number carries the value)
-  els.answerMarker.removeAttribute("data-v");
-  els.answerMarker.classList.remove("hidden");
-  requestAnimationFrame(function(){ els.answerMarker.style.left = Q.answer + "%"; });
 
   setKickerForTurn();
   if (MODE === "daily"){
