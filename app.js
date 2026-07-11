@@ -316,15 +316,20 @@ function verdictFor(guesses, answer, win){
 
 // ===== crowd layer =====
 function crowdFlow(finalGuess){
-  if (!CONFIG.CROWD_API_URL || MODE !== "daily" || isPreLaunch(DAY_KEY)) return;
+  if (!CONFIG.CROWD_API_URL || MODE !== "daily") return;
   var base = String(CONFIG.CROWD_API_URL).replace(/\/+$/, "");
+  // Pre-launch taster days record under high test IDs (99990, 99991, ...)
+  // so real puzzle numbers start clean on launch day.
+  var crowdPuzzle = isPreLaunch(DAY_KEY)
+    ? 100000 + daysSince(CONFIG.ANCHOR, DAY_KEY)
+    : CUR.puzzleNo;
   var sentKey = "cs-crowd-sent-" + DAY_KEY;
   var already = false;
   try{ already = !!localStorage.getItem(sentKey); }catch(_){}
 
   var p;
   if (already){
-    p = fetch(base + "/dist?puzzle=" + CUR.puzzleNo).then(function(r){
+    p = fetch(base + "/dist?puzzle=" + crowdPuzzle).then(function(r){
       if (!r.ok) throw new Error("HTTP " + r.status);
       return r.json();
     });
@@ -332,7 +337,7 @@ function crowdFlow(finalGuess){
     p = fetch(base + "/guess", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ puzzle: CUR.puzzleNo, guess: finalGuess })
+      body: JSON.stringify({ puzzle: crowdPuzzle, guess: finalGuess })
     }).then(function(r){
       if (!r.ok) throw new Error("HTTP " + r.status);
       try{ localStorage.setItem(sentKey, "1"); }catch(_){}
