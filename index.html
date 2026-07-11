@@ -630,12 +630,12 @@
     // Site configuration — overrides the defaults in app.js, so you never
     // need to edit that file. See worker/README.md for the crowd layer.
     window.CS_CONFIG = Object.assign({
-      ANCHOR: "2026-07-20",              // launch day — puzzle No. 1 (site shows a holding page before this)
-      CROWD_API_URL: ""                  // paste your Cloudflare Worker URL to turn on the crowd layer
+      ANCHOR: "2026-07-20",              // launch day — puzzle No. 1 (a taster question runs before this)
+      CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=12"></script>
-  <script src="app.js?v=12"></script>
+  <script src="questions.js?v=13"></script>
+  <script src="app.js?v=13"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
