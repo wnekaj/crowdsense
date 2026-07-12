@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Crowdsense — daily email composer</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='white'/%3E%3Crect x='14' y='14' width='30' height='12' fill='black'/%3E%3Crect x='38' y='14' width='12' height='30' fill='black'/%3E%3Crect x='14' y='32' width='12' height='12' fill='%23F26522'/%3E%3C/svg%3E" />
+  <style>
+    :root{
+      --ink:#121212; --muted:#787c7e; --line:#d3d6da; --hairline:#e3e5e8;
+      --accent:#f26522; --accent-deep:#d5541a;
+      --sans:"Libre Franklin", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    *{ box-sizing:border-box }
+    body{ margin:0; font-family:var(--sans); color:var(--ink); background:#fff;
+          display:flex; flex-direction:column; align-items:center; padding:0 0 60px }
+    .wrap{ width:min(640px,94vw) }
+    .brand{ font-weight:500; font-size:17px; letter-spacing:.14em; text-transform:uppercase; margin:20px 0 2px }
+    .brand span{ color:var(--accent) }
+    .sub{ color:var(--muted); font-size:12px; letter-spacing:.1em; text-transform:uppercase; margin-bottom:24px }
+    label{ display:block; font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:18px 0 6px }
+    input[type=date]{
+      font-family:inherit; font-size:15px; padding:8px 10px;
+      border:1px solid var(--line); border-radius:4px; color:var(--ink);
+    }
+    .field{
+      width:100%; font-family:inherit; font-size:14.5px; line-height:1.55; color:var(--ink);
+      border:1px solid var(--line); border-radius:4px; padding:12px;
+      background:#fff;
+    }
+    textarea.field{ min-height:270px; resize:vertical }
+    .row{ display:flex; align-items:center; justify-content:space-between; gap:10px }
+    .copybtn{
+      border:none; border-radius:4px; padding:8px 14px; cursor:pointer;
+      background:var(--accent); color:#fff; font-weight:500; font-size:13px;
+      transition:background .15s ease;
+    }
+    .copybtn:hover{ background:var(--accent-deep) }
+    .note{ color:var(--muted); font-size:12.5px; line-height:1.5; margin-top:8px }
+    .warn{ color:var(--accent-deep); font-size:13px; margin-top:10px }
+    .meta{ color:var(--muted); font-size:13px; margin-top:6px; font-variant-numeric:tabular-nums }
+    .toast{
+      position:fixed; left:50%; top:18px; transform:translate(-50%,-8px);
+      background:var(--ink); color:#fff; font-size:13px; padding:8px 14px; border-radius:4px;
+      opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease;
+    }
+    .toast.show{ opacity:1; transform:translate(-50%,0) }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">Crowdsense<span>.</span> <span style="color:var(--muted);letter-spacing:.06em;text-transform:none;font-weight:400">/ email composer</span></div>
+    <div class="sub">Internal tool — writes the daily subscriber email for pasting into Buttondown or Mailchimp</div>
+
+    <label for="day">Email for the morning of</label>
+    <input type="date" id="day" />
+    <div class="meta" id="meta"></div>
+    <div class="warn" id="warn"></div>
+
+    <label>Subject</label>
+    <div class="row">
+      <input class="field" id="subject" readonly />
+      <button class="copybtn" data-copy="subject" type="button">Copy</button>
+    </div>
+
+    <label>Body</label>
+    <textarea class="field" id="body" readonly></textarea>
+    <div class="row" style="justify-content:flex-end;margin-top:8px">
+      <button class="copybtn" data-copy="body" type="button">Copy</button>
+    </div>
+
+    <p class="note">The body never contains the day's answer — only the question (plus yesterday's answer as a hook once there is one). Buttondown and Mailchimp append the legally required unsubscribe link automatically, so don't add one by hand. This page is unlisted but public; it reveals nothing a player couldn't already see.</p>
+  </div>
+
+  <div class="toast" id="toast">Copied</div>
+
+  <script>
+    // Keep in sync with CS_CONFIG in index.html
+    var ANCHOR = "2026-07-20";
+    var SITE_URL = "https://crowdsense.uk/";
+  </script>
+  <script src="questions.js?v=14"></script>
+  <script>
+  (function(){
+    function $(id){ return document.getElementById(id); }
+    function pad(n){ return String(n).padStart(2,"0"); }
+    function todayKeyLondon(){
+      var p = new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/London",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
+      var o = {}; p.forEach(function(x){ o[x.type]=x.value; });
+      return o.year+"-"+o.month+"-"+o.day;
+    }
+    function daysSince(aKey,bKey){
+      var a=aKey.split("-").map(Number), b=bKey.split("-").map(Number);
+      return Math.floor(Date.UTC(b[0],b[1]-1,b[2])/86400000)-Math.floor(Date.UTC(a[0],a[1]-1,a[2])/86400000);
+    }
+    function shiftKey(key,days){
+      var p=key.split("-").map(Number);
+      var d=new Date(Date.UTC(p[0],p[1]-1,p[2]));
+      d.setUTCDate(d.getUTCDate()+days);
+      return d.toISOString().slice(0,10);
+    }
+    function pickForKey(key){
+      var dated = CS_QUESTIONS.filter(function(q){ return (q.date||"")===key; });
+      if (dated.length) return dated[0];
+      var pool = CS_QUESTIONS.filter(function(q){ return !(q.date||"").length; });
+      if (!pool.length) pool = CS_QUESTIONS;
+      var sorted = pool.slice().sort(function(a,b){
+        var x=String(a.question).toLowerCase(), y=String(b.question).toLowerCase();
+        return x<y?-1:(x>y?1:0);
+      });
+      return sorted[Math.abs(daysSince(ANCHOR,key)) % sorted.length];
+    }
+    function hasDated(key){
+      return CS_QUESTIONS.some(function(q){ return (q.date||"")===key; });
+    }
+    function fmtLong(key){
+      var p=key.split("-").map(Number);
+      return new Intl.DateTimeFormat("en-GB",{timeZone:"UTC",weekday:"long",day:"numeric",month:"long"}).format(new Date(Date.UTC(p[0],p[1]-1,p[2])));
+    }
+
+    function build(){
+      var key = $("day").value;
+      if (!key) return;
+      var no = daysSince(ANCHOR,key)+1;
+      var pre = no < 1;
+      var q = pickForKey(key);
+      var warn = "";
+      if (pre) warn = "Pre-launch date — this is the taster question, not a numbered puzzle.";
+      else if (!hasDated(key)) warn = "No dated question for this day — the fallback rotation would run. Top up questions.js!";
+      $("warn").textContent = warn;
+      $("meta").textContent = (pre ? "Taster" : "Puzzle No. " + no) + " · " + fmtLong(key);
+
+      var subject = pre
+        ? "Crowdsense — today's taster question"
+        : "Crowdsense No. " + no + " — can you read the public?";
+
+      var lines = [];
+      lines.push("Today's question:");
+      lines.push("");
+      lines.push("“" + q.question + "”");
+      lines.push("");
+      lines.push("One guess. The closer the better. Play now: " + SITE_URL);
+
+      // yesterday's answer as the hook, once yesterday was a real (dated) puzzle
+      var yKey = shiftKey(key,-1);
+      if (hasDated(yKey)){
+        var yq = pickForKey(yKey);
+        lines.push("");
+        lines.push("Yesterday: " + yq.answer + "% — " + yq.question.replace(/^What percentage (of\s+)?/i,"").replace(/\?$/,"") + ". Were you close?");
+      }
+      lines.push("");
+      lines.push("—");
+      lines.push("Crowdsense is a Public First game. You're getting this because you subscribed at crowdsense.uk.");
+
+      $("subject").value = subject;
+      $("body").value = lines.join("\n");
+    }
+
+    var toastTimer=null;
+    function toast(msg){
+      var t=$("toast"); t.textContent=msg; t.classList.add("show");
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer=setTimeout(function(){ t.classList.remove("show"); },1600);
+    }
+    document.addEventListener("click",function(e){
+      var b=e.target.closest("[data-copy]");
+      if(!b) return;
+      var el=$(b.getAttribute("data-copy"));
+      el.select ? el.select() : null;
+      var text=el.value;
+      function done(){ toast("Copied"); }
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done).catch(function(){
+          document.execCommand("copy"); done();
+        });
+      } else { document.execCommand("copy"); done(); }
+    });
+
+    $("day").value = todayKeyLondon();
+    $("day").addEventListener("input", build);
+    build();
+  })();
+  </script>
+</body>
+</html>
