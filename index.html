@@ -427,6 +427,13 @@
     }
     .email-btn:hover{ color:var(--ink) }
     .email-msg{ font-size:12px; color:var(--muted); width:100%; margin-top:4px }
+    .privacy{ margin:14px 0 0 }
+    .linkbtn{
+      border:none; background:transparent; cursor:pointer;
+      color:var(--muted); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+      padding:4px; font-family:inherit;
+    }
+    .linkbtn:hover{ color:var(--ink) }
 
     /* ---------- Modals ---------- */
     .modal-root{ position:fixed; inset:0; z-index:60 }
@@ -564,6 +571,7 @@
         <button type="submit" class="email-btn">Subscribe</button>
         <span id="emailMsg" class="email-msg" role="status" aria-live="polite"></span>
       </form>
+      <p class="privacy"><button type="button" id="privacyBtn" class="linkbtn">Privacy</button></p>
     </div>
   </main>
 
@@ -587,7 +595,24 @@
         </div>
         <p style="margin-top:12px">Your score is simply how many points you were off. <b>0 is perfect</b>, lower is better. Within 2 is a bullseye; score within 5 to keep your streak.</p>
         <p>New question daily at midnight, GMT.</p>
-        <p style="margin-top:14px"><a href="https://www.publicfirst.co.uk/" target="_blank" rel="noopener" style="color:inherit">A Public First game</a> · all figures from original polling of the British public.</p>
+        <p style="margin-top:14px">All figures from original polling of the British public.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Privacy -->
+  <div id="privacyModal" class="modal-root hidden" role="dialog" aria-modal="true" aria-labelledby="privacyTitle">
+    <div class="modal-backdrop" data-close="privacyModal"></div>
+    <div class="modal-card">
+      <button class="modal-close" data-close="privacyModal" aria-label="Close">✕</button>
+      <h2 class="modal-title" id="privacyTitle">Privacy</h2>
+      <div class="modal-body">
+        <p>Crowdsense is a game by <a href="https://www.publicfirst.co.uk/" target="_blank" rel="noopener" style="color:inherit">Public First</a>. We keep data collection to the minimum needed to run it.</p>
+        <p><b>Your guess.</b> When you play, the number you guess is sent to our server and pooled anonymously with everyone else's, so we can show how you compare with the crowd. It isn't linked to your name, your email, or any identifier.</p>
+        <p><b>Your stats.</b> Your streak, scores and history are stored only in your own browser, never sent to us. Clearing your browser data resets them.</p>
+        <p><b>Email.</b> If you subscribe, we store your address (via Formspree) solely to send you the daily question. There's an unsubscribe link in every email, or reply to any email and we'll remove you.</p>
+        <p><b>Analytics.</b> We use GoatCounter, a privacy-friendly tool that counts visits without cookies and without tracking you across sites.</p>
+        <p>Questions or a removal request: <a href="mailto:hello@crowdsense.uk" style="color:inherit">hello@crowdsense.uk</a>.</p>
       </div>
     </div>
   </div>
@@ -635,8 +660,8 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=14"></script>
-  <script src="app.js?v=14"></script>
+  <script src="questions.js?v=15"></script>
+  <script src="app.js?v=15"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });

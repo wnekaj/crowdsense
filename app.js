@@ -91,7 +91,7 @@ var els = {
   crowdBlock: $("crowdBlock"), crowdHead: $("crowdHead"), histo: $("histo"),
   shareBtn: $("shareBtn"), countdownP: $("countdownP"), countdown: $("countdown"),
   toast: $("toast"),
-  helpBtn: $("helpBtn"), statsBtn: $("statsBtn"), archiveBtn: $("archiveBtn"),
+  helpBtn: $("helpBtn"), statsBtn: $("statsBtn"), archiveBtn: $("archiveBtn"), privacyBtn: $("privacyBtn"),
   archiveList: $("archiveList"),
   emailForm: $("emailForm"), emailInput: $("emailInput"), emailMsg: $("emailMsg")
 };
@@ -625,11 +625,12 @@ document.addEventListener("click", function(e){
   if (t) closeModal(t.getAttribute("data-close"));
 });
 document.addEventListener("keydown", function(e){
-  if (e.key === "Escape"){ closeModal("helpModal"); closeModal("statsModal"); closeModal("archiveModal"); }
+  if (e.key === "Escape"){ closeModal("helpModal"); closeModal("statsModal"); closeModal("archiveModal"); closeModal("privacyModal"); }
 });
 if (els.helpBtn) els.helpBtn.addEventListener("click", function(){ openModal("helpModal"); });
 if (els.statsBtn) els.statsBtn.addEventListener("click", function(){ renderStats(); openModal("statsModal"); });
 if (els.archiveBtn) els.archiveBtn.addEventListener("click", function(){ renderArchive(); openModal("archiveModal"); });
+if (els.privacyBtn) els.privacyBtn.addEventListener("click", function(){ openModal("privacyModal"); });
 
 // ===== archive / practice =====
 function renderArchive(){
