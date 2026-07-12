@@ -553,6 +553,23 @@ function shareText(){
   lines.push(CONFIG.SITE_URL);
   return lines.join("\n");
 }
+// Fallback copy for insecure contexts and older browsers, where the
+// share/clipboard APIs don't exist.
+function legacyCopy(text){
+  try{
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    var ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  }catch(_){ return false; }
+}
 function doShare(){
   var text = shareText();
   if (navigator.share){
@@ -562,10 +579,14 @@ function doShare(){
   if (navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(text)
       .then(function(){ toast("Result copied — paste it anywhere"); })
-      .catch(function(){ toast("Couldn't copy — select and copy manually"); });
-  } else {
-    toast("Sharing not supported in this browser");
+      .catch(function(){
+        if (legacyCopy(text)) toast("Result copied — paste it anywhere");
+        else toast("Couldn't copy — select and copy manually");
+      });
+    return;
   }
+  if (legacyCopy(text)) toast("Result copied — paste it anywhere");
+  else toast("Couldn't copy — select and copy manually");
 }
 
 // ===== countdown to next question (London midnight) =====
