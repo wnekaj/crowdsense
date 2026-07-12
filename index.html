@@ -607,12 +607,11 @@
       <button class="modal-close" data-close="privacyModal" aria-label="Close">✕</button>
       <h2 class="modal-title" id="privacyTitle">Privacy</h2>
       <div class="modal-body">
-        <p>Crowdsense is a game by <a href="https://www.publicfirst.co.uk/" target="_blank" rel="noopener" style="color:inherit">Public First</a>. We keep data collection to the minimum needed to run it.</p>
+        <p>We keep data collection to the minimum needed to run the game.</p>
         <p><b>Your guess.</b> When you play, the number you guess is sent to our server and pooled anonymously with everyone else's, so we can show how you compare with the crowd. It isn't linked to your name, your email, or any identifier.</p>
         <p><b>Your stats.</b> Your streak, scores and history are stored only in your own browser, never sent to us. Clearing your browser data resets them.</p>
-        <p><b>Email.</b> If you subscribe, we store your address (via Formspree) solely to send you the daily question. There's an unsubscribe link in every email, or reply to any email and we'll remove you.</p>
-        <p><b>Analytics.</b> We use GoatCounter, a privacy-friendly tool that counts visits without cookies and without tracking you across sites.</p>
-        <p>Questions or a removal request: <a href="mailto:hello@crowdsense.uk" style="color:inherit">hello@crowdsense.uk</a>.</p>
+        <p><b>Email.</b> If you subscribe, we store your address solely to send you the daily question. There's an unsubscribe link in every email.</p>
+        <p><b>Analytics.</b> We use privacy-friendly analytics that count visits without cookies and without tracking you across sites.</p>
       </div>
     </div>
   </div>
@@ -660,8 +659,8 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=15"></script>
-  <script src="app.js?v=15"></script>
+  <script src="questions.js?v=16"></script>
+  <script src="app.js?v=16"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
