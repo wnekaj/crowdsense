@@ -169,7 +169,7 @@ function readStats(){
     var raw = localStorage.getItem("cs-stats");
     if (raw){ var s = JSON.parse(raw); if (s && typeof s.played === "number") return s; }
   }catch(_){}
-  return { played:0, wins:0, tiers:{target:0,hot:0,warm:0,cool:0,cold:0}, firstErrSum:0, scoreSum:0 };
+  return { played:0, wins:0, tiers:{target:0,hot:0,warm:0,cool:0,cold:0}, firstErrSum:0, scoreSum:0, best:null };
 }
 function writeStats(s){ try{ localStorage.setItem("cs-stats", JSON.stringify(s)); }catch(_){} }
 function recordResult(win, firstErr, finalErr, score){
@@ -180,6 +180,8 @@ function recordResult(win, firstErr, finalErr, score){
   s.tiers[t] = (s.tiers[t]||0) + 1;
   s.firstErrSum += firstErr;
   s.scoreSum += score;
+  // best day: the lowest score (0 = read the public perfectly)
+  s.best = (s.best === null || s.best === undefined) ? score : Math.min(s.best, score);
   writeStats(s);
 }
 function renderStats(){
@@ -189,7 +191,8 @@ function renderStats(){
   // Lower is better; 0 means you read the public perfectly.
   $("stWin").textContent = s.played ? String(Math.round((s.scoreSum / s.played) * 10) / 10) : "–";
   $("stStreak").textContent = readStreak().count;
-  $("stMax").textContent = parseInt(localStorage.getItem("bestStreak")||"0",10);
+  // Best = your lowest daily score; 0 is a perfect day
+  $("stMax").textContent = (s.best === null || s.best === undefined) ? "–" : String(s.best);
 
   var rows = $("distRows");
   rows.innerHTML = "";
