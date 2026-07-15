@@ -531,7 +531,10 @@ function submitGuess(){
 }
 
 // ===== share =====
-function shareText(){
+// includeUrl=false leaves the link out of the text — used with the native
+// share sheet, where the URL travels as its own field so the target renders
+// a proper link preview (site icon, OG card) instead of a plain-text glyph.
+function shareText(includeUrl){
   var lines = [];
   var title = "Crowdsense No. " + CUR.puzzleNo + " — " + state.score + " off";
   if (MODE === "practice") title += " (practice)";
@@ -550,7 +553,7 @@ function shareText(){
     var s = readStreak();
     if (state.win && s.count > 1) lines.push("🔥 " + s.count + " day streak");
   }
-  lines.push(CONFIG.SITE_URL);
+  if (includeUrl !== false) lines.push(CONFIG.SITE_URL);
   return lines.join("\n");
 }
 // Fallback copy for insecure contexts and older browsers, where the
@@ -571,11 +574,11 @@ function legacyCopy(text){
   }catch(_){ return false; }
 }
 function doShare(){
-  var text = shareText();
   if (navigator.share){
-    navigator.share({ text: text }).catch(function(){});
+    navigator.share({ title: "Crowdsense", text: shareText(false), url: CONFIG.SITE_URL }).catch(function(){});
     return;
   }
+  var text = shareText();
   if (navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(text)
       .then(function(){ toast("Result copied — paste it anywhere"); })
