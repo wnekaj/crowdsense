@@ -635,40 +635,100 @@ document.addEventListener("keydown", function(e){
 });
 if (els.helpBtn) els.helpBtn.addEventListener("click", function(){ openModal("helpModal"); });
 if (els.statsBtn) els.statsBtn.addEventListener("click", function(){ renderStats(); openModal("statsModal"); });
-if (els.archiveBtn) els.archiveBtn.addEventListener("click", function(){ renderArchive(); openModal("archiveModal"); });
+if (els.archiveBtn) els.archiveBtn.addEventListener("click", function(){ calY = null; renderArchive(); openModal("archiveModal"); });
 if (els.privacyBtn) els.privacyBtn.addEventListener("click", function(){ openModal("privacyModal"); });
 
 // ===== archive / practice =====
+// A month calendar: past puzzle days are clickable and open that day's
+// question in practice mode. Days you've completed carry a small dot.
+var calY = null, calM = null; // displayed month; reset each time the modal opens
+
+function monthKeyOf(y, m){ return y + "-" + String(m).padStart(2, "0"); }
+
 function renderArchive(){
   var list = els.archiveList;
   list.innerHTML = "";
-  var past = PUZZLE_NO - 1;
-  if (past < 1){
+  if (PUZZLE_NO <= 1){
     var p = document.createElement("p");
     p.className = "archive-empty";
-    p.textContent = "No past questions yet — today's is No. 1. Come back tomorrow and this shelf starts filling up.";
+    p.textContent = "No past questions yet — today's is No. 1. Come back tomorrow and the calendar starts filling up.";
     list.appendChild(p);
     return;
   }
-  var shown = Math.min(past, 60);
-  for (var n = past; n > past - shown; n--){
-    (function(n){
-      var key = keyForPuzzle(n);
-      var q = pickQuestionForKey(key);
-      var row = document.createElement("button");
-      row.type = "button";
-      row.className = "archiverow";
-      row.innerHTML =
-        '<span class="ano">No. ' + n + '</span>' +
-        '<span class="adate">' + formatKey(key) + '</span>' +
-        '<span class="aq">' + q.question + '</span>';
-      row.addEventListener("click", function(){
-        closeModal("archiveModal");
-        setupGame(key, "practice");
-      });
-      list.appendChild(row);
-    })(n);
+  if (calY === null){
+    var tp = DAY_KEY.split("-").map(Number);
+    calY = tp[0]; calM = tp[1];
   }
+  renderCalendar();
+}
+
+function renderCalendar(){
+  var list = els.archiveList;
+  list.innerHTML = "";
+  var anchorMK = CONFIG.ANCHOR.slice(0, 7);
+  var todayMK = DAY_KEY.slice(0, 7);
+  var curMK = monthKeyOf(calY, calM);
+
+  var head = document.createElement("div");
+  head.className = "calhead";
+  var prev = document.createElement("button");
+  prev.type = "button"; prev.className = "calnav"; prev.textContent = "‹";
+  prev.setAttribute("aria-label", "Previous month");
+  prev.disabled = curMK <= anchorMK;
+  prev.addEventListener("click", function(){ calM--; if (calM < 1){ calM = 12; calY--; } renderCalendar(); });
+  var label = document.createElement("span");
+  label.className = "callabel";
+  label.textContent = new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", month: "long", year: "numeric" })
+    .format(new Date(Date.UTC(calY, calM - 1, 1)));
+  var next = document.createElement("button");
+  next.type = "button"; next.className = "calnav"; next.textContent = "›";
+  next.setAttribute("aria-label", "Next month");
+  next.disabled = curMK >= todayMK;
+  next.addEventListener("click", function(){ calM++; if (calM > 12){ calM = 1; calY++; } renderCalendar(); });
+  head.appendChild(prev); head.appendChild(label); head.appendChild(next);
+  list.appendChild(head);
+
+  var grid = document.createElement("div");
+  grid.className = "calgrid";
+  ["M","T","W","T","F","S","S"].forEach(function(w){
+    var el = document.createElement("span");
+    el.className = "calwd"; el.textContent = w;
+    grid.appendChild(el);
+  });
+  var firstDow = (new Date(Date.UTC(calY, calM - 1, 1)).getUTCDay() + 6) % 7; // Monday first
+  for (var i = 0; i < firstDow; i++) grid.appendChild(document.createElement("span"));
+  var daysInMonth = new Date(Date.UTC(calY, calM, 0)).getUTCDate();
+  for (var d = 1; d <= daysInMonth; d++){
+    var key = curMK + "-" + String(d).padStart(2, "0");
+    var cell = document.createElement("button");
+    cell.type = "button";
+    cell.className = "cal-day";
+    cell.textContent = d;
+    var playable = key >= CONFIG.ANCHOR && key < DAY_KEY;
+    if (key === DAY_KEY){
+      cell.classList.add("today");
+      cell.disabled = true;
+      cell.title = "Today's question";
+    } else if (!playable){
+      cell.classList.add("off");
+      cell.disabled = true;
+    } else {
+      cell.classList.add("avail");
+      cell.title = "No. " + puzzleNoForKey(key);
+      try{
+        var st = JSON.parse(localStorage.getItem("cs-state-" + key) || "null");
+        if (st && st.done) cell.classList.add("done");
+      }catch(_){}
+      (function(k){
+        cell.addEventListener("click", function(){
+          closeModal("archiveModal");
+          setupGame(k, "practice");
+        });
+      })(key);
+    }
+    grid.appendChild(cell);
+  }
+  list.appendChild(grid);
 }
 
 // ===== question selection (same question for everyone, everywhere) =====
