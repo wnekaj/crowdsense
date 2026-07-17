@@ -184,6 +184,31 @@ function recordResult(win, firstErr, finalErr, score){
   s.best = (s.best === null || s.best === undefined) ? score : Math.min(s.best, score);
   writeStats(s);
 }
+// Recompute the best (lowest) daily score from the per-day game states in
+// localStorage. Fixes players whose 'best' was seeded from their first game
+// after the field was introduced rather than from their true history.
+function reconcileBestFromHistory(){
+  try{
+    var s = readStats();
+    if (!s.played) return;
+    var best = null;
+    for (var i = 0; i < localStorage.length; i++){
+      var k = localStorage.key(i);
+      if (!k || k.indexOf("cs-state-") !== 0) continue;
+      var st = JSON.parse(localStorage.getItem(k) || "null");
+      if (!st || !st.done || !st.guesses || !st.guesses.length) continue;
+      var q = pickQuestionForKey(k.slice(9));
+      if (!q) continue;
+      var sc = computeScore(st.guesses, q.answer);
+      if (best === null || sc < best) best = sc;
+    }
+    if (best !== null && (s.best === null || s.best === undefined || best < s.best)){
+      s.best = best;
+      writeStats(s);
+    }
+  }catch(_){}
+}
+
 function renderStats(){
   var s = readStats();
   $("stPlayed").textContent = s.played;
@@ -892,6 +917,7 @@ function loadQuestions(){
     BANK = bank;
 
     resetStreakIfSkippedDay();
+    reconcileBestFromHistory();
     startDailyTicker();
     updateStreakBadge();
     setupGame(DAY_KEY, "daily");
