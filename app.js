@@ -210,10 +210,12 @@ function renderStats(){
     var row = document.createElement("div");
     row.className = "distrow";
     var lab = document.createElement("span"); lab.className = "g"; lab.textContent = t.label;
+    var wrap = document.createElement("div"); wrap.className = "distwrap";
     var bar = document.createElement("div"); bar.className = "distbar " + t.cls + (n ? "" : " zero");
     bar.style.width = Math.max(9, Math.round(100*n/max)) + "%";
     bar.textContent = n;
-    row.appendChild(lab); row.appendChild(bar);
+    wrap.appendChild(bar);
+    row.appendChild(lab); row.appendChild(wrap);
     rows.appendChild(row);
   });
 
@@ -234,7 +236,7 @@ function renderStats(){
 
   var fe = $("firstErr");
   if (s.played){
-    fe.innerHTML = "Your Crowdsense score is how far off you are on an average day — <b>lower is better</b>, and 0 means you read the public perfectly.";
+    fe.innerHTML = "Your Crowdsense score is how far off you are on an average day — <b>lower is better</b>.";
   } else {
     fe.textContent = "Play your first game to start measuring your crowdsense.";
   }
