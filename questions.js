@@ -26,7 +26,7 @@ var CS_QUESTIONS = [
     date: "2026-07-20",  // Day 1
     question: "What percentage of the public think Andy Burnham will be a good leader?",
     answer: 40,
-    note: "Just 20% say bad. Another 25% sit on the fence.",
+    note: "Just 20% say bad. Come back tomorrow for another question.",
     source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
   },
   {
