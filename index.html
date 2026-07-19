@@ -40,12 +40,13 @@
       --accent-deep:#d5541a;
       --accent-soft:#fdeee4;
       /* heat scale — muted, editorial tones; one saturation family */
-      --cold:#8a9bb4;   /* dusty slate */
-      --cool:#c4ad62;   /* sand */
-      --warm:#d98e54;   /* soft apricot */
-      --hot:#c26d5c;    /* terracotta */
-      --win:#7a9e7e;    /* sage */
-      --win-soft:#eef4ef;
+      --cold:#c26d5c;   /* terracotta — Under a rock */
+      --cool:#d98e54;   /* soft apricot — Out of touch */
+      --warm:#c4ad62;   /* sand — In the mix */
+      --hot:#7a9e7e;    /* sage — Common touch */
+      --win:#c9a13b;    /* gold — On the pulse */
+      --win-grad:linear-gradient(135deg,#e2c467 0%,#c9a13b 55%,#ab822e 100%);
+      --win-soft:#f7f1e0;
       --radius:4px;
       --display:"Libre Franklin", "Helvetica Neue", Helvetica, Arial, sans-serif;
       --sans:"Libre Franklin", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -256,7 +257,7 @@
     .hdot.cool{ background:var(--cool) }
     .hdot.warm{ background:var(--warm) }
     .hdot.hot{ background:var(--hot) }
-    .hdot.target{ background:var(--win) }
+    .hdot.target{ background:var(--win-grad) }
     /* chips remain for the how-to modal legend only */
     .chip{
       font-size:12px; font-weight:500; letter-spacing:.3px;
@@ -266,7 +267,7 @@
     .chip.cool{ background:var(--cool) }
     .chip.warm{ background:var(--warm) }
     .chip.hot{ background:var(--hot) }
-    .chip.target{ background:var(--win) }
+    .chip.target{ background:var(--win-grad) }
 
     /* ---------- Reveal panel ---------- */
     .reveal{
@@ -504,7 +505,7 @@
       border-radius:2px; padding:2px 7px; min-width:20px; text-align:right;
       transition:width .4s ease;
     }
-    .distbar.target{ background:var(--win) }
+    .distbar.target{ background:var(--win-grad) }
     .distbar.hot{ background:var(--hot) }
     .distbar.warm{ background:var(--warm) }
     .distbar.cool{ background:var(--cool) }
