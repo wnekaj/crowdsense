@@ -122,8 +122,8 @@ function loadState(){
 function heat(err){
   if (err <= 2)  return { cls:"target", label:"On the pulse",  emoji:"🎯" };
   if (err <= 5)  return { cls:"hot",    label:"Hot",  emoji:"🟩" };
-  if (err <= 10) return { cls:"warm",   label:"Warm",    emoji:"🟨" };
-  if (err <= 20) return { cls:"cool",   label:"Cold",  emoji:"🟧" };
+  if (err <= 15) return { cls:"warm",   label:"Warm",    emoji:"🟨" };
+  if (err <= 25) return { cls:"cool",   label:"Cold",  emoji:"🟧" };
   return           { cls:"cold",   label:"Out of touch", emoji:"🟥" };
 }
 
@@ -159,8 +159,13 @@ function updateStreakBadge(){
   if (!els.streakBadge) return;
   var s = readStreak();
   var show = s.count > 0 && (s.last === DAY_KEY || s.last === getYesterdayKey(DAY_KEY));
-  els.streakBadge.classList.toggle("hidden", !show);
-  if (show) els.streakBadge.textContent = "🔥 " + s.count;
+  // a bang-on day (best score of 0) earns the trophy for good
+  var trophy = readStats().best === 0;
+  els.streakBadge.classList.toggle("hidden", !show && !trophy);
+  var parts = [];
+  if (show) parts.push("🔥 " + s.count);
+  if (trophy) parts.push("🏆");
+  els.streakBadge.textContent = parts.join(" ");
 }
 
 // ===== stats =====
@@ -337,8 +342,8 @@ function verdictFor(guesses, answer, win){
   var errF = Math.abs(guesses[guesses.length-1] - answer);
   if (errF <= 2)  return { text: "Dead on." };
   if (errF <= 5)  return { text: "Sharp." };
-  if (errF <= 10) return { text: "Close." };
-  if (errF <= 20) return { text: "Warm-ish." };
+  if (errF <= 15) return { text: "Close." };
+  if (errF <= 25) return { text: "In the mix." };
   return { text: "The public surprised you." };
 }
 
@@ -517,8 +522,8 @@ function finishGame(alreadyDone){
       } else {
         writeStreak(0, DAY_KEY);
       }
-      updateStreakBadge();
       recordResult(state.win, err1, errF, state.score);
+      updateStreakBadge();
       saveState();
     }
     crowdFlow(state.guesses[state.guesses.length-1]);
