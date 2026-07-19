@@ -123,8 +123,8 @@ function heat(err){
   if (err <= 2)  return { cls:"target", label:"On the pulse",  emoji:"🎯" };
   if (err <= 5)  return { cls:"hot",    label:"Common touch",  emoji:"🟩" };
   if (err <= 10) return { cls:"warm",   label:"In the mix",    emoji:"🟨" };
-  if (err <= 20) return { cls:"cool",   label:"Out of touch",  emoji:"🟧" };
-  return           { cls:"cold",   label:"Under a rock", emoji:"🟥" };
+  if (err <= 20) return { cls:"cool",   label:"Westminster bubble",  emoji:"🟧" };
+  return           { cls:"cold",   label:"Out of touch", emoji:"🟥" };
 }
 
 // ===== scoring =====
@@ -225,8 +225,8 @@ function renderStats(){
     { cls:"target", label:"🎯 On the pulse" },
     { cls:"hot",    label:"Common touch" },
     { cls:"warm",   label:"In the mix" },
-    { cls:"cool",   label:"Out of touch" },
-    { cls:"cold",   label:"Under a rock" }
+    { cls:"cool",   label:"Westminster bubble" },
+    { cls:"cold",   label:"Out of touch" }
   ];
   var max = 1;
   tiers.forEach(function(t){ max = Math.max(max, s.tiers[t.cls]||0); });
