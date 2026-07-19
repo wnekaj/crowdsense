@@ -13,8 +13,8 @@
 var CS_QUESTIONS = [
 
   /* ---------- PRE-LAUNCH TASTER (also the fallback if dates run out) ----------
-     Note: intentionally the same question as Day 1 — early taster players
-     will already know the answer on launch day. Owner's call. */
+     Note: intentionally the same question as Day 2 — early taster players
+     will already know that day's answer. Owner's call. */
   {
     date: "",
     question: "What percentage of Brits agreed Andy Burnham would be an improvement on Keir Starmer as Prime Minister?",
@@ -25,16 +25,16 @@ var CS_QUESTIONS = [
 
   {
     date: "2026-07-20",  // Day 1
-    question: "What percentage of Brits agree that Andy Burnham will be an improvement on Keir Starmer as PM?",
-    answer: 49,
-    note: "Just 16% disagree. Come back tomorrow for another guess.",
+    question: "What percentage of the public think Andy Burnham will be a good leader?",
+    answer: 40,
+    note: "Just 20% say bad. Come back tomorrow for another guess.",
     source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
   },
   {
     date: "2026-07-21",  // Day 2
-    question: "What percentage of the public think Andy Burnham will be a bad leader?",
-    answer: 20,
-    note: "40% say good. Another 25% sit on the fence.",
+    question: "What percentage of Brits agree that Andy Burnham will be an improvement on Keir Starmer as PM?",
+    answer: 49,
+    note: "Just 16% disagree.",
     source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
   },
   {
