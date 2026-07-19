@@ -7,20 +7,20 @@
    Scheduling: each question carries a "date" (YYYY-MM-DD, London time) and
    runs on exactly that day. The undated taster runs on any day without a
    dated question — every day before launch, and as the fallback if the
-   bank runs dry. Top up before 2 August.
+   bank runs dry. Top up before 3 August.
    ========================================================================= */
 
 var CS_QUESTIONS = [
 
   /* ---------- PRE-LAUNCH TASTER (also the fallback if dates run out) ----------
-     Deliberately NOT the Burnham/Starmer question: that is now Day 1, and
-     taster players must not walk into launch day knowing the answer. */
+     Note: intentionally the same question as Day 1 — early taster players
+     will already know the answer on launch day. Owner's call. */
   {
     date: "",
-    question: "What percentage of the British public have ever used ChatGPT?",
-    answer: 62,
+    question: "What percentage of Brits agreed Andy Burnham would be an improvement on Keir Starmer as Prime Minister?",
+    answer: 49,
     note: "A pre-launch taster — the daily game proper starts Monday 20 July.",
-    source: "Public First poll of 2,017 UK adults, 20–26 March 2026"
+    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
   },
 
   {
@@ -120,6 +120,13 @@ var CS_QUESTIONS = [
     answer: 51,
     note: "29% would vote to stay out. 11% don't know.",
     source: "YouGov poll for The Times of 2,058 GB adults, 10–11 June 2026"
+  },
+  {
+    date: "2026-08-03",  // Day 15
+    question: "What percentage of the British public have ever used ChatGPT?",
+    answer: 62,
+    note: "Which leaves four in ten who've never touched it.",
+    source: "Public First poll of 2,017 UK adults, 20–26 March 2026"
   }
 
   /* ---------- SPARE (verified, ready if needed) ----------
