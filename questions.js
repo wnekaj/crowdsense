@@ -5,23 +5,12 @@
    this ("real polling"), and each day's reveal cites its own source.
 
    Scheduling: each question carries a "date" (YYYY-MM-DD, London time) and
-   runs on exactly that day. The undated taster runs on any day without a
-   dated question — every day before launch, and as the fallback if the
-   bank runs dry. Top up before 3 August.
+   runs on exactly that day. There is no undated question left: on any day
+   without a dated question the engine falls back to rotating through the
+   whole bank (repeating already-used questions), so top up before 3 August.
    ========================================================================= */
 
 var CS_QUESTIONS = [
-
-  /* ---------- PRE-LAUNCH TASTER (also the fallback if dates run out) ----------
-     Note: intentionally the same question as Day 2 — early taster players
-     will already know that day's answer. Owner's call. */
-  {
-    date: "",
-    question: "What percentage of Brits agreed Andy Burnham would be an improvement on Keir Starmer as Prime Minister?",
-    answer: 49,
-    note: "A pre-launch taster — the daily game proper starts Monday 20 July.",
-    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
-  },
 
   {
     date: "2026-07-20",  // Day 1
@@ -32,10 +21,10 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-07-21",  // Day 2
-    question: "What percentage of Brits agree that Andy Burnham will be an improvement on Keir Starmer as PM?",
-    answer: 49,
-    note: "Just 16% disagree.",
-    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
+    question: "What percentage of Londoners say they've attended a protest in the last year?",
+    answer: 13,
+    note: "21% of 18–24s — versus 6% of over-65s.",
+    source: "Public First poll of 1,041 London adults, 19–22 June 2026"
   },
   {
     date: "2026-07-22",  // Day 3
@@ -128,14 +117,4 @@ var CS_QUESTIONS = [
     note: "Roughly two in five have never used AI.",
     source: "Public First poll of 2,017 UK adults, 20–26 March 2026"
   }
-
-  /* ---------- SPARE (verified, ready if needed) ----------
-  ,{
-    date: "",
-    question: "What percentage of Londoners say they've attended a protest in the last year?",
-    answer: 13,
-    note: "21% of 18–24s — versus 6% of over-65s.",
-    source: "Public First poll of 1,041 London adults, 19–22 June 2026"
-  }
-  ----------------------------------------------------------- */
 ];
