@@ -1,147 +1,125 @@
 /* =========================================================================
-   CROWDSENSE — LAUNCH QUESTION BANK (REAL FIGURES)
-   Derived from published Public First polling tables, verified against the
-   raw xlsx toplines. Nets are summed from unrounded values then rounded.
-
-   ⚠ Two things to verify before launch:
-   1. The ThinkFlow question (27 Jul) assumes "ThinkFlow" was a fictitious
-      control brand in the Google poll (alongside HorizonML and NovaMind).
-      Confirm with the research team before it runs.
-   2. Whether client attribution is needed in source lines is a house-style
-      call — kept neutral here.
+   CROWDSENSE — FINAL 14-DAY SCHEDULE · LAUNCH: MON 20 JULY 2026
+   All figures verified against raw tables. Days 13–14 are third-party
+   polls (Focaldata; YouGov/The Times) — the how-to modal wording covers
+   this ("real polling"), and each day's reveal cites its own source.
 
    Scheduling: each question carries a "date" (YYYY-MM-DD, London time) and
-   runs on exactly that day. Launch is Monday 2026-07-20 (puzzle No. 1).
-   The perishable leadership-race questions run first; evergreen follows.
-   The bank currently covers 20 Jul – 3 Aug — top it up before it runs out,
-   or undated questions will be rotated automatically as a fallback.
+   runs on exactly that day. The undated taster runs on any day without a
+   dated question — every day before launch, and as the fallback if the
+   bank runs dry. Top up before 2 August.
    ========================================================================= */
 
 var CS_QUESTIONS = [
 
-  /* ---------- PRE-LAUNCH TASTER ----------
-     Undated, so it runs on any day without a dated question — i.e. every
-     day before launch. Swap or remove once the bank extends past 3 Aug,
-     or it will resurface when the dates run out. */
+  /* ---------- PRE-LAUNCH TASTER (also the fallback if dates run out) ----------
+     Deliberately NOT the Burnham/Starmer question: that is now Day 1, and
+     taster players must not walk into launch day knowing the answer. */
   {
     date: "",
-    question: "What percentage of Brits agreed Andy Burnham would be an improvement on Keir Starmer as Prime Minister?",
-    answer: 49,
-    note: "A pre-launch taster — the daily game proper starts Monday 20 July.",
-    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
-  },
-
-  /* ---------- LAUNCH WEEK: leadership race (perishable) ---------- */
-  {
-    date: "2026-07-20",
-    question: "What percentage of Brits think Andy Burnham is most likely to become the next Prime Minister?",
-    answer: 59,
-    note: "Among over-65s it's 74%. Just 3% say Angela Rayner.",
-    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
-  },
-  {
-    date: "2026-07-21",
-    question: "What percentage of Brits say the Labour leadership contest is 'all but guaranteed — mostly a formality'?",
-    answer: 64,
-    note: "82% of over-65s call it a formality. Only 48% of 18–24s agree.",
-    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
-  },
-  {
-    date: "2026-07-22",
-    question: "What percentage of the public say the country needs a general election to sort out who should be in charge?",
-    answer: 51,
-    note: "Strikingly uniform: 51% of 18–24s, 53% of over-65s.",
-    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
-  },
-  {
-    date: "2026-07-23",
-    question: "What percentage of Brits have a 'very unfavourable' view of Nigel Farage?",
-    answer: 37,
-    note: "Rises to 45% among over-65s — higher than among 18–24s (31%).",
-    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
-  },
-  {
-    date: "2026-07-24",
-    question: "What percentage of the public would approve of Ed Miliband being appointed Chancellor of the Exchequer?",
-    answer: 34,
-    note: "The age war: 48% of over-65s strongly disapprove. 4% of 18–24s do.",
-    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
-  },
-  {
-    date: "2026-07-25",
-    question: "What percentage of Brits say they trust Andy Burnham?",
-    answer: 48,
-    note: "More trust him than don't — rare territory for a politician.",
-    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
-  },
-
-  /* ---------- EVERGREEN: AI & tech ---------- */
-  {
-    date: "2026-07-26",
     question: "What percentage of the British public have ever used ChatGPT?",
     answer: 62,
-    note: "Which leaves four in ten who've never touched it.",
-    source: "Public First poll of 2,017 UK adults, 20–26 March 2026"
-  },
-  {
-    date: "2026-07-27",
-    question: "What percentage of Brits claim to have used 'ThinkFlow' — an AI tool that doesn't exist?",
-    answer: 8,
-    note: "It was invented for this poll. One in twelve used it anyway.",
-    source: "Public First poll of 2,017 UK adults, 20–26 March 2026"
-  },
-  {
-    date: "2026-07-28",
-    question: "What percentage of the public use AI tools for work at least once a week?",
-    answer: 56,
-    note: "22% say they never use AI at work at all.",
-    source: "Public First poll of 2,017 UK adults, 20–26 March 2026"
-  },
-  {
-    date: "2026-07-29",
-    question: "What percentage of Brits would give up access to every AI tool, permanently, in exchange for £2.50?",
-    answer: 37,
-    note: "Raise the offer to £100 and still only 53% take the money.",
+    note: "A pre-launch taster — the daily game proper starts Monday 20 July.",
     source: "Public First poll of 2,017 UK adults, 20–26 March 2026"
   },
 
-  /* ---------- EVERGREEN: online safety ---------- */
   {
-    date: "2026-07-30",
-    question: "What percentage of the public think under-16s would still find ways around social media age checks?",
-    answer: 81,
-    note: "Just 3% say it's 'not at all likely' the kids would win.",
-    source: "Public First poll of 1,949 UK adults, 15–19 June 2026"
+    date: "2026-07-20",  // Day 1
+    question: "What percentage of Brits agree that Andy Burnham will be an improvement on Keir Starmer as PM?",
+    answer: 49,
+    note: "Just 16% disagree. Day one: the bar is set.",
+    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
   },
   {
-    date: "2026-07-31",
-    question: "What percentage of Brits would be comfortable having their own face scanned to prove their age online, if it meant better protection for children?",
-    answer: 53,
-    note: "Comfort with a child scanning theirs is lower: 39%.",
-    source: "Public First poll of 1,949 UK adults, 15–19 June 2026"
+    date: "2026-07-21",  // Day 2
+    question: "What percentage of the public think Andy Burnham will be a bad leader?",
+    answer: 20,
+    note: "40% say good. A quarter sit exactly on the fence.",
+    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
   },
-
-  /* ---------- EVERGREEN: crime & morality (LONDONERS — keep the wording) ---------- */
   {
-    date: "2026-08-01",
-    question: "What percentage of Londoners say the death penalty is an appropriate punishment in some cases?",
+    date: "2026-07-22",  // Day 3
+    question: "What percentage of Brits say they're currently registered on a dating app or website?",
+    answer: 12,
+    note: "Another 30% have been in the past.",
+    source: "Public First poll of 2,045 UK adults, 19–22 January 2026"
+  },
+  {
+    date: "2026-07-23",  // Day 4
+    question: "What percentage of UK workers say they've been promoted at work in the past year?",
+    answer: 30,
+    note: "52% of 25–34s — versus 14% of 45–54s.",
+    source: "Public First poll of 1,352 working UK adults, 20–26 March 2026"
+  },
+  {
+    date: "2026-07-24",  // Day 5
+    question: "What percentage of the public have an unfavourable view of Nigel Farage?",
+    answer: 49,
+    note: "37% go straight to 'very unfavourable'. 34% are favourable.",
+    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
+  },
+  {
+    date: "2026-07-25",  // Day 6
+    question: "What percentage of Brits agree that talking politics on a first date is usually a bad idea?",
     answer: 62,
-    note: "Yes, London. 40% of over-65s pick the strongest pro option.",
-    source: "Public First poll of 1,041 London adults, 19–22 June 2026"
+    note: "32% see no problem with it. Brave.",
+    source: "Public First poll of 2,045 UK adults, 19–22 January 2026"
   },
   {
-    date: "2026-08-02",
-    question: "What percentage of Londoners agree that 'a good person would never commit a crime'?",
-    answer: 43,
-    note: "Only 28% of 18–24s agree. Age, not politics, is the divide.",
-    source: "Public First poll of 1,041 London adults, 19–22 June 2026"
+    date: "2026-07-26",  // Day 7
+    question: "What percentage of British adults say they gamble at least once a week?",
+    answer: 25,
+    note: "45% say they never gamble at all.",
+    source: "Public First poll of 2,076 UK adults, 29 May – 2 June 2026"
   },
   {
-    date: "2026-08-03",
-    question: "What percentage of Londoners think criminals are better than the police at using technology?",
-    answer: 34,
-    note: "Just 19% back the police. 31% call it a draw.",
-    source: "Public First poll of 1,041 London adults, 19–22 June 2026"
+    date: "2026-07-27",  // Day 8
+    question: "What percentage of the public agree they'd one day be interested in going into politics?",
+    answer: 16,
+    note: "54% strongly disagree. The talent pipeline, everyone.",
+    source: "Public First poll of 3,025 UK adults, 13–15 March 2026"
+  },
+  {
+    date: "2026-07-28",  // Day 9
+    question: "What percentage of Brits think the UK's best days are behind it?",
+    answer: 37,
+    note: "Just 11% say the best days are ahead.",
+    source: "Public First poll of 3,025 UK adults, 13–15 March 2026"
+  },
+  {
+    date: "2026-07-29",  // Day 10
+    question: "What percentage of the public say they have travelled outside of Europe?",
+    answer: 76,
+    note: "Meaning one in four Brits never has.",
+    source: "Public First poll of 3,025 UK adults, 13–15 March 2026"
+  },
+  {
+    date: "2026-07-30",  // Day 11
+    question: "Asked if they plan to start a business in the next five years, what percentage of Brits simply say 'No'?",
+    answer: 62,
+    note: "Among under-25s, only 30% say no.",
+    source: "Public First poll of 4,158 UK adults, 19–29 January 2026"
+  },
+  {
+    date: "2026-07-31",  // Day 12
+    question: "What percentage of the public say they tend to buy organic products from the supermarket?",
+    answer: 32,
+    note: "Two-thirds say they don't.",
+    source: "Public First poll of 3,025 UK adults, 13–15 March 2026"
+  },
+  {
+    date: "2026-08-01",  // Day 13
+    question: "What percentage of UK adults recognise the Gen Z slang term 'rizz'?",
+    answer: 19,
+    note: "41% of 18–24s. 4% of over-65s.",
+    source: "Focaldata survey of 1,060 UK adults, 7–10 May 2026"
+  },
+  {
+    date: "2026-08-02",  // Day 14
+    question: "In a referendum tomorrow, what percentage of Brits say they'd vote to rejoin the European Union?",
+    answer: 51,
+    note: "29% would vote to stay out. 11% don't know.",
+    source: "YouGov poll for The Times of 2,058 GB adults, 10–11 June 2026"
   }
 
   /* ---------- SPARE (verified, ready if needed) ----------
