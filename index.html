@@ -488,7 +488,7 @@
     .modal-close:hover{ color:var(--ink); border-color:var(--muted) }
     .legend{ display:flex; flex-direction:column; gap:6px; margin-top:8px }
     .legend .lg{ display:flex; align-items:center; gap:12px; font-size:13.5px }
-    .legend .chip{ flex:0 0 108px; text-align:center }
+    .legend .chip{ flex:0 0 132px; text-align:center }
 
     /* Stats */
     .statgrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:6px 0 16px; text-align:center }
@@ -496,7 +496,7 @@
     .stat .l{ color:var(--muted); font-size:10.5px; text-transform:uppercase; letter-spacing:.6px }
     .disthead{ font-size:12px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:8px }
     .distrow{ display:flex; align-items:center; gap:8px; margin-bottom:5px; font-size:12.5px; font-variant-numeric:tabular-nums }
-    .distrow .g{ flex:0 0 86px; color:var(--muted); font-weight:700 }
+    .distrow .g{ flex:0 0 112px; color:var(--muted); font-weight:700 }
     /* bars scale within a shared track so widths stay proportional */
     .distwrap{ flex:1; min-width:0 }
     .distbar{
@@ -626,11 +626,11 @@
         <p>Each day we take one real question the British public have been polled on, and you guess what they said.</p>
         <p>You have <b>one guess</b>. Use your instinct to estimate what the public think. How good is your crowdsense?</p>
         <div class="legend">
-          <div class="lg"><span class="chip target">🎯 On target</span> Within 2</div>
-          <div class="lg"><span class="chip hot">Hot</span> Within 5</div>
-          <div class="lg"><span class="chip warm">Warm</span> Within 10</div>
-          <div class="lg"><span class="chip cool">Cool</span> Within 20</div>
-          <div class="lg"><span class="chip cold">Cold</span> More than 20 away</div>
+          <div class="lg"><span class="chip target">🎯 On the pulse</span> Within 2</div>
+          <div class="lg"><span class="chip hot">Common touch</span> Within 5</div>
+          <div class="lg"><span class="chip warm">In the mix</span> Within 10</div>
+          <div class="lg"><span class="chip cool">Out of touch</span> Within 20</div>
+          <div class="lg"><span class="chip cold">Under a rock</span> More than 20 away</div>
         </div>
         <p style="margin-top:12px">Your score is simply how many percentage points you were off. <b>0 is perfect</b>, lower is better. Within 2 is a bullseye; score within 5 to keep your streak.</p>
         <p>New question daily at midnight, GMT.</p>
@@ -698,8 +698,8 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=24"></script>
-  <script src="app.js?v=24"></script>
+  <script src="questions.js?v=25"></script>
+  <script src="app.js?v=25"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
