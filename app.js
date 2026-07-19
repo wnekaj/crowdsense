@@ -255,7 +255,7 @@ function renderStats(){
       var eF = Math.abs(saved.guesses[saved.guesses.length-1] - tq.answer);
       lg.textContent = (saved.guesses.length > 1)
         ? "Today: first guess " + e1 + " off · final " + eF + " off"
-        : "Today: one guess, " + e1 + " off";
+        : "Today you were " + e1 + " off";
     }
   }
 
@@ -334,9 +334,7 @@ function setKickerForTurn(){
 }
 
 function verdictFor(guesses, answer, win){
-  var err1 = Math.abs(guesses[0] - answer);
   var errF = Math.abs(guesses[guesses.length-1] - answer);
-  if (guesses.length === 1 && err1 <= CONFIG.BULLSEYE) return { text: "Bullseye, first time." };
   if (errF <= 2)  return { text: "Dead on." };
   if (errF <= 5)  return { text: "Sharp." };
   if (errF <= 10) return { text: "Close." };
