@@ -663,7 +663,7 @@
           <div class="lg"><span class="chip cool">Warm-ish</span> Within 25</div>
           <div class="lg"><span class="chip cold">Out of touch</span> More than 25 away</div>
         </div>
-        <p style="margin-top:12px">Your score is simply how many percentage points you were off. <b>0 is perfect</b>, lower is better. Within 2 and you're on the pulse; score within 5 to keep your streak.</p>
+        <p style="margin-top:12px">Your score is simply how many percentage points you were off. <b>0 is perfect</b>, lower is better. Within 2 and you're on the pulse; score within 25 to keep your streak.</p>
         <p>New question daily at midnight, GMT.</p>
         <p style="margin-top:14px">All figures from real polling of the British public; each day's source is shown with the answer.</p>
       </div>
@@ -716,6 +716,14 @@
         <div id="distRows"></div>
         <div class="lastgame" id="lastGame"></div>
         <div class="firsterr" id="firstErr"></div>
+        <div class="subscribe">
+          <p class="subhead">Tomorrow's question straight to your inbox</p>
+          <form class="email-form" action="https://formspree.io/f/mgvnzepd" method="POST">
+            <input name="email" type="email" placeholder="you@email.com" required autocomplete="email" />
+            <button type="submit" class="email-btn">Send it</button>
+            <span class="email-msg" role="status" aria-live="polite"></span>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -729,8 +737,8 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=39"></script>
-  <script src="app.js?v=39"></script>
+  <script src="questions.js?v=40"></script>
+  <script src="app.js?v=40"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
