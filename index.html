@@ -454,6 +454,12 @@
     .shake{ animation:shake .4s ease }
 
     /* ---------- Email ---------- */
+    .subscribe{
+      margin-top:22px; padding-top:16px;
+      border-top:1px solid var(--hairline);
+      text-align:center;
+    }
+    .subhead{ font-size:13px; color:var(--muted); margin:0 0 6px }
     .below{
       width:min(560px,94vw); margin-top:28px; padding-top:18px;
       border-top:1px solid var(--hairline);
@@ -622,15 +628,19 @@
 
         <button id="shareBtn" class="sharebtn" type="button">Share your result</button>
         <p class="countdown" id="countdownP">Next question in <b id="countdown">—</b></p>
+
+        <div class="subscribe" id="subscribeBlock">
+          <p class="subhead">Tomorrow's question, straight to your inbox</p>
+          <form id="emailForm" class="email-form" action="https://formspree.io/f/mgvnzepd" method="POST">
+            <input id="emailInput" name="email" type="email" placeholder="you@email.com" required autocomplete="email" />
+            <button type="submit" class="email-btn">Send it</button>
+            <span id="emailMsg" class="email-msg" role="status" aria-live="polite"></span>
+          </form>
+        </div>
       </div>
     </div>
 
     <div class="below">
-      <form id="emailForm" class="email-form" action="https://formspree.io/f/mgvnzepd" method="POST">
-        <input id="emailInput" name="email" type="email" placeholder="Get tomorrow's question by email" required autocomplete="email" />
-        <button type="submit" class="email-btn">Subscribe</button>
-        <span id="emailMsg" class="email-msg" role="status" aria-live="polite"></span>
-      </form>
       <p class="privacy"><button type="button" id="privacyBtn" class="linkbtn">Privacy</button></p>
     </div>
   </main>
@@ -719,8 +729,8 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=37"></script>
-  <script src="app.js?v=37"></script>
+  <script src="questions.js?v=38"></script>
+  <script src="app.js?v=38"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
