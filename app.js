@@ -9,7 +9,7 @@ var CONFIG = {
   TZ: "Europe/London",
   MAX_GUESSES: 1,
   BULLSEYE: 2,                   // within this = bullseye
-  WIN_MARGIN: 5,                 // within this = win (keeps the streak)
+  WIN_MARGIN: 25,                // within this = win (keeps the streak; anything but Out of touch)
   FIRST_WEIGHT: 0.4,             // weighting only applies if MAX_GUESSES > 1
   FINAL_WEIGHT: 0.6,
   REVEAL_MS: 3400,               // Pointless-style countdown duration on reveal
@@ -97,6 +97,9 @@ var els = {
   emailForm: $("emailForm"), emailInput: $("emailInput"), emailMsg: $("emailMsg"),
   subscribeBlock: $("subscribeBlock")
 };
+
+// set once the player opens their stats themselves; stops the post-reveal auto-open
+var STATS_SEEN = false;
 
 // ===== state =====
 var MODE = "daily";                 // "daily" | "practice"
@@ -530,6 +533,15 @@ function finishGame(alreadyDone){
       recordResult(state.win, err1, errF, state.score);
       updateStreakBadge();
       saveState();
+      // surface the record once the reveal has landed, unless the player
+      // has already opened it (or another modal) themselves
+      var statsDelay = els.reveal.classList.contains("staging") ? CONFIG.REVEAL_MS + 2200 : 1400;
+      setTimeout(function(){
+        if (STATS_SEEN) return;
+        if (document.querySelector(".modal-root:not(.hidden)")) return;
+        renderStats();
+        openModal("statsModal");
+      }, statsDelay);
     }
     crowdFlow(state.guesses[state.guesses.length-1]);
   }
@@ -689,7 +701,7 @@ document.addEventListener("keydown", function(e){
   if (e.key === "Escape"){ closeModal("helpModal"); closeModal("statsModal"); closeModal("archiveModal"); closeModal("privacyModal"); }
 });
 if (els.helpBtn) els.helpBtn.addEventListener("click", function(){ openModal("helpModal"); });
-if (els.statsBtn) els.statsBtn.addEventListener("click", function(){ hideStatsHint(); renderStats(); openModal("statsModal"); });
+if (els.statsBtn) els.statsBtn.addEventListener("click", function(){ STATS_SEEN = true; hideStatsHint(); renderStats(); openModal("statsModal"); });
 if (els.archiveBtn) els.archiveBtn.addEventListener("click", function(){ calY = null; renderArchive(); openModal("archiveModal"); });
 if (els.privacyBtn) els.privacyBtn.addEventListener("click", function(){ openModal("privacyModal"); });
 
@@ -858,13 +870,16 @@ function setupGame(dayKey, mode){
 // ===== email capture =====
 function handleEmailSubmit(e){
   e.preventDefault();
-  var email = (els.emailInput && els.emailInput.value || "").trim();
-  if (!email) return;
-  els.emailMsg.textContent = "Submitting…";
-  fetch(els.emailForm.action, { method:"POST", headers:{ "Accept":"application/json" }, body: new FormData(els.emailForm) })
+  var form = e.target;
+  var input = form.querySelector("input[type=email]");
+  var msg = form.querySelector(".email-msg");
+  var email = (input && input.value || "").trim();
+  if (!email || !msg) return;
+  msg.textContent = "Submitting…";
+  fetch(form.action, { method:"POST", headers:{ "Accept":"application/json" }, body: new FormData(form) })
     .then(function(res){ if (res.ok) return res.json(); throw new Error("Subscribe failed"); })
-    .then(function(){ els.emailMsg.textContent = "Thanks! Check your inbox to confirm."; try{ els.emailForm.reset(); }catch(_){} })
-    .catch(function(){ els.emailMsg.textContent = "Sorry — there was a problem. Please try again."; });
+    .then(function(){ msg.textContent = "Thanks! Check your inbox to confirm."; try{ form.reset(); }catch(_){} })
+    .catch(function(){ msg.textContent = "Sorry — there was a problem. Please try again."; });
 }
 
 // ===== optional Google Sheet loader (columns: date, question, answer, note, source) =====
@@ -979,4 +994,6 @@ els.slider.addEventListener("input", function(){
 });
 if (els.backToday) els.backToday.addEventListener("click", function(){ setupGame(DAY_KEY, "daily"); });
 if (els.shareBtn) els.shareBtn.addEventListener("click", doShare);
-if (els.emailForm) els.emailForm.addEventListener("submit", handleEmailSubmit);
+Array.prototype.forEach.call(document.querySelectorAll("form.email-form"), function(f){
+  f.addEventListener("submit", handleEmailSubmit);
+});
