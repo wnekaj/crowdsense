@@ -475,10 +475,10 @@
     .email-btn{
       border:none; border-radius:4px; padding:9px 6px;
       font-size:13px; font-weight:500; letter-spacing:.04em; cursor:pointer;
-      background:transparent; color:var(--muted);
+      background:transparent; color:var(--accent);
       transition:color .15s ease;
     }
-    .email-btn:hover{ color:var(--ink) }
+    .email-btn:hover{ color:var(--accent-deep) }
     .email-msg{ font-size:12px; color:var(--muted); width:100%; margin-top:4px }
     .privacy{ margin:14px 0 0 }
     .linkbtn{
@@ -630,7 +630,7 @@
         <p class="countdown" id="countdownP">Next question in <b id="countdown">—</b></p>
 
         <div class="subscribe" id="subscribeBlock">
-          <p class="subhead">Tomorrow's question, straight to your inbox</p>
+          <p class="subhead">Tomorrow's question straight to your inbox</p>
           <form id="emailForm" class="email-form" action="https://formspree.io/f/mgvnzepd" method="POST">
             <input id="emailInput" name="email" type="email" placeholder="you@email.com" required autocomplete="email" />
             <button type="submit" class="email-btn">Send it</button>
@@ -729,8 +729,8 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=38"></script>
-  <script src="app.js?v=38"></script>
+  <script src="questions.js?v=39"></script>
+  <script src="app.js?v=39"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
