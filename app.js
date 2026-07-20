@@ -121,9 +121,9 @@ function loadState(){
 // ===== heat scale =====
 function heat(err){
   if (err <= 2)  return { cls:"target", label:"On the pulse",  emoji:"🎯" };
-  if (err <= 5)  return { cls:"hot",    label:"Hot",  emoji:"🟩" };
-  if (err <= 15) return { cls:"warm",   label:"Warm",    emoji:"🟨" };
-  if (err <= 25) return { cls:"cool",   label:"Cool",  emoji:"🟧" };
+  if (err <= 5)  return { cls:"hot",    label:"On the scent",  emoji:"🟩" };
+  if (err <= 15) return { cls:"warm",   label:"In the mix",    emoji:"🟨" };
+  if (err <= 25) return { cls:"cool",   label:"Warm-ish",  emoji:"🟧" };
   return           { cls:"cold",   label:"Out of touch", emoji:"🟥" };
 }
 
@@ -228,9 +228,9 @@ function renderStats(){
   rows.innerHTML = "";
   var tiers = [
     { cls:"target", label:"🎯 On the pulse" },
-    { cls:"hot",    label:"Hot" },
-    { cls:"warm",   label:"Warm" },
-    { cls:"cool",   label:"Cool" },
+    { cls:"hot",    label:"On the scent" },
+    { cls:"warm",   label:"In the mix" },
+    { cls:"cool",   label:"Warm-ish" },
     { cls:"cold",   label:"Out of touch" }
   ];
   var max = 1;
