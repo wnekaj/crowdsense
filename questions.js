@@ -31,9 +31,9 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-07-21",  // Day 2
-    question: "What percentage of Brits say they're currently registered on a dating app or website?",
-    answer: 12,
-    note: "Another 30% have been in the past.",
+    question: "What percentage of Brits agree that talking politics on a first date is usually a bad idea?",
+    answer: 62,
+    note: "32% see no problem with it, the rest don't know.",
     source: "Public First poll of 2,045 UK adults, 19–22 January 2026"
   },
   {
@@ -52,9 +52,9 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-07-24",  // Day 5
-    question: "What percentage of Brits agree that talking politics on a first date is usually a bad idea?",
-    answer: 62,
-    note: "32% see no problem with it, the rest don't know.",
+    question: "What percentage of Brits say they're currently registered on a dating app or website?",
+    answer: 12,
+    note: "Another 30% have been in the past.",
     source: "Public First poll of 2,045 UK adults, 19–22 January 2026"
   },
   {
