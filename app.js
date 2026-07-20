@@ -92,6 +92,7 @@ var els = {
   shareBtn: $("shareBtn"), countdownP: $("countdownP"), countdown: $("countdown"),
   toast: $("toast"),
   helpBtn: $("helpBtn"), statsBtn: $("statsBtn"), archiveBtn: $("archiveBtn"), privacyBtn: $("privacyBtn"),
+  statsHint: $("statsHint"),
   archiveList: $("archiveList"),
   emailForm: $("emailForm"), emailInput: $("emailInput"), emailMsg: $("emailMsg")
 };
@@ -496,6 +497,7 @@ function finishGame(alreadyDone){
         els.reveal.classList.remove("staging");
         var scoreEl = els.scoreLine.querySelector("b");
         if (scoreEl) animateCount(scoreEl, state.score, "", 800, 0);
+        maybeShowStatsHint();
       }, 350);
     });
   }
@@ -528,6 +530,26 @@ function finishGame(alreadyDone){
     }
     crowdFlow(state.guesses[state.guesses.length-1]);
   }
+  // staged reveals show the hint from the animation's completion callback
+  if (!els.reveal.classList.contains("staging")) maybeShowStatsHint();
+}
+
+// One-time nudge toward the stats button, shown only the first time a
+// player ever completes a daily game.
+function maybeShowStatsHint(){
+  if (MODE !== "daily" || !els.statsHint) return;
+  try{
+    if (localStorage.getItem("cs-stats-hint")) return;
+    if (readStats().played !== 1) return;
+    localStorage.setItem("cs-stats-hint", "1");
+  }catch(_){ return; }
+  els.statsHint.classList.remove("hidden");
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){ els.statsHint.classList.add("show"); });
+  });
+}
+function hideStatsHint(){
+  if (els.statsHint) els.statsHint.classList.add("hidden");
 }
 
 // ===== guessing =====
@@ -664,7 +686,7 @@ document.addEventListener("keydown", function(e){
   if (e.key === "Escape"){ closeModal("helpModal"); closeModal("statsModal"); closeModal("archiveModal"); closeModal("privacyModal"); }
 });
 if (els.helpBtn) els.helpBtn.addEventListener("click", function(){ openModal("helpModal"); });
-if (els.statsBtn) els.statsBtn.addEventListener("click", function(){ renderStats(); openModal("statsModal"); });
+if (els.statsBtn) els.statsBtn.addEventListener("click", function(){ hideStatsHint(); renderStats(); openModal("statsModal"); });
 if (els.archiveBtn) els.archiveBtn.addEventListener("click", function(){ calY = null; renderArchive(); openModal("archiveModal"); });
 if (els.privacyBtn) els.privacyBtn.addEventListener("click", function(){ openModal("privacyModal"); });
 
