@@ -94,7 +94,8 @@ var els = {
   helpBtn: $("helpBtn"), statsBtn: $("statsBtn"), archiveBtn: $("archiveBtn"), privacyBtn: $("privacyBtn"),
   statsHint: $("statsHint"),
   archiveList: $("archiveList"),
-  emailForm: $("emailForm"), emailInput: $("emailInput"), emailMsg: $("emailMsg")
+  emailForm: $("emailForm"), emailInput: $("emailInput"), emailMsg: $("emailMsg"),
+  subscribeBlock: $("subscribeBlock")
 };
 
 // ===== state =====
@@ -508,9 +509,11 @@ function finishGame(alreadyDone){
   setKickerForTurn();
   if (MODE === "daily"){
     els.countdownP.classList.remove("hidden");
+    if (els.subscribeBlock) els.subscribeBlock.classList.remove("hidden");
     startCountdown();
   } else {
     els.countdownP.classList.add("hidden");
+    if (els.subscribeBlock) els.subscribeBlock.classList.add("hidden");
   }
 
   if (MODE === "daily"){
