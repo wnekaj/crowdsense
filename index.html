@@ -518,6 +518,7 @@
     /* Stats */
     .statgrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:6px 0 16px; text-align:center }
     .stat .v{ font-family:var(--display); font-weight:700; font-size:26px; font-variant-numeric:tabular-nums }
+    .stat .v.gold{ color:#c9a13b }
     .stat .l{ color:var(--muted); font-size:10.5px; text-transform:uppercase; letter-spacing:.6px }
     .disthead{ font-size:12px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:8px }
     .distrow{ display:flex; align-items:center; gap:8px; margin-bottom:5px; font-size:12.5px; font-variant-numeric:tabular-nums }
@@ -742,8 +743,8 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=44"></script>
-  <script src="app.js?v=44"></script>
+  <script src="questions.js?v=45"></script>
+  <script src="app.js?v=45"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
