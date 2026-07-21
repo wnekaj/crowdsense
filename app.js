@@ -774,8 +774,11 @@ function renderCalendar(){
     var playable = key >= CONFIG.ANCHOR && key < DAY_KEY;
     if (key === DAY_KEY){
       cell.classList.add("today");
-      cell.disabled = true;
       cell.title = "Today's question";
+      cell.addEventListener("click", function(){
+        closeModal("archiveModal");
+        setupGame(DAY_KEY, "daily");
+      });
     } else if (!playable){
       cell.classList.add("off");
       cell.disabled = true;

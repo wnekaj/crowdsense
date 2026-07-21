@@ -427,7 +427,12 @@
     }
     .cal-day.avail:hover{ background:var(--accent-soft) }
     .cal-day.off{ color:var(--line) }
-    .cal-day.today{ color:var(--muted); outline:1px solid var(--hairline) }
+    .cal-day.today{
+      color:var(--accent-deep); font-weight:500; cursor:pointer;
+      outline:1px solid var(--hairline);
+      transition:background .15s ease;
+    }
+    .cal-day.today:hover{ background:var(--accent-soft) }
     .cal-day.done::after{
       content:""; position:absolute; bottom:5px; left:50%;
       transform:translateX(-50%);
@@ -737,8 +742,8 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=42"></script>
-  <script src="app.js?v=42"></script>
+  <script src="questions.js?v=43"></script>
+  <script src="app.js?v=43"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
