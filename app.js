@@ -226,8 +226,8 @@ function renderStats(){
   // Lower is better; 0 means you read the public perfectly.
   var avg = s.played ? Math.round((s.scoreSum / s.played) * 10) / 10 : null;
   $("stWin").textContent = (avg === null) ? "–" : String(avg);
-  // a Crowdsense average of 5 or better quietly turns gold
-  $("stWin").classList.toggle("gold", avg !== null && avg <= 5);
+  // the average quietly takes the colour of the tier it falls in
+  $("stWin").className = "v" + (avg === null ? "" : " " + heat(avg).cls);
   $("stStreak").textContent = readStreak().count;
   // Best = your lowest daily score; 0 is a perfect day
   $("stMax").textContent = (s.best === null || s.best === undefined) ? "–" : String(s.best);
