@@ -87,7 +87,7 @@ var els = {
   ledger: $("ledger"),
   reveal: $("reveal"), verdict: $("verdict"), bigAnswer: $("bigAnswer"),
   revealFill: $("revealFill"), youMarker: $("youMarker"), youLabel: $("youLabel"),
-  scoreLine: $("scoreLine"), answerNote: $("answerNote"), sourceNote: $("sourceNote"),
+  answerNote: $("answerNote"), sourceNote: $("sourceNote"),
   crowdBlock: $("crowdBlock"), crowdHead: $("crowdHead"), histo: $("histo"),
   shareBtn: $("shareBtn"), countdownP: $("countdownP"), countdown: $("countdown"),
   toast: $("toast"),
@@ -348,11 +348,12 @@ function setKickerForTurn(){
 
 function verdictFor(guesses, answer, win){
   var errF = Math.abs(guesses[guesses.length-1] - answer);
-  if (errF <= 2)  return { text: "Bang on — you're on the pulse" };
-  if (errF <= 5)  return { text: "Sharp — you're on the scent" };
-  if (errF <= 10) return { text: "Close — you're in the mix" };
-  if (errF <= 20) return { text: "Thereabouts — you're warm-ish" };
-  return { text: "The public surprised you — you're out of touch" };
+  var off = errF + " off — ";
+  if (errF <= 2)  return { text: off + "on the pulse" };
+  if (errF <= 5)  return { text: off + "on the scent" };
+  if (errF <= 10) return { text: off + "in the mix" };
+  if (errF <= 20) return { text: off + "warm-ish" };
+  return { text: off + "out of touch" };
 }
 
 // ===== crowd layer =====
@@ -472,7 +473,6 @@ function finishGame(alreadyDone){
   var v = verdictFor(state.guesses, Q.answer, state.win);
   els.verdict.textContent = v.text;
   els.verdict.className = "verdict " + (state.win ? "win" : "loss");
-  els.scoreLine.innerHTML = "<b>" + state.score + "</b> off" + (MODE === "practice" ? " · practice" : "");
   els.bigAnswer.textContent = Q.answer + "%";
   var finalGuessVal = state.guesses[state.guesses.length-1];
   els.youMarker.style.left = finalGuessVal + "%";
@@ -502,8 +502,6 @@ function finishGame(alreadyDone){
       if (!marked) showGuessMark();
       setTimeout(function(){
         els.reveal.classList.remove("staging");
-        var scoreEl = els.scoreLine.querySelector("b");
-        if (scoreEl) animateCount(scoreEl, state.score, "", 800, 0);
         maybeShowStatsHint();
       }, 350);
     });

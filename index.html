@@ -329,16 +329,10 @@
     .bignum{
       font-family:var(--display); font-weight:300;
       font-size:clamp(72px, 24vw, 110px);
-      line-height:1; margin:8px 0 6px;
+      line-height:1; margin:8px 0 14px;
       color:var(--ink);
       font-variant-numeric:tabular-nums;
     }
-    .scoreline{
-      color:var(--muted); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
-      margin:0 0 14px;
-      font-variant-numeric:tabular-nums;
-    }
-    .scoreline b{ font-weight:500; color:var(--ink) }
     .note{ color:var(--ink); font-size:14px; line-height:1.5; margin:0 auto 6px; max-width:42ch }
     .source-note{ color:var(--muted); font-size:11px; letter-spacing:.04em; margin:0 0 18px }
     .sharebtn{
@@ -627,7 +621,6 @@
         </div>
         <p class="verdict" id="verdict"></p>
         <div class="bignum" id="bigAnswer"></div>
-        <p class="scoreline" id="scoreLine"></p>
         <p class="note" id="answerNote"></p>
         <p class="source-note" id="sourceNote"></p>
 
@@ -637,7 +630,7 @@
         </div>
 
         <button id="shareBtn" class="sharebtn" type="button">Share your result</button>
-        <p class="countdown" id="countdownP">Next question in <b id="countdown">—</b></p>
+        <p class="countdown" id="countdownP"><b id="countdown">—</b></p>
 
         <div class="subscribe" id="subscribeBlock">
           <p class="subhead">Tomorrow's question straight to your inbox</p>
@@ -747,8 +740,8 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=47"></script>
-  <script src="app.js?v=47"></script>
+  <script src="questions.js?v=48"></script>
+  <script src="app.js?v=48"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
