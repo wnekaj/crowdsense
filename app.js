@@ -9,7 +9,7 @@ var CONFIG = {
   TZ: "Europe/London",
   MAX_GUESSES: 1,
   BULLSEYE: 2,                   // within this = bullseye
-  WIN_MARGIN: 25,                // within this = win (keeps the streak; anything but Out of touch)
+  WIN_MARGIN: 15,                // within this = win (keeps the streak)
   FIRST_WEIGHT: 0.4,             // weighting only applies if MAX_GUESSES > 1
   FINAL_WEIGHT: 0.6,
   REVEAL_MS: 3400,               // Pointless-style countdown duration on reveal
