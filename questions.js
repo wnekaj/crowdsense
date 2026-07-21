@@ -40,7 +40,7 @@ var CS_QUESTIONS = [
     date: "2026-07-22",  // Day 3
     question: "What percentage of the public say they have travelled outside of Europe?",
     answer: 76,
-    note: "Meaning one in four Brits never has.",
+    note: "Meaning one in four haven't.",
     source: "Public First poll of 3,025 UK adults, 13–15 March 2026"
   },
   {
