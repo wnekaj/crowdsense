@@ -38,10 +38,10 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-07-22",  // Day 3
-    question: "What percentage of UK workers say they've been promoted at work in the past year?",
-    answer: 30,
-    note: "52% of 25–34s versus 14% of 45–54s.",
-    source: "Public First poll of 1,352 working UK adults, 20–26 March 2026"
+    question: "What percentage of the public say they have travelled outside of Europe?",
+    answer: 76,
+    note: "Meaning one in four Brits never has.",
+    source: "Public First poll of 3,025 UK adults, 13–15 March 2026"
   },
   {
     date: "2026-07-23",  // Day 4
@@ -80,10 +80,10 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-07-28",  // Day 9
-    question: "What percentage of the public say they have travelled outside of Europe?",
-    answer: 76,
-    note: "Meaning one in four Brits never has.",
-    source: "Public First poll of 3,025 UK adults, 13–15 March 2026"
+    question: "What percentage of UK workers say they've been promoted at work in the past year?",
+    answer: 30,
+    note: "52% of 25–34s versus 14% of 45–54s.",
+    source: "Public First poll of 1,352 working UK adults, 20–26 March 2026"
   },
   {
     date: "2026-07-29",  // Day 10
