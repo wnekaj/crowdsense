@@ -127,8 +127,8 @@ function loadState(){
 function heat(err){
   if (err <= 2)  return { cls:"target", label:"On the pulse",  emoji:"🎯" };
   if (err <= 5)  return { cls:"hot",    label:"On the scent",  emoji:"🟩" };
-  if (err <= 15) return { cls:"warm",   label:"In the mix",    emoji:"🟨" };
-  if (err <= 25) return { cls:"cool",   label:"Warm-ish",  emoji:"🟧" };
+  if (err <= 10) return { cls:"warm",   label:"In the mix",    emoji:"🟨" };
+  if (err <= 20) return { cls:"cool",   label:"Warm-ish",  emoji:"🟧" };
   return           { cls:"cold",   label:"Out of touch", emoji:"🟥" };
 }
 
@@ -347,8 +347,8 @@ function verdictFor(guesses, answer, win){
   var errF = Math.abs(guesses[guesses.length-1] - answer);
   if (errF <= 2)  return { text: "Dead on." };
   if (errF <= 5)  return { text: "Sharp." };
-  if (errF <= 15) return { text: "Close." };
-  if (errF <= 25) return { text: "Thereabouts." };
+  if (errF <= 10) return { text: "Close." };
+  if (errF <= 20) return { text: "Thereabouts." };
   return { text: "The public surprised you." };
 }
 
