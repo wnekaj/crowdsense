@@ -224,7 +224,10 @@ function renderStats(){
   $("stPlayed").textContent = s.played;
   // Crowdsense score: rolling average of how far off you are each day.
   // Lower is better; 0 means you read the public perfectly.
-  $("stWin").textContent = s.played ? String(Math.round((s.scoreSum / s.played) * 10) / 10) : "–";
+  var avg = s.played ? Math.round((s.scoreSum / s.played) * 10) / 10 : null;
+  $("stWin").textContent = (avg === null) ? "–" : String(avg);
+  // a Crowdsense average of 5 or better quietly turns gold
+  $("stWin").classList.toggle("gold", avg !== null && avg <= 5);
   $("stStreak").textContent = readStreak().count;
   // Best = your lowest daily score; 0 is a perfect day
   $("stMax").textContent = (s.best === null || s.best === undefined) ? "–" : String(s.best);
@@ -345,11 +348,11 @@ function setKickerForTurn(){
 
 function verdictFor(guesses, answer, win){
   var errF = Math.abs(guesses[guesses.length-1] - answer);
-  if (errF <= 2)  return { text: "Dead on." };
-  if (errF <= 5)  return { text: "Sharp." };
-  if (errF <= 10) return { text: "Close." };
-  if (errF <= 20) return { text: "Thereabouts." };
-  return { text: "The public surprised you." };
+  if (errF <= 2)  return { text: "Bang on — you're on the pulse" };
+  if (errF <= 5)  return { text: "Sharp — you're on the scent" };
+  if (errF <= 10) return { text: "Close — you're in the mix" };
+  if (errF <= 20) return { text: "Thereabouts — you're warm-ish" };
+  return { text: "The public surprised you — you're out of touch" };
 }
 
 // ===== crowd layer =====
