@@ -95,7 +95,7 @@
     .iconbtns{ display:flex; gap:6px }
     .iconbtn{
       width:38px; height:38px; border-radius:8px;
-      border:1px solid var(--ink); background:#fff;
+      border:1px solid var(--accent); background:#fff;
       cursor:pointer; color:var(--accent);
       display:grid; place-items:center;
       transition:color .15s ease, background .15s ease, border-color .15s ease, transform .05s ease;
@@ -741,8 +741,8 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=58"></script>
-  <script src="app.js?v=58"></script>
+  <script src="questions.js?v=59"></script>
+  <script src="app.js?v=59"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
