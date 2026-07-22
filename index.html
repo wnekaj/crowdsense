@@ -92,15 +92,16 @@
       color:var(--muted);
       margin-top:3px;
     }
-    .iconbtns{ display:flex; gap:2px }
+    .iconbtns{ display:flex; gap:6px }
     .iconbtn{
-      width:34px; height:34px; border-radius:4px;
-      border:none; background:transparent;
-      font-size:16px; cursor:pointer; color:var(--accent);
+      width:38px; height:38px; border-radius:8px;
+      border:1px solid var(--line); background:#fff;
+      cursor:pointer; color:var(--ink);
       display:grid; place-items:center;
-      transition:color .15s ease, transform .05s ease;
+      transition:color .15s ease, background .15s ease, border-color .15s ease, transform .05s ease;
     }
-    .iconbtn:hover{ color:var(--accent-deep) }
+    .iconbtn svg{ display:block }
+    .iconbtn:hover{ color:var(--accent); border-color:var(--accent); background:var(--accent-soft) }
     .iconbtn:active{ transform:translateY(1px) }
     .iconbtn:focus-visible{ outline:3px solid rgba(242,101,34,.35); outline-offset:2px }
 
@@ -326,7 +327,6 @@
       color:var(--ink);
       font-variant-numeric:tabular-nums;
     }
-    .note{ color:var(--ink); font-size:14px; line-height:1.5; margin:0 auto 6px; max-width:42ch }
     .source-note{ color:var(--muted); font-size:11px; letter-spacing:.04em; margin:0 0 18px }
     .sharebtn{
       border:none; border-radius:4px; padding:13px 32px;
@@ -336,12 +336,6 @@
     }
     .sharebtn:hover{ background:var(--accent-deep) }
     .sharebtn:active{ transform:translateY(1px) }
-    .countdown{
-      color:var(--muted); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
-      margin-top:14px;
-      font-variant-numeric:tabular-nums;
-    }
-    .countdown b{ color:var(--muted); font-weight:500 }
 
     /* ---------- Practice mode ---------- */
     .practicebar{
@@ -552,9 +546,21 @@
       <div class="tagline">The daily poll guessing game</div>
     </div>
     <div class="iconbtns">
-      <button id="archiveBtn" class="iconbtn" title="Previous questions" aria-label="Previous questions">▦</button>
-      <button id="statsBtn" class="iconbtn" title="Your stats" aria-label="Your stats">▤</button>
-      <button id="helpBtn" class="iconbtn" title="How to play" aria-label="How to play">?</button>
+      <button id="archiveBtn" class="iconbtn" title="Previous questions" aria-label="Previous questions">
+        <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>
+        </svg>
+      </button>
+      <button id="statsBtn" class="iconbtn" title="Your stats" aria-label="Your stats">
+        <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 6h13M4 12h9M4 18h15"/>
+        </svg>
+      </button>
+      <button id="helpBtn" class="iconbtn" title="How to play" aria-label="How to play">
+        <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"/><path d="M9.2 9.3a2.8 2.8 0 1 1 3.7 2.7c-.7.3-1 .8-1 1.6v.4"/><circle cx="12" cy="17" r="0.4" fill="currentColor" stroke="none"/>
+        </svg>
+      </button>
     </div>
     <div id="statsHint" class="statshint hidden" aria-hidden="true">
       <svg viewBox="0 0 56 44" width="46" height="36" aria-hidden="true">
@@ -614,7 +620,6 @@
         </div>
         <p class="verdict" id="verdict"></p>
         <div class="bignum" id="bigAnswer"></div>
-        <p class="note" id="answerNote"></p>
         <p class="source-note" id="sourceNote"></p>
 
         <div class="crowd hidden" id="crowdBlock">
@@ -623,16 +628,6 @@
         </div>
 
         <button id="shareBtn" class="sharebtn" type="button">Share your result</button>
-        <p class="countdown" id="countdownP"><b id="countdown">—</b></p>
-
-        <div class="subscribe" id="subscribeBlock">
-          <p class="subhead">Tomorrow's question straight to your inbox</p>
-          <form id="emailForm" class="email-form" action="https://formspree.io/f/mgvnzepd" method="POST">
-            <input id="emailInput" name="email" type="email" placeholder="you@email.com" required autocomplete="email" />
-            <button type="submit" class="email-btn">Send it</button>
-            <span id="emailMsg" class="email-msg" role="status" aria-live="polite"></span>
-          </form>
-        </div>
       </div>
     </div>
 
@@ -733,8 +728,8 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=55"></script>
-  <script src="app.js?v=55"></script>
+  <script src="questions.js?v=56"></script>
+  <script src="app.js?v=56"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
