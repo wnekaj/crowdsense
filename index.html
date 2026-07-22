@@ -96,12 +96,12 @@
     .iconbtn{
       width:38px; height:38px; border-radius:8px;
       border:1px solid var(--line); background:#fff;
-      cursor:pointer; color:var(--ink);
+      cursor:pointer; color:var(--accent);
       display:grid; place-items:center;
       transition:color .15s ease, background .15s ease, border-color .15s ease, transform .05s ease;
     }
     .iconbtn svg{ display:block }
-    .iconbtn:hover{ color:var(--accent); border-color:var(--accent); background:var(--accent-soft) }
+    .iconbtn:hover{ color:var(--accent-deep); border-color:var(--accent); background:var(--accent-soft) }
     .iconbtn:active{ transform:translateY(1px) }
     .iconbtn:focus-visible{ outline:3px solid rgba(242,101,34,.35); outline-offset:2px }
 
@@ -447,7 +447,7 @@
     }
     .subhead{ font-size:13px; color:var(--muted); margin:0 0 6px }
     .below{
-      width:min(560px,94vw); margin-top:0; padding-top:18px;
+      width:min(560px,94vw); margin-top:35px; padding-top:18px;
       border-top:1px solid var(--hairline);
       text-align:center;
     }
@@ -728,8 +728,8 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=56"></script>
-  <script src="app.js?v=56"></script>
+  <script src="questions.js?v=57"></script>
+  <script src="app.js?v=57"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
