@@ -91,7 +91,7 @@ var els = {
   crowdBlock: $("crowdBlock"), crowdHead: $("crowdHead"), histo: $("histo"),
   shareBtn: $("shareBtn"),
   toast: $("toast"),
-  helpBtn: $("helpBtn"), statsBtn: $("statsBtn"), archiveBtn: $("archiveBtn"), privacyBtn: $("privacyBtn"),
+  helpBtn: $("helpBtn"), statsBtn: $("statsBtn"), archiveBtn: $("archiveBtn"), privacyBtn: $("privacyBtn"), contactBtn: $("contactBtn"),
   statsHint: $("statsHint"),
   archiveList: $("archiveList"),
   emailForm: $("emailForm"), emailInput: $("emailInput"), emailMsg: $("emailMsg"),
@@ -255,21 +255,6 @@ function renderStats(){
     row.appendChild(lab); row.appendChild(wrap);
     rows.appendChild(row);
   });
-
-  // today's guess breakdown lives here, off the game screen
-  var lg = $("lastGame");
-  if (lg){
-    lg.textContent = "";
-    var saved = loadState();
-    if (saved && saved.done && saved.guesses.length){
-      var tq = pickQuestionForKey(DAY_KEY);
-      var e1 = Math.abs(saved.guesses[0] - tq.answer);
-      var eF = Math.abs(saved.guesses[saved.guesses.length-1] - tq.answer);
-      lg.textContent = (saved.guesses.length > 1)
-        ? "Today: first guess " + e1 + " off · final " + eF + " off"
-        : "Today you were " + e1 + " off";
-    }
-  }
 
   var fe = $("firstErr");
   if (s.played){
@@ -676,12 +661,13 @@ document.addEventListener("click", function(e){
   if (t) closeModal(t.getAttribute("data-close"));
 });
 document.addEventListener("keydown", function(e){
-  if (e.key === "Escape"){ closeModal("helpModal"); closeModal("statsModal"); closeModal("archiveModal"); closeModal("privacyModal"); }
+  if (e.key === "Escape"){ closeModal("helpModal"); closeModal("statsModal"); closeModal("archiveModal"); closeModal("privacyModal"); closeModal("contactModal"); }
 });
 if (els.helpBtn) els.helpBtn.addEventListener("click", function(){ openModal("helpModal"); });
 if (els.statsBtn) els.statsBtn.addEventListener("click", function(){ STATS_SEEN = true; hideStatsHint(); renderStats(); openModal("statsModal"); });
 if (els.archiveBtn) els.archiveBtn.addEventListener("click", function(){ calY = null; renderArchive(); openModal("archiveModal"); });
 if (els.privacyBtn) els.privacyBtn.addEventListener("click", function(){ openModal("privacyModal"); });
+if (els.contactBtn) els.contactBtn.addEventListener("click", function(){ openModal("contactModal"); });
 
 // ===== archive / practice =====
 // A month calendar: past puzzle days are clickable and open that day's

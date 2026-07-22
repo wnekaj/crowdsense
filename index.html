@@ -95,7 +95,7 @@
     .iconbtns{ display:flex; gap:6px }
     .iconbtn{
       width:38px; height:38px; border-radius:8px;
-      border:1px solid var(--line); background:#fff;
+      border:1px solid var(--ink); background:#fff;
       cursor:pointer; color:var(--accent);
       display:grid; place-items:center;
       transition:color .15s ease, background .15s ease, border-color .15s ease, transform .05s ease;
@@ -451,7 +451,8 @@
       border-top:1px solid var(--hairline);
       text-align:center;
     }
-    .email-form{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; align-items:center }
+    .email-form{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; align-items:center }
+    .email-ico{ display:flex; align-items:center; color:var(--accent) }
     .email-form input[type=email]{
       min-width:220px; border:none; border-bottom:1px solid var(--line); border-radius:0;
       padding:9px 2px; font-size:14px; outline:none; background:transparent; color:var(--ink);
@@ -521,8 +522,6 @@
     .distbar.cool{ background:var(--cool) }
     .distbar.cold{ background:var(--cold) }
     .distbar.zero{ background:var(--hairline); color:var(--muted) }
-    .lastgame{ margin-top:12px; font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums }
-    .lastgame:empty{ display:none }
     .firsterr{ margin-top:12px; font-size:13.5px; color:var(--ink); border-top:1px solid var(--hairline); padding-top:12px }
     .firsterr b{ font-weight:500 }
 
@@ -632,7 +631,7 @@
     </div>
 
     <div class="below">
-      <p class="privacy"><button type="button" id="privacyBtn" class="linkbtn">Privacy</button></p>
+      <p class="privacy"><button type="button" id="privacyBtn" class="linkbtn">Privacy</button> · <button type="button" id="contactBtn" class="linkbtn">Contact</button></p>
     </div>
   </main>
 
@@ -677,6 +676,18 @@
     </div>
   </div>
 
+  <!-- Contact -->
+  <div id="contactModal" class="modal-root hidden" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
+    <div class="modal-backdrop" data-close="contactModal"></div>
+    <div class="modal-card">
+      <button class="modal-close" data-close="contactModal" aria-label="Close">✕</button>
+      <h2 class="modal-title" id="contactTitle">Contact</h2>
+      <div class="modal-body">
+        <p>To get in touch email <a href="mailto:info@crowdsense.uk">info@crowdsense.uk</a></p>
+      </div>
+    </div>
+  </div>
+
   <!-- Archive -->
   <div id="archiveModal" class="modal-root hidden" role="dialog" aria-modal="true" aria-labelledby="archiveTitle">
     <div class="modal-backdrop" data-close="archiveModal"></div>
@@ -705,11 +716,13 @@
         </div>
         <div class="disthead">Your record</div>
         <div id="distRows"></div>
-        <div class="lastgame" id="lastGame"></div>
         <div class="firsterr" id="firstErr"></div>
         <div class="subscribe">
           <p class="subhead">Tomorrow's question straight to your inbox</p>
           <form class="email-form" action="https://formspree.io/f/mgvnzepd" method="POST">
+            <span class="email-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            </span>
             <input name="email" type="email" placeholder="you@email.com" required autocomplete="email" />
             <button type="submit" class="email-btn">Send it</button>
             <span class="email-msg" role="status" aria-live="polite"></span>
@@ -728,8 +741,8 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=57"></script>
-  <script src="app.js?v=57"></script>
+  <script src="questions.js?v=58"></script>
+  <script src="app.js?v=58"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
