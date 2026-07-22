@@ -652,7 +652,9 @@ function legacyCopy(text){
 }
 function doShare(){
   if (navigator.share){
-    navigator.share({ title: "Crowdsense", text: shareText(false), url: CONFIG.SITE_URL }).catch(function(){});
+    // URL lives in the text on its own line; no separate url field, which
+    // WhatsApp would otherwise append to the previous line.
+    navigator.share({ title: "Crowdsense", text: shareText(true) }).catch(function(){});
     return;
   }
   var text = shareText();
