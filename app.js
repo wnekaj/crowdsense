@@ -87,15 +87,14 @@ var els = {
   ledger: $("ledger"),
   reveal: $("reveal"), verdict: $("verdict"), bigAnswer: $("bigAnswer"),
   revealFill: $("revealFill"), youMarker: $("youMarker"), youLabel: $("youLabel"),
-  answerNote: $("answerNote"), sourceNote: $("sourceNote"),
+  sourceNote: $("sourceNote"),
   crowdBlock: $("crowdBlock"), crowdHead: $("crowdHead"), histo: $("histo"),
-  shareBtn: $("shareBtn"), countdownP: $("countdownP"), countdown: $("countdown"),
+  shareBtn: $("shareBtn"),
   toast: $("toast"),
   helpBtn: $("helpBtn"), statsBtn: $("statsBtn"), archiveBtn: $("archiveBtn"), privacyBtn: $("privacyBtn"),
   statsHint: $("statsHint"),
   archiveList: $("archiveList"),
   emailForm: $("emailForm"), emailInput: $("emailInput"), emailMsg: $("emailMsg"),
-  subscribeBlock: $("subscribeBlock")
 };
 
 // set once the player opens their stats themselves; stops the post-reveal auto-open
@@ -339,7 +338,7 @@ function setKickerForTurn(){
   if (state.done){
     els.kicker.textContent = (MODE === "practice")
       ? "Practice round — pick another from the archive, or head back to today."
-      : "Come back tomorrow for question No. " + (PUZZLE_NO + 1) + ".";
+      : "Come back tomorrow for question #" + (PUZZLE_NO + 1) + ".";
     return;
   }
   if (state.guesses.length === 0) els.kicker.textContent = "Guess the percentage. First your instinct…";
@@ -506,19 +505,10 @@ function finishGame(alreadyDone){
       }, 350);
     });
   }
-  els.answerNote.textContent = Q.note || "";
   els.sourceNote.textContent = Q.source ? ("Source: " + Q.source) : "";
   els.reveal.classList.remove("hidden");
 
   setKickerForTurn();
-  if (MODE === "daily"){
-    els.countdownP.classList.remove("hidden");
-    if (els.subscribeBlock) els.subscribeBlock.classList.remove("hidden");
-    startCountdown();
-  } else {
-    els.countdownP.classList.add("hidden");
-    if (els.subscribeBlock) els.subscribeBlock.classList.add("hidden");
-  }
 
   if (MODE === "daily"){
     if (!alreadyDone){
@@ -671,27 +661,6 @@ function doShare(){
   else toast("Couldn't copy — select and copy manually");
 }
 
-// ===== countdown to next question (London midnight) =====
-var _countdownTimer = null;
-function startCountdown(){
-  if (_countdownTimer) clearInterval(_countdownTimer);
-  function tick(){
-    var parts = new Intl.DateTimeFormat("en-GB", { timeZone: safeTZ(), hour12:false, hour:"2-digit", minute:"2-digit", second:"2-digit" }).formatToParts(new Date());
-    var h=0,m=0,s=0;
-    for (var i=0;i<parts.length;i++){
-      if (parts[i].type==="hour") h=+parts[i].value;
-      else if (parts[i].type==="minute") m=+parts[i].value;
-      else if (parts[i].type==="second") s=+parts[i].value;
-    }
-    var left = 86400 - (h*3600 + m*60 + s);
-    if (left <= 0){ els.countdown.textContent = "now — refresh!"; return; }
-    var hh = Math.floor(left/3600), mm = Math.floor((left%3600)/60), ss = left%60;
-    els.countdown.textContent = hh + "h " + String(mm).padStart(2,"0") + "m " + String(ss).padStart(2,"0") + "s";
-  }
-  tick();
-  _countdownTimer = setInterval(tick, 1000);
-}
-
 // ===== date ticker =====
 function startDailyTicker(){
   if (!els.dailyDate) return;
@@ -727,7 +696,7 @@ function renderArchive(){
   if (PUZZLE_NO <= 1){
     var p = document.createElement("p");
     p.className = "archive-empty";
-    p.textContent = "No past questions yet — today's is No. 1. Come back tomorrow and the calendar starts filling up.";
+    p.textContent = "No past questions yet — today's is #1. Come back tomorrow and the calendar starts filling up.";
     list.appendChild(p);
     return;
   }
@@ -793,7 +762,7 @@ function renderCalendar(){
       cell.disabled = true;
     } else {
       cell.classList.add("avail");
-      cell.title = "No. " + puzzleNoForKey(key);
+      cell.title = "#" + puzzleNoForKey(key);
       try{
         var st = JSON.parse(localStorage.getItem("cs-state-" + key) || "null");
         if (st && st.done) cell.classList.add("done");
@@ -837,7 +806,7 @@ function setupGame(dayKey, mode){
   state = { guesses: [], done: false, win: false, score: 0, crowdPct: null };
   minAllowed = 0; maxAllowed = 100;
 
-  els.puzzleNo.textContent = "No. " + CUR.puzzleNo;
+  els.puzzleNo.textContent = "#" + CUR.puzzleNo;
   els.questionText.textContent = Q.question;
   els.ledger.innerHTML = "";
   els.reveal.classList.add("hidden");
