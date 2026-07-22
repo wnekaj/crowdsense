@@ -45,10 +45,10 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-07-23",  // Day 4
-    question: "What percentage of the public have an unfavourable view of Nigel Farage?",
-    answer: 49,
-    note: "34% are favourable.",
-    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
+    question: "What percentage of British adults say they gamble at least once a week?",
+    answer: 25,
+    note: "45% say they never gamble at all.",
+    source: "Public First poll of 2,076 UK adults, 29 May – 2 June 2026"
   },
   {
     date: "2026-07-24",  // Day 5
@@ -59,10 +59,10 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-07-25",  // Day 6
-    question: "What percentage of British adults say they gamble at least once a week?",
-    answer: 25,
-    note: "45% say they never gamble at all.",
-    source: "Public First poll of 2,076 UK adults, 29 May – 2 June 2026"
+    question: "What percentage of the public have an unfavourable view of Nigel Farage?",
+    answer: 49,
+    note: "34% are favourable.",
+    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
   },
   {
     date: "2026-07-26",  // Day 7
