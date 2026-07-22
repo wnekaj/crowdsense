@@ -605,24 +605,30 @@ function submitGuess(){
 // includeUrl=false leaves the link out of the text — used with the native
 // share sheet, where the URL travels as its own field so the target renders
 // a proper link preview (site icon, OG card) instead of a plain-text glyph.
+// five-square bracket meter: one filled square per tier reached (best = 5),
+// each in the tier's share colour, the rest empty. Plain-text so it renders
+// anywhere (WhatsApp, iMessage, etc.).
+function shareMeter(err){
+  var m = {
+    target: { n:5, sq:"🟩" },   // on the pulse
+    hot:    { n:4, sq:"🟦" },   // on the scent
+    warm:   { n:3, sq:"🟨" },   // in the mix
+    cool:   { n:2, sq:"🟧" },   // warm-ish
+    cold:   { n:1, sq:"🟥" }    // out of touch
+  }[heat(err).cls];
+  var out = "";
+  for (var i=0; i<5; i++) out += (i < m.n) ? m.sq : "⬜";
+  return out;
+}
 function shareText(includeUrl){
   var lines = [];
-  var title = "Crowdsense No. " + CUR.puzzleNo + " — " + state.score + " off";
+  var title = "Crowdsense #" + CUR.puzzleNo;
   if (MODE === "practice") title += " (practice)";
   lines.push(title);
-  var grid = state.guesses.map(function(g){
-    var err = Math.abs(g - Q.answer);
-    var h = heat(err);
-    if (err <= CONFIG.BULLSEYE) return h.emoji;
-    return h.emoji + (Q.answer > g ? "⬆️" : "⬇️");
-  }).join(" ");
-  lines.push(grid);
-  if (MODE === "daily"){
-    if (state.crowdPct !== null && state.crowdPct !== undefined){
-      lines.push("Closer than " + state.crowdPct + "% of players");
-    }
-    var s = readStreak();
-    if (state.win && s.count > 1) lines.push("🔥 " + s.count + " day streak");
+  var finalErr = Math.abs(state.guesses[state.guesses.length-1] - Q.answer);
+  lines.push(shareMeter(finalErr) + " " + state.score + " off");
+  if (MODE === "daily" && state.crowdPct !== null && state.crowdPct !== undefined){
+    lines.push("Closer than " + state.crowdPct + "% of players");
   }
   if (includeUrl !== false) lines.push(CONFIG.SITE_URL);
   return lines.join("\n");
