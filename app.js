@@ -163,12 +163,13 @@ function updateStreakBadge(){
   if (!els.streakBadge) return;
   var s = readStreak();
   var show = s.count > 0 && (s.last === DAY_KEY || s.last === getYesterdayKey(DAY_KEY));
-  // a bang-on day (best score of 0) earns the trophy for good
-  var trophy = readStats().best === 0;
-  els.streakBadge.classList.toggle("hidden", !show && !trophy);
+  // every bullseye (a within-2 "on the pulse" finish) is tallied for good
+  var bullseyes = 0;
+  try{ bullseyes = readStats().tiers.target || 0; }catch(_){}
+  els.streakBadge.classList.toggle("hidden", !show && bullseyes === 0);
   var parts = [];
   if (show) parts.push("🔥 " + s.count);
-  if (trophy) parts.push("🏆");
+  if (bullseyes > 0) parts.push("🎯 " + bullseyes);
   els.streakBadge.textContent = parts.join(" ");
 }
 
