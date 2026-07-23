@@ -586,7 +586,7 @@ function submitGuess(){
 function shareMeter(err){
   var m = {
     target: { n:5, sq:"🟩" },   // on the pulse
-    hot:    { n:4, sq:"🟦" },   // on the scent
+    hot:    { n:4, sq:"🟩" },   // on the scent
     warm:   { n:3, sq:"🟨" },   // in the mix
     cool:   { n:2, sq:"🟧" },   // warm-ish
     cold:   { n:1, sq:"🟥" }    // out of touch
