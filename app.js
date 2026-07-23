@@ -259,7 +259,7 @@ function renderStats(){
 
   var fe = $("firstErr");
   if (s.played){
-    fe.innerHTML = "Your Crowdsense score is how far off you are on an average day. <b>Score within 10 to keep your streak</b>.";
+    fe.textContent = "Your Crowdsense score is how far off you are on an average day.";
   } else {
     fe.textContent = "Play your first game to start measuring your crowdsense.";
   }
@@ -498,15 +498,12 @@ function finishGame(alreadyDone){
 
   if (MODE === "daily"){
     if (!alreadyDone){
-      // streak + stats are recorded once, when the game actually ends
-      if (state.win){
-        var s = readStreak();
-        var next = (s.last === getYesterdayKey(DAY_KEY)) ? s.count + 1 : 1;
-        if (s.last === DAY_KEY) next = s.count; // safety: never double-count a day
-        writeStreak(next, DAY_KEY);
-      } else {
-        writeStreak(0, DAY_KEY);
-      }
+      // streak + stats are recorded once, when the game actually ends.
+      // Streak = consecutive days played (any score keeps it alive).
+      var s = readStreak();
+      var next = (s.last === getYesterdayKey(DAY_KEY)) ? s.count + 1 : 1;
+      if (s.last === DAY_KEY) next = s.count; // safety: never double-count a day
+      writeStreak(next, DAY_KEY);
       recordResult(state.win, err1, errF, state.score);
       updateStreakBadge();
       saveState();
