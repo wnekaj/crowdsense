@@ -258,7 +258,7 @@ function renderStats(){
 
   var fe = $("firstErr");
   if (s.played){
-    fe.innerHTML = "Your Crowdsense score is how far off you are on an average day — <b>lower is better</b>.";
+    fe.innerHTML = "Your Crowdsense score is how far off you are on an average day. <b>Score within 10 to keep your streak</b>.";
   } else {
     fe.textContent = "Play your first game to start measuring your crowdsense.";
   }
