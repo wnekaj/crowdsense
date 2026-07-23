@@ -523,7 +523,7 @@
     .distbar.cold{ background:var(--cold) }
     .distbar.zero{ background:var(--hairline); color:var(--muted) }
     .firsterr{ margin-top:12px; font-size:13.5px; color:var(--ink); border-top:1px solid var(--hairline); padding-top:12px }
-    .firsterr b{ font-weight:500 }
+    .firsterr b{ font-weight:700 }
 
     @media (prefers-reduced-motion: reduce){
       *{ animation:none !important; transition:none !important }
@@ -741,8 +741,8 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=63"></script>
-  <script src="app.js?v=63"></script>
+  <script src="questions.js?v=64"></script>
+  <script src="app.js?v=64"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
