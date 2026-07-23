@@ -487,6 +487,9 @@ function finishGame(alreadyDone){
       if (!marked) showGuessMark();
       setTimeout(function(){
         els.reveal.classList.remove("staging");
+        // update the header badge only now the answer is on screen, so a
+        // bullseye 🎯 never gives itself away before the reveal lands
+        updateStreakBadge();
         maybeShowStatsHint();
       }, 350);
     });
@@ -505,7 +508,9 @@ function finishGame(alreadyDone){
       if (s.last === DAY_KEY) next = s.count; // safety: never double-count a day
       writeStreak(next, DAY_KEY);
       recordResult(state.win, err1, errF, state.score);
-      updateStreakBadge();
+      // badge update is deferred to the reveal-complete callback (staged),
+      // or fires below for the non-staged path, so 🎯 stays hidden until land
+      if (!els.reveal.classList.contains("staging")) updateStreakBadge();
       saveState();
       // surface the record once the reveal has landed, unless the player
       // has already opened it (or another modal) themselves
@@ -582,15 +587,18 @@ function submitGuess(){
 // each in the tier's share colour, the rest empty. Plain-text so it renders
 // anywhere (WhatsApp, iMessage, etc.).
 function shareMeter(err){
+  var cls = heat(err).cls;
   var m = {
     target: { n:5, sq:"🟩" },   // on the pulse
     hot:    { n:4, sq:"🟩" },   // on the scent
     warm:   { n:3, sq:"🟨" },   // in the mix
     cool:   { n:2, sq:"🟧" },   // warm-ish
     cold:   { n:1, sq:"🟥" }    // out of touch
-  }[heat(err).cls];
+  }[cls];
   var out = "";
   for (var i=0; i<5; i++) out += (i < m.n) ? m.sq : "⬜";
+  // a bullseye (on the pulse) gets a target right after the five squares
+  if (cls === "target") out += "🎯";
   return out;
 }
 function shareText(includeUrl){
