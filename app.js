@@ -951,6 +951,20 @@ function loadQuestions(){
   });
 })();
 
+// ===== stale-tab guard =====
+// Phones resurrect old tabs (bfcache, app switcher) hours or days later.
+// Whenever the page comes back into view, check the London day: if the tab
+// still shows a previous day's question in daily mode, reload for today's.
+function reloadIfNewDay(){
+  try{
+    if (MODE === "daily" && getDayKey() !== DAY_KEY) location.reload();
+  }catch(_){}
+}
+window.addEventListener("pageshow", function(e){ if (e.persisted) reloadIfNewDay(); });
+document.addEventListener("visibilitychange", function(){
+  if (document.visibilityState === "visible") reloadIfNewDay();
+});
+
 // ===== events =====
 els.guessBtn.addEventListener("click", submitGuess);
 els.input.addEventListener("keydown", function(e){ if (e.key === "Enter") submitGuess(); });
