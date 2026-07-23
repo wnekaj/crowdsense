@@ -740,11 +740,19 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=66"></script>
-  <script src="app.js?v=66"></script>
+  <script src="questions.js?v=67"></script>
+  <script src="app.js?v=67"></script>
   <script>
     if ("serviceWorker" in navigator){
-      window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js"); });
+      window.addEventListener("load", function(){
+        navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(function(reg){
+          // re-check for a new worker whenever the tab comes back into view,
+          // so cache fixes and question updates reach devices promptly
+          document.addEventListener("visibilitychange", function(){
+            if (document.visibilityState === "visible") reg.update().catch(function(){});
+          });
+        }).catch(function(){});
+      });
     }
   </script>
 
