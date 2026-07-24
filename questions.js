@@ -8,7 +8,7 @@
    Scheduling: each question carries a "date" (YYYY-MM-DD, London time) and
    runs on exactly that day. The undated Burnham-improvement taster runs on
    any day without a dated question — it is the fallback if the bank runs
-   dry. Top up before 2 August.
+   dry. Top up before 5 August.
    ========================================================================= */
 
 var CS_QUESTIONS = [
@@ -66,10 +66,10 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-07-26",  // Day 7
-    question: "What percentage of the public agree they'd one day be interested in going into politics?",
-    answer: 16,
-    note: "54% strongly disagree.",
-    source: "Public First poll of 3,025 UK adults, 13–15 March 2026"
+    question: "What percentage of Londoners say they've attended a protest in the last year?",
+    answer: 13,
+    note: "21% of 18–24s — versus 6% of over-65s.",
+    source: "Public First poll of 1,041 London adults, 19–22 June 2026"
   },
   {
     date: "2026-07-27",  // Day 8
@@ -101,33 +101,44 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-07-31",  // Day 12
-    question: "What percentage of UK adults recognise the Gen Z slang term 'rizz'?",
-    answer: 19,
-    note: "41% of 18–24s. 4% of over-65s.",
-    source: "Focaldata survey of 1,060 UK adults, 7–10 May 2026"
+    question: "What percentage of Brits say they'd be willing to volunteer for military service if the UK mainland was invaded?",
+    answer: 44,
+    note: "30% of men are very willing — versus 12% of women.",
+    source: "Public First poll of 1,983 UK adults, 6–9 March 2026"
   },
   {
     date: "2026-08-01",  // Day 13
-    question: "In a referendum tomorrow, what percentage of Brits say they'd vote to rejoin the European Union?",
-    answer: 51,
-    note: "29% would vote to stay out. 11% don't know.",
-    source: "YouGov poll for The Times of 2,058 GB adults, 10–11 June 2026"
+    question: "What percentage of Brits say they'd feel responsible for protecting their family in the event of a war?",
+    answer: 90,
+    note: "Compare that with the 44% who'd volunteer for military service.",
+    source: "Public First poll of 1,983 UK adults, 6–9 March 2026"
   },
   {
     date: "2026-08-02",  // Day 14
-    question: "What percentage of the British public have ever used ChatGPT?",
+    question: "What percentage of Brits say they have never tried a vape?",
+    answer: 71,
+    note: "14% have tried them and still use them.",
+    source: "Public First poll of 2,010 UK adults, 21 February – 5 March 2025"
+  },
+  {
+    date: "2026-08-03",  // Day 15
+    question: "What percentage of Brits say they smoke every day?",
+    answer: 12,
+    note: "54% have never smoked.",
+    source: "Public First poll of 2,010 UK adults, 21 February – 5 March 2025"
+  },
+  {
+    date: "2026-08-04",  // Day 16
+    question: "What percentage of Brits say they have a Boots Advantage Card?",
     answer: 62,
-    note: "Roughly two in five have never used AI.",
-    source: "Public First poll of 2,017 UK adults, 20–26 March 2026"
+    note: "78% of women — versus 45% of men.",
+    source: "Public First poll of 2,015 UK adults, 16–30 January 2026"
+  },
+  {
+    date: "2026-08-05",  // Day 17
+    question: "What percentage of UK workers say they haven't taken a single day off work since November 2024?",
+    answer: 41,
+    note: "4% say they've taken more than 30.",
+    source: "Public First poll of 1,308 working UK adults, 16–30 January 2026"
   }
-
-  /* ---------- SPARE (verified, ready if needed) ----------
-  ,{
-    date: "",
-    question: "What percentage of Londoners say they've attended a protest in the last year?",
-    answer: 13,
-    note: "21% of 18–24s — versus 6% of over-65s.",
-    source: "Public First poll of 1,041 London adults, 19–22 June 2026"
-  }
-  ----------------------------------------------------------- */
 ];
