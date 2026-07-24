@@ -69,9 +69,9 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-07-28",  // Day 9
-    question: "What percentage of UK workers say they've been promoted at work in the past year?",
-    answer: 30,
-    source: "Public First poll of 1,352 working UK adults, 20–26 March 2026"
+    question: "What percentage of Brits say they have never tried a vape?",
+    answer: 72,
+    source: "Public First poll of 2,010 UK adults, 21 February – 5 March 2025"
   },
   {
     date: "2026-07-29",  // Day 10
@@ -99,9 +99,9 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-08-02",  // Day 14
-    question: "What percentage of Brits say they have never tried a vape?",
-    answer: 72,
-    source: "Public First poll of 2,010 UK adults, 21 February – 5 March 2025"
+    question: "What percentage of UK workers say they've been promoted at work in the past year?",
+    answer: 30,
+    source: "Public First poll of 1,352 working UK adults, 20–26 March 2026"
   },
   {
     date: "2026-08-03",  // Day 15
