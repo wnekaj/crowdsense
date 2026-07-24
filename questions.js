@@ -1,8 +1,6 @@
 /* =========================================================================
    CROWDSENSE — LAUNCH SCHEDULE · LAUNCH: MON 20 JULY 2026
-   All figures verified against raw tables. Rizz and rejoin-EU days are
-   third-party polls (Focaldata; YouGov/The Times) — the how-to modal
-   wording covers this ("real polling"), and each day's reveal cites its
+   All figures verified against raw tables; each day's reveal cites its
    own source.
 
    Scheduling: each question carries a "date" (YYYY-MM-DD, London time) and
@@ -18,7 +16,6 @@ var CS_QUESTIONS = [
     date: "",
     question: "What percentage of Brits agreed Andy Burnham would be an improvement on Keir Starmer as Prime Minister?",
     answer: 49,
-    note: "Just 16% disagree.",
     source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
   },
 
@@ -26,119 +23,102 @@ var CS_QUESTIONS = [
     date: "2026-07-20",  // Day 1
     question: "What percentage of the public think Andy Burnham will be a good leader?",
     answer: 40,
-    note: "20% think he'll be a bad leader. Come back tomorrow for another question.",
     source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
   },
   {
     date: "2026-07-21",  // Day 2
     question: "What percentage of Brits agree that talking politics on a first date is usually a bad idea?",
     answer: 62,
-    note: "32% see no problem with it, the rest don't know.",
     source: "Public First poll of 2,045 UK adults, 19–22 January 2026"
   },
   {
     date: "2026-07-22",  // Day 3
     question: "What percentage of the public say they have travelled outside of Europe?",
     answer: 76,
-    note: "Meaning one in four haven't.",
     source: "Public First poll of 3,025 UK adults, 13–15 March 2026"
   },
   {
     date: "2026-07-23",  // Day 4
     question: "What percentage of British adults say they gamble at least once a week?",
     answer: 25,
-    note: "45% say they never gamble at all.",
     source: "Public First poll of 2,076 UK adults, 29 May – 2 June 2026"
   },
   {
     date: "2026-07-24",  // Day 5
     question: "What percentage of Brits say they're currently registered on a dating app or website?",
     answer: 12,
-    note: "Another 30% have been in the past.",
     source: "Public First poll of 2,045 UK adults, 19–22 January 2026"
   },
   {
     date: "2026-07-25",  // Day 6
-    question: "What percentage of the public have an unfavourable view of Nigel Farage?",
-    answer: 49,
-    note: "34% are favourable.",
-    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
+    question: "What percentage of Brits say they'd be willing to volunteer for military service if the UK mainland was invaded?",
+    answer: 44,
+    source: "Public First poll of 1,983 UK adults, 6–9 March 2026"
   },
   {
     date: "2026-07-26",  // Day 7
-    question: "What percentage of Londoners say they've attended a protest in the last year?",
-    answer: 13,
-    note: "21% of 18–24s — versus 6% of over-65s.",
-    source: "Public First poll of 1,041 London adults, 19–22 June 2026"
+    question: "What percentage of UK workers say they haven't taken a single day off work since November 2024?",
+    answer: 41,
+    source: "Public First poll of 1,308 working UK adults, 16–30 January 2026"
   },
   {
     date: "2026-07-27",  // Day 8
     question: "What percentage of Brits think the UK's best days are behind it?",
     answer: 37,
-    note: "Just 11% say the best days are ahead.",
     source: "Public First poll of 3,025 UK adults, 13–15 March 2026"
   },
   {
     date: "2026-07-28",  // Day 9
     question: "What percentage of UK workers say they've been promoted at work in the past year?",
     answer: 30,
-    note: "52% of 25–34s versus 14% of 45–54s.",
     source: "Public First poll of 1,352 working UK adults, 20–26 March 2026"
   },
   {
     date: "2026-07-29",  // Day 10
     question: "Asked if they plan to start a business in the next five years, what percentage of Brits simply say 'No'?",
     answer: 62,
-    note: "Among under-25s, only 30% say no.",
     source: "Public First poll of 4,158 UK adults, 19–29 January 2026"
   },
   {
     date: "2026-07-30",  // Day 11
     question: "What percentage of the public say they tend to buy organic products from the supermarket?",
     answer: 32,
-    note: "Two-thirds say they don't.",
     source: "Public First poll of 3,025 UK adults, 13–15 March 2026"
   },
   {
     date: "2026-07-31",  // Day 12
-    question: "What percentage of Brits say they'd be willing to volunteer for military service if the UK mainland was invaded?",
-    answer: 44,
-    note: "30% of men are very willing — versus 12% of women.",
-    source: "Public First poll of 1,983 UK adults, 6–9 March 2026"
+    question: "What percentage of the public have an unfavourable view of Nigel Farage?",
+    answer: 49,
+    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
   },
   {
     date: "2026-08-01",  // Day 13
     question: "What percentage of Brits say they'd feel responsible for protecting their family in the event of a war?",
     answer: 90,
-    note: "Compare that with the 44% who'd volunteer for military service.",
     source: "Public First poll of 1,983 UK adults, 6–9 March 2026"
   },
   {
     date: "2026-08-02",  // Day 14
     question: "What percentage of Brits say they have never tried a vape?",
-    answer: 71,
-    note: "14% have tried them and still use them.",
+    answer: 72,
     source: "Public First poll of 2,010 UK adults, 21 February – 5 March 2025"
   },
   {
     date: "2026-08-03",  // Day 15
     question: "What percentage of Brits say they smoke every day?",
     answer: 12,
-    note: "54% have never smoked.",
     source: "Public First poll of 2,010 UK adults, 21 February – 5 March 2025"
   },
   {
     date: "2026-08-04",  // Day 16
     question: "What percentage of Brits say they have a Boots Advantage Card?",
     answer: 62,
-    note: "78% of women — versus 45% of men.",
     source: "Public First poll of 2,015 UK adults, 16–30 January 2026"
   },
   {
     date: "2026-08-05",  // Day 17
-    question: "What percentage of UK workers say they haven't taken a single day off work since November 2024?",
-    answer: 41,
-    note: "4% say they've taken more than 30.",
-    source: "Public First poll of 1,308 working UK adults, 16–30 January 2026"
+    question: "What percentage of Londoners say they've attended a protest in the last year?",
+    answer: 13,
+    source: "Public First poll of 1,041 London adults, 19–22 June 2026"
   }
 ];
