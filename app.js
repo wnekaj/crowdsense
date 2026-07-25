@@ -107,9 +107,11 @@ var Q = null;                       // current question (alias of CUR.q)
 var state = { guesses: [], done: false, win: false, score: 0, crowdPct: null };
 var minAllowed = 0, maxAllowed = 100;   // the squeeze window
 
-function stateKey(){ return "cs-state-" + DAY_KEY; }
+// State is keyed by the day being played, so a past day's result is stored
+// under its own date: it shows as done in the calendar and can't be replayed
+// (and so can't be counted twice in the stats).
+function stateKey(){ return "cs-state-" + ((CUR && CUR.dayKey) || DAY_KEY); }
 function saveState(){
-  if (MODE !== "daily") return;
   try{ localStorage.setItem(stateKey(), JSON.stringify({ guesses: state.guesses, done: state.done })); }catch(_){}
 }
 function loadState(){
@@ -323,7 +325,7 @@ function setKickerForTurn(){
   if (!els.kicker) return;
   if (state.done){
     els.kicker.textContent = (MODE === "practice")
-      ? "Practice round — pick another from the archive, or head back to today."
+      ? "Pick another from the archive, or head back to today."
       : "Come back tomorrow for question #" + (PUZZLE_NO + 1) + ".";
     return;
   }
@@ -499,31 +501,31 @@ function finishGame(alreadyDone){
 
   setKickerForTurn();
 
-  if (MODE === "daily"){
-    if (!alreadyDone){
-      // streak + stats are recorded once, when the game actually ends.
-      // Streak = consecutive days played (any score keeps it alive).
+  if (!alreadyDone){
+    // Every finished game counts toward the stats, past days included.
+    // The streak is consecutive days of the daily puzzle only.
+    if (MODE === "daily"){
       var s = readStreak();
       var next = (s.last === getYesterdayKey(DAY_KEY)) ? s.count + 1 : 1;
       if (s.last === DAY_KEY) next = s.count; // safety: never double-count a day
       writeStreak(next, DAY_KEY);
-      recordResult(state.win, err1, errF, state.score);
-      // badge update is deferred to the reveal-complete callback (staged),
-      // or fires below for the non-staged path, so 🎯 stays hidden until land
-      if (!els.reveal.classList.contains("staging")) updateStreakBadge();
-      saveState();
-      // surface the record once the reveal has landed, unless the player
-      // has already opened it (or another modal) themselves
-      var statsDelay = els.reveal.classList.contains("staging") ? CONFIG.REVEAL_MS + 2200 : 1400;
-      setTimeout(function(){
-        if (STATS_SEEN) return;
-        if (document.querySelector(".modal-root:not(.hidden)")) return;
-        renderStats();
-        openModal("statsModal");
-      }, statsDelay);
     }
-    crowdFlow(state.guesses[state.guesses.length-1]);
+    recordResult(state.win, err1, errF, state.score);
+    // badge update is deferred to the reveal-complete callback (staged),
+    // or fires here for the non-staged path, so 🎯 stays hidden until land
+    if (!els.reveal.classList.contains("staging")) updateStreakBadge();
+    saveState();
+    // surface the record once the reveal has landed, unless the player
+    // has already opened it (or another modal) themselves
+    var statsDelay = els.reveal.classList.contains("staging") ? CONFIG.REVEAL_MS + 2200 : 1400;
+    setTimeout(function(){
+      if (STATS_SEEN) return;
+      if (document.querySelector(".modal-root:not(.hidden)")) return;
+      renderStats();
+      openModal("statsModal");
+    }, statsDelay);
   }
+  if (MODE === "daily") crowdFlow(state.guesses[state.guesses.length-1]);
   // staged reveals show the hint from the animation's completion callback
   if (!els.reveal.classList.contains("staging")) maybeShowStatsHint();
 }
@@ -531,7 +533,7 @@ function finishGame(alreadyDone){
 // One-time nudge toward the stats button, shown only the first time a
 // player ever completes a daily game.
 function maybeShowStatsHint(){
-  if (MODE !== "daily" || !els.statsHint) return;
+  if (!els.statsHint) return;
   try{
     if (localStorage.getItem("cs-stats-hint")) return;
     if (readStats().played !== 1) return;
@@ -603,9 +605,7 @@ function shareMeter(err){
 }
 function shareText(includeUrl){
   var lines = [];
-  var title = "Crowdsense #" + CUR.puzzleNo;
-  if (MODE === "practice") title += " (practice)";
-  lines.push(title);
+  lines.push("Crowdsense #" + CUR.puzzleNo);
   var finalErr = Math.abs(state.guesses[state.guesses.length-1] - Q.answer);
   lines.push(shareMeter(finalErr) + " " + state.score + " off");
   if (MODE === "daily" && state.crowdPct !== null && state.crowdPct !== undefined){
@@ -819,24 +819,20 @@ function setupGame(dayKey, mode){
   renderDots();
   setKickerForTurn();
 
-  var practice = mode === "practice";
-  els.practiceBar.classList.toggle("hidden", !practice);
-  if (practice){
-    els.practiceLabel.textContent = "Practice";
-  }
+  els.practiceBar.classList.toggle("hidden", mode !== "practice");
+  els.practiceLabel.textContent = "";
 
-  if (!practice){
-    var saved = loadState();
-    if (saved && saved.guesses.length){
-      saved.guesses.forEach(function(g){
-        state.guesses.push(g);
-        renderLedgerRow(state.guesses.length, g);
-        applyGuessToWindow(g);
-      });
-      renderDots();
-      if (saved.done) finishGame(true);
-      else setKickerForTurn();
-    }
+  // restore any saved result for this day, today's or a past one
+  var saved = loadState();
+  if (saved && saved.guesses.length){
+    saved.guesses.forEach(function(g){
+      state.guesses.push(g);
+      renderLedgerRow(state.guesses.length, g);
+      applyGuessToWindow(g);
+    });
+    renderDots();
+    if (saved.done) finishGame(true);
+    else setKickerForTurn();
   }
 }
 
