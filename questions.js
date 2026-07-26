@@ -57,7 +57,7 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-07-26",  // Day 7
-    question: "What percentage of UK workers say they haven't taken a single day off work since November 2024?",
+    question: "What percentage of UK workers said they didn't take a single day off work due to sickness in 2025?",
     answer: 41,
     source: "Public First poll of 1,308 working UK adults, 16–30 January 2026"
   },
