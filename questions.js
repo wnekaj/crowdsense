@@ -75,9 +75,9 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-07-29",  // Day 10
-    question: "Asked if they plan to start a business in the next five years, what percentage of Brits simply say 'No'?",
-    answer: 62,
-    source: "Public First poll of 4,158 UK adults, 19–29 January 2026"
+    question: "What percentage of the public have an unfavourable view of Nigel Farage?",
+    answer: 49,
+    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
   },
   {
     date: "2026-07-30",  // Day 11
@@ -87,9 +87,9 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-07-31",  // Day 12
-    question: "What percentage of the public have an unfavourable view of Nigel Farage?",
-    answer: 49,
-    source: "Public First poll of 2,013 UK adults, 26–29 June 2026"
+    question: "Asked if they plan to start a business in the next five years, what percentage of Brits simply say 'No'?",
+    answer: 62,
+    source: "Public First poll of 4,158 UK adults, 19–29 January 2026"
   },
   {
     date: "2026-08-01",  // Day 13
