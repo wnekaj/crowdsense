@@ -138,7 +138,7 @@
       var lines = [];
       lines.push("Today's question:");
       lines.push("");
-      lines.push("“" + q.question + "”");
+      lines.push("“" + String(q.question).replace(/\*\*/g, "") + "”");
       lines.push("");
       lines.push("One guess. The closer the better. Play now: " + SITE_URL);
 
@@ -147,7 +147,7 @@
       if (hasDated(yKey)){
         var yq = pickForKey(yKey);
         lines.push("");
-        lines.push("Yesterday: " + yq.answer + "% — " + yq.question.replace(/^What percentage (of\s+)?/i,"").replace(/\?$/,"") + ". Were you close?");
+        lines.push("Yesterday: " + yq.answer + "% — " + String(yq.question).replace(/\*\*/g,"").replace(/^What percentage (of\s+)?/i,"").replace(/\?$/,"") + ". Were you close?");
       }
       lines.push("");
       lines.push("—");

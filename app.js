@@ -790,6 +790,15 @@ function pickQuestionForKey(key){
 // feed the crowd data for puzzle No. 1.
 function isPreLaunch(dayKey){ return daysSince(CONFIG.ANCHOR, dayKey) < 0; }
 
+// Questions may emphasise a phrase with **double asterisks**. Everything is
+// HTML-escaped first, so only that one markup can ever reach the DOM.
+function renderQuestionText(text){
+  var safe = String(text || "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+  els.questionText.innerHTML = safe;
+}
+
 // ===== game setup (daily or practice) =====
 function setupGame(dayKey, mode){
   MODE = mode;
@@ -799,7 +808,7 @@ function setupGame(dayKey, mode){
   minAllowed = 0; maxAllowed = 100;
 
   els.puzzleNo.textContent = "#" + CUR.puzzleNo;
-  els.questionText.textContent = Q.question;
+  renderQuestionText(Q.question);
   els.ledger.innerHTML = "";
   els.reveal.classList.add("hidden");
   els.crowdBlock.classList.add("hidden");

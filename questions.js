@@ -138,5 +138,11 @@ var CS_QUESTIONS = [
     question: "If a general election were called tomorrow, what percentage of Brits say they would vote Labour?",
     answer: 23,
     source: "Public First poll of 2,183 UK adults, 21–25 July 2026"
+  },
+  {
+    date: "2026-08-09",  // Day 21
+    question: "What percentage of **18–34 year-olds** say they have used AI to help write a break-up or rejection message?",
+    answer: 10,
+    source: "Public First poll of 2,045 UK adults, 19–29 January 2026"
   }
 ];
