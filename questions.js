@@ -111,15 +111,15 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-08-04",  // Day 16
-    question: "What percentage of Brits say they'd feel responsible for protecting their family if a war broke out?",
-    answer: 90,
-    source: "Public First poll of 1,983 UK adults, 6–9 March 2026"
-  },
-  {
-    date: "2026-08-05",  // Day 17
     question: "What percentage of **18–34 year-olds** say they have used AI to help write a break-up or rejection message?",
     answer: 10,
     source: "Public First poll of 2,045 UK adults, 19–29 January 2026"
+  },
+  {
+    date: "2026-08-05",  // Day 17
+    question: "What percentage of Brits say they'd feel responsible for protecting their family if a war broke out?",
+    answer: 90,
+    source: "Public First poll of 1,983 UK adults, 6–9 March 2026"
   },
   {
     date: "2026-08-06",  // Day 18
