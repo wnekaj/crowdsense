@@ -17,7 +17,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;700&family=Caveat:wght@500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;700&display=swap" rel="stylesheet" />
 
   <style>
     :root{
@@ -65,18 +65,34 @@
       padding:16px 4px 10px;
       position:relative;
     }
-    /* one-time nudge for first-time players, pointing at the stats button */
-    .statshint{
-      position:absolute; top:46px; right:52px; z-index:5;
-      display:flex; flex-direction:column; align-items:flex-end;
-      font-family:'Caveat','Segoe Script','Comic Sans MS',cursive;
-      font-size:18px; line-height:1; color:var(--ink);
-      transform:rotate(-4deg);
+    /* ---------- One-off tour ---------- */
+    .tour{ position:fixed; inset:0; z-index:60; cursor:pointer }
+    /* the spotlight: a ring over the target, dimming everything else via a
+       very large box-shadow spread */
+    .tour-spot{
+      position:fixed; border-radius:10px;
+      border:2px solid var(--accent);
+      box-shadow:0 0 0 9999px rgba(18,18,18,.6);
+      transition:top .25s ease, left .25s ease, width .25s ease, height .25s ease;
       pointer-events:none;
-      opacity:0; transition:opacity .6s ease .3s;
     }
-    .statshint.show{ opacity:1 }
-    .statshint svg{ display:block; margin:0 14px 2px 0; color:var(--ink) }
+    .tour-card{
+      position:fixed; width:min(280px,80vw);
+      background:#fff; border-radius:8px; padding:14px 16px 12px;
+      box-shadow:0 8px 30px rgba(0,0,0,.22);
+      pointer-events:none;
+    }
+    .tour-text{ margin:0 0 10px; font-size:14px; line-height:1.5; color:var(--ink) }
+    .tour-text b{ font-weight:700 }
+    .tour-foot{ display:flex; align-items:center; justify-content:space-between; gap:10px }
+    .tour-step{ font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted) }
+    .tour-next{
+      border:none; border-radius:4px; padding:7px 14px;
+      font-size:13px; font-weight:500; cursor:pointer;
+      background:var(--accent); color:#fff;
+      pointer-events:auto;
+    }
+    .tour-next:hover{ background:var(--accent-deep) }
     .brand{
       font-family:var(--display);
       font-weight:500; font-size:17px; letter-spacing:.14em;
@@ -561,14 +577,19 @@
         </svg>
       </button>
     </div>
-    <div id="statsHint" class="statshint hidden" aria-hidden="true">
-      <svg viewBox="0 0 56 44" width="46" height="36" aria-hidden="true">
-        <path d="M6 41 C 24 40, 43 31, 46 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M39 16 L 46 8 L 50 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <span>your stats</span>
-    </div>
   </header>
+
+  <!-- One-off click-through tour, shown after a player's first finished game -->
+  <div id="tour" class="tour hidden" role="dialog" aria-modal="true" aria-labelledby="tourText">
+    <div class="tour-spot" id="tourSpot"></div>
+    <div class="tour-card" id="tourCard">
+      <p class="tour-text" id="tourText"></p>
+      <div class="tour-foot">
+        <span class="tour-step" id="tourStep"></span>
+        <button type="button" class="tour-next" id="tourNext">Next</button>
+      </div>
+    </div>
+  </div>
 
   <main class="app">
     <div class="card" id="card">
@@ -740,8 +761,8 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=77"></script>
-  <script src="app.js?v=77"></script>
+  <script src="questions.js?v=78"></script>
+  <script src="app.js?v=78"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){

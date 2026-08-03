@@ -92,7 +92,8 @@ var els = {
   shareBtn: $("shareBtn"),
   toast: $("toast"),
   helpBtn: $("helpBtn"), statsBtn: $("statsBtn"), archiveBtn: $("archiveBtn"), privacyBtn: $("privacyBtn"), contactBtn: $("contactBtn"),
-  statsHint: $("statsHint"),
+  tour: $("tour"), tourSpot: $("tourSpot"), tourCard: $("tourCard"),
+  tourText: $("tourText"), tourStep: $("tourStep"), tourNext: $("tourNext"),
   archiveList: $("archiveList"),
   emailForm: $("emailForm"), emailInput: $("emailInput"), emailMsg: $("emailMsg"),
 };
@@ -492,7 +493,6 @@ function finishGame(alreadyDone){
         // update the header badge only now the answer is on screen, so a
         // bullseye 🎯 never gives itself away before the reveal lands
         updateStreakBadge();
-        maybeShowStatsHint();
       }, 350);
     });
   }
@@ -515,37 +515,85 @@ function finishGame(alreadyDone){
     // or fires here for the non-staged path, so 🎯 stays hidden until land
     if (!els.reveal.classList.contains("staging")) updateStreakBadge();
     saveState();
+    // the tour waits until the player has seen the answer and dismissed stats
+    armTour();
     // surface the record once the reveal has landed, unless the player
     // has already opened it (or another modal) themselves
     var statsDelay = els.reveal.classList.contains("staging") ? CONFIG.REVEAL_MS + 2200 : 1400;
     setTimeout(function(){
-      if (STATS_SEEN) return;
-      if (document.querySelector(".modal-root:not(.hidden)")) return;
-      renderStats();
-      openModal("statsModal");
+      if (!STATS_SEEN && !document.querySelector(".modal-root:not(.hidden)")){
+        renderStats();
+        openModal("statsModal");
+        return;
+      }
+      // stats didn't auto-open (already seen, or another panel is up) — run
+      // the tour once nothing is covering the screen
+      if (TOUR_PENDING && !document.querySelector(".modal-root:not(.hidden)")) startTour();
     }, statsDelay);
   }
   if (MODE === "daily") crowdFlow(state.guesses[state.guesses.length-1]);
-  // staged reveals show the hint from the animation's completion callback
-  if (!els.reveal.classList.contains("staging")) maybeShowStatsHint();
 }
 
-// One-time nudge toward the stats button, shown only the first time a
-// player ever completes a daily game.
-function maybeShowStatsHint(){
-  if (!els.statsHint) return;
-  try{
-    if (localStorage.getItem("cs-stats-hint")) return;
-    if (readStats().played !== 1) return;
-    localStorage.setItem("cs-stats-hint", "1");
-  }catch(_){ return; }
-  els.statsHint.classList.remove("hidden");
-  requestAnimationFrame(function(){
-    requestAnimationFrame(function(){ els.statsHint.classList.add("show"); });
-  });
+// ===== one-off tour =====
+// A short click-through that points out the header buttons. It runs once per
+// device: after a player finishes a game and closes their stats. Players who
+// were already playing before the tour existed get it once too.
+var TOUR_KEY = "cs-tour-v1";
+var TOUR_PENDING = false, TOUR_STEP = -1, TOUR_STEPS = [];
+
+function tourSeen(){
+  try{ return !!localStorage.getItem(TOUR_KEY); }catch(_){ return true; }
 }
-function hideStatsHint(){
-  if (els.statsHint) els.statsHint.classList.add("hidden");
+function markTourSeen(){
+  try{ localStorage.setItem(TOUR_KEY, "1"); }catch(_){}
+}
+// called when a game finishes: queue the tour for when stats is dismissed
+function armTour(){
+  if (!els.tour || tourSeen()) return;
+  TOUR_PENDING = true;
+}
+function startTour(){
+  if (!els.tour || tourSeen()) return;
+  TOUR_PENDING = false;
+  TOUR_STEPS = [
+    { el: els.statsBtn,   text: "<b>Your stats.</b> Your Crowdsense score, streak and record live here." },
+    { el: els.archiveBtn, text: "<b>Past questions.</b> Play any day you've missed." }
+  ].filter(function(s){ return s.el; });
+  if (!TOUR_STEPS.length) return;
+  TOUR_STEP = 0;
+  els.tour.classList.remove("hidden");
+  paintTourStep();
+  window.addEventListener("resize", paintTourStep);
+}
+function paintTourStep(){
+  var step = TOUR_STEPS[TOUR_STEP];
+  if (!step) return;
+  var r = step.el.getBoundingClientRect();
+  var pad = 6;
+  els.tourSpot.style.top = (r.top - pad) + "px";
+  els.tourSpot.style.left = (r.left - pad) + "px";
+  els.tourSpot.style.width = (r.width + pad*2) + "px";
+  els.tourSpot.style.height = (r.height + pad*2) + "px";
+  els.tourText.innerHTML = step.text;
+  els.tourStep.textContent = (TOUR_STEP + 1) + " of " + TOUR_STEPS.length;
+  els.tourNext.textContent = (TOUR_STEP === TOUR_STEPS.length - 1) ? "Got it" : "Next";
+  // card sits under the highlighted button, kept inside the viewport
+  var cardW = Math.min(280, window.innerWidth * 0.8);
+  var left = Math.min(Math.max(8, r.left + r.width/2 - cardW/2), window.innerWidth - cardW - 8);
+  els.tourCard.style.top = (r.bottom + 14) + "px";
+  els.tourCard.style.left = left + "px";
+}
+function advanceTour(){
+  if (TOUR_STEP < 0) return;
+  if (TOUR_STEP < TOUR_STEPS.length - 1){ TOUR_STEP++; paintTourStep(); return; }
+  endTour();
+}
+function endTour(){
+  TOUR_STEP = -1;
+  TOUR_PENDING = false;
+  markTourSeen();
+  if (els.tour) els.tour.classList.add("hidden");
+  window.removeEventListener("resize", paintTourStep);
 }
 
 // ===== guessing =====
@@ -661,7 +709,11 @@ function startDailyTicker(){
 
 // ===== modals =====
 function openModal(id){ var m = $(id); if (m) m.classList.remove("hidden"); }
-function closeModal(id){ var m = $(id); if (m) m.classList.add("hidden"); }
+function closeModal(id){
+  var m = $(id); if (m) m.classList.add("hidden");
+  // closing the stats tile is the tour's cue
+  if (id === "statsModal" && TOUR_PENDING) setTimeout(startTour, 260);
+}
 document.addEventListener("click", function(e){
   var t = e.target.closest("[data-close]");
   if (t) closeModal(t.getAttribute("data-close"));
@@ -670,7 +722,14 @@ document.addEventListener("keydown", function(e){
   if (e.key === "Escape"){ closeModal("helpModal"); closeModal("statsModal"); closeModal("archiveModal"); closeModal("privacyModal"); closeModal("contactModal"); }
 });
 if (els.helpBtn) els.helpBtn.addEventListener("click", function(){ openModal("helpModal"); });
-if (els.statsBtn) els.statsBtn.addEventListener("click", function(){ STATS_SEEN = true; hideStatsHint(); renderStats(); openModal("statsModal"); });
+if (els.statsBtn) els.statsBtn.addEventListener("click", function(){ STATS_SEEN = true; renderStats(); openModal("statsModal"); });
+// the whole overlay is a click target: click anywhere to advance
+if (els.tour) els.tour.addEventListener("click", advanceTour);
+document.addEventListener("keydown", function(e){
+  if (TOUR_STEP < 0) return;
+  if (e.key === "Escape") endTour();
+  else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); advanceTour(); }
+});
 if (els.archiveBtn) els.archiveBtn.addEventListener("click", function(){ calY = null; renderArchive(); openModal("archiveModal"); });
 if (els.privacyBtn) els.privacyBtn.addEventListener("click", function(){ openModal("privacyModal"); });
 if (els.contactBtn) els.contactBtn.addEventListener("click", function(){ openModal("contactModal"); });
@@ -942,14 +1001,8 @@ function loadQuestions(){
     startDailyTicker();
     updateStreakBadge();
     setupGame(DAY_KEY, "daily");
-
-    // first visit: show how-to
-    try{
-      if (!localStorage.getItem("cs-seen-help")){
-        openModal("helpModal");
-        localStorage.setItem("cs-seen-help", "1");
-      }
-    }catch(_){}
+    // no how-to pop-up: the ? button opens it, and first-timers get the
+    // click-through tour after their first finished game
   }).catch(function(err){
     console.error("Init failed", err);
     els.questionText.textContent = "Something went wrong loading today's question — refresh to try again.";
