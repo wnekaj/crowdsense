@@ -576,7 +576,8 @@ function startTour(){
   TOUR_PENDING = false;
   TOUR_STEPS = [
     { el: els.statsBtn,   text: "<b>Your stats.</b> Your Crowdsense score, streak and record live here." },
-    { el: els.archiveBtn, text: "<b>Past questions.</b> Play any day you've missed." }
+    { el: els.archiveBtn, text: "<b>Past questions.</b> Play any day you've missed." },
+    { el: els.helpBtn,    text: "<b>How to play.</b> The rules and the scoring, whenever you need them." }
   ].filter(function(s){ return s.el; });
   if (!TOUR_STEPS.length) return;
   TOUR_STEP = 0;
@@ -785,8 +786,15 @@ function renderCalendar(){
 
   var head = document.createElement("div");
   head.className = "calhead";
+  // SVG chevrons rather than ‹ › glyphs: text arrows sit off-centre because
+  // of the font's side bearings, an SVG is centred by geometry
+  var chevron = function(dir){
+    return '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" ' +
+           'stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+           '<path d="' + (dir === "prev" ? "M15 5l-7 7 7 7" : "M9 5l7 7-7 7") + '"/></svg>';
+  };
   var prev = document.createElement("button");
-  prev.type = "button"; prev.className = "calnav"; prev.textContent = "‹";
+  prev.type = "button"; prev.className = "calnav"; prev.innerHTML = chevron("prev");
   prev.setAttribute("aria-label", "Previous month");
   prev.disabled = curMK <= anchorMK;
   prev.addEventListener("click", function(){ calM--; if (calM < 1){ calM = 12; calY--; } renderCalendar(); });
@@ -795,7 +803,7 @@ function renderCalendar(){
   label.textContent = new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", month: "long", year: "numeric" })
     .format(new Date(Date.UTC(calY, calM - 1, 1)));
   var next = document.createElement("button");
-  next.type = "button"; next.className = "calnav"; next.textContent = "›";
+  next.type = "button"; next.className = "calnav"; next.innerHTML = chevron("next");
   next.setAttribute("aria-label", "Next month");
   next.disabled = curMK >= todayMK;
   next.addEventListener("click", function(){ calM++; if (calM > 12){ calM = 1; calY++; } renderCalendar(); });
