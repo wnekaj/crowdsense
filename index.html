@@ -84,8 +84,7 @@
     }
     .tour-text{ margin:0 0 10px; font-size:14px; line-height:1.5; color:var(--ink) }
     .tour-text b{ font-weight:700 }
-    .tour-foot{ display:flex; align-items:center; justify-content:space-between; gap:10px }
-    .tour-step{ font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted) }
+    .tour-foot{ display:flex; align-items:center; justify-content:flex-end }
     .tour-next{
       border:none; border-radius:4px; padding:7px 14px;
       font-size:13px; font-weight:500; cursor:pointer;
@@ -396,12 +395,18 @@
     }
     .callabel{ font-size:13.5px; font-weight:500; letter-spacing:.04em }
     .calnav{
-      border:none; background:transparent; cursor:pointer;
-      color:var(--accent-deep); font-size:20px; line-height:1; padding:2px 12px;
+      width:34px; height:34px; flex:0 0 34px;
+      display:grid; place-items:center;
+      border:1px solid var(--line); border-radius:8px; background:#fff;
+      cursor:pointer; color:var(--accent);
+      font-size:20px; line-height:1; padding:0;
       font-family:inherit;
+      transition:color .15s ease, background .15s ease, border-color .15s ease;
     }
-    .calnav:hover{ color:var(--ink) }
-    .calnav:disabled{ color:var(--line); cursor:default }
+    .calnav:hover:not(:disabled){ color:var(--accent-deep); border-color:var(--accent); background:var(--accent-soft) }
+    .calnav:active:not(:disabled){ transform:translateY(1px) }
+    .calnav:focus-visible{ outline:3px solid rgba(242,101,34,.35); outline-offset:2px }
+    .calnav:disabled{ color:var(--line); border-color:var(--hairline); cursor:default }
     .calgrid{
       display:grid; grid-template-columns:repeat(7,1fr); gap:4px;
       text-align:center;
@@ -585,7 +590,6 @@
     <div class="tour-card" id="tourCard">
       <p class="tour-text" id="tourText"></p>
       <div class="tour-foot">
-        <span class="tour-step" id="tourStep"></span>
         <button type="button" class="tour-next" id="tourNext">Next</button>
       </div>
     </div>
@@ -761,8 +765,8 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=79"></script>
-  <script src="app.js?v=79"></script>
+  <script src="questions.js?v=80"></script>
+  <script src="app.js?v=80"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){
