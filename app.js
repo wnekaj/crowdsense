@@ -552,6 +552,20 @@ function armTour(){
   if (!els.tour || tourSeen()) return;
   TOUR_PENDING = true;
 }
+// Players who have already played get the tour straight away on landing.
+// Brand-new players get it after their first game instead, when the header
+// buttons actually mean something to them.
+function maybeStartTourOnLoad(){
+  if (!els.tour || tourSeen()) return;
+  var played = 0;
+  try{ played = readStats().played || 0; }catch(_){}
+  if (played < 1) return;
+  setTimeout(function(){
+    if (tourSeen() || TOUR_STEP >= 0) return;
+    if (document.querySelector(".modal-root:not(.hidden)")) return;
+    startTour();
+  }, 700);
+}
 function startTour(){
   if (!els.tour || tourSeen()) return;
   TOUR_PENDING = false;
@@ -1001,8 +1015,9 @@ function loadQuestions(){
     startDailyTicker();
     updateStreakBadge();
     setupGame(DAY_KEY, "daily");
-    // no how-to pop-up: the ? button opens it, and first-timers get the
-    // click-through tour after their first finished game
+    // no how-to pop-up: the ? button opens it. Returning players get the
+    // one-off tour now; first-timers get it after their first finished game.
+    maybeStartTourOnLoad();
   }).catch(function(err){
     console.error("Init failed", err);
     els.questionText.textContent = "Something went wrong loading today's question — refresh to try again.";
