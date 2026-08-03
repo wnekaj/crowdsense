@@ -399,10 +399,11 @@
       display:grid; place-items:center;
       border:1px solid var(--line); border-radius:8px; background:#fff;
       cursor:pointer; color:var(--accent);
-      font-size:20px; line-height:1; padding:0;
+      line-height:0; padding:0;
       font-family:inherit;
       transition:color .15s ease, background .15s ease, border-color .15s ease;
     }
+    .calnav svg{ display:block }
     .calnav:hover:not(:disabled){ color:var(--accent-deep); border-color:var(--accent); background:var(--accent-soft) }
     .calnav:active:not(:disabled){ transform:translateY(1px) }
     .calnav:focus-visible{ outline:3px solid rgba(242,101,34,.35); outline-offset:2px }
@@ -566,14 +567,14 @@
       <div class="tagline">The daily poll guessing game</div>
     </div>
     <div class="iconbtns">
-      <button id="archiveBtn" class="iconbtn" title="Previous questions" aria-label="Previous questions">
-        <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>
-        </svg>
-      </button>
       <button id="statsBtn" class="iconbtn" title="Your stats" aria-label="Your stats">
         <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M4 6h13M4 12h9M4 18h15"/>
+        </svg>
+      </button>
+      <button id="archiveBtn" class="iconbtn" title="Previous questions" aria-label="Previous questions">
+        <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>
         </svg>
       </button>
       <button id="helpBtn" class="iconbtn" title="How to play" aria-label="How to play">
@@ -765,8 +766,8 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=80"></script>
-  <script src="app.js?v=80"></script>
+  <script src="questions.js?v=81"></script>
+  <script src="app.js?v=81"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){
