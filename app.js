@@ -93,7 +93,7 @@ var els = {
   toast: $("toast"),
   helpBtn: $("helpBtn"), statsBtn: $("statsBtn"), archiveBtn: $("archiveBtn"), privacyBtn: $("privacyBtn"), contactBtn: $("contactBtn"),
   tour: $("tour"), tourSpot: $("tourSpot"), tourCard: $("tourCard"),
-  tourText: $("tourText"), tourStep: $("tourStep"), tourNext: $("tourNext"),
+  tourText: $("tourText"), tourNext: $("tourNext"),
   archiveList: $("archiveList"),
   emailForm: $("emailForm"), emailInput: $("emailInput"), emailMsg: $("emailMsg"),
 };
@@ -345,20 +345,25 @@ function verdictFor(guesses, answer, win){
 }
 
 // ===== crowd layer =====
-function crowdFlow(finalGuess){
-  if (!CONFIG.CROWD_API_URL || MODE !== "daily") return;
+// isFresh = the guess was just made. Restored results only read the
+// distribution; they must never re-submit a guess made on an earlier visit.
+function crowdFlow(finalGuess, isFresh){
+  if (!CONFIG.CROWD_API_URL) return;
   var base = String(CONFIG.CROWD_API_URL).replace(/\/+$/, "");
+  // Keyed to the day being played, so past questions pool with the players
+  // who answered them on the day.
+  var dayKey = CUR.dayKey;
   // Pre-launch taster days record under high test IDs (99990, 99991, ...)
   // so real puzzle numbers start clean on launch day.
-  var crowdPuzzle = isPreLaunch(DAY_KEY)
-    ? 100000 + daysSince(CONFIG.ANCHOR, DAY_KEY)
+  var crowdPuzzle = isPreLaunch(dayKey)
+    ? 100000 + daysSince(CONFIG.ANCHOR, dayKey)
     : CUR.puzzleNo;
-  var sentKey = "cs-crowd-sent-" + DAY_KEY;
+  var sentKey = "cs-crowd-sent-" + dayKey;
   var already = false;
   try{ already = !!localStorage.getItem(sentKey); }catch(_){}
 
   var p;
-  if (already){
+  if (already || !isFresh){
     p = fetch(base + "/dist?puzzle=" + crowdPuzzle).then(function(r){
       if (!r.ok) throw new Error("HTTP " + r.status);
       return r.json();
@@ -531,7 +536,7 @@ function finishGame(alreadyDone){
       if (TOUR_PENDING && !document.querySelector(".modal-root:not(.hidden)")) startTour();
     }, statsDelay);
   }
-  if (MODE === "daily") crowdFlow(state.guesses[state.guesses.length-1]);
+  crowdFlow(state.guesses[state.guesses.length-1], !alreadyDone);
 }
 
 // ===== one-off tour =====
@@ -589,7 +594,6 @@ function paintTourStep(){
   els.tourSpot.style.width = (r.width + pad*2) + "px";
   els.tourSpot.style.height = (r.height + pad*2) + "px";
   els.tourText.innerHTML = step.text;
-  els.tourStep.textContent = (TOUR_STEP + 1) + " of " + TOUR_STEPS.length;
   els.tourNext.textContent = (TOUR_STEP === TOUR_STEPS.length - 1) ? "Got it" : "Next";
   // card sits under the highlighted button, kept inside the viewport
   var cardW = Math.min(280, window.innerWidth * 0.8);
