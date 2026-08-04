@@ -117,9 +117,9 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-08-05",  // Day 17
-    question: "What percentage of Brits say they'd feel responsible for protecting their family if a war broke out?",
-    answer: 90,
-    source: "Public First poll of 1,983 UK adults, 6–9 March 2026"
+    question: "What percentage of Brits say it's likely a nuclear weapon will be used in a conflict in the next five years?",
+    answer: 44,
+    source: "Public First poll of 2,024 UK adults, April 2026"
   },
   {
     date: "2026-08-06",  // Day 18
@@ -146,6 +146,12 @@ var CS_QUESTIONS = [
     question: "What percentage of Londoners say they've attended a protest in the last year?",
     answer: 13,
     source: "Public First poll of 1,041 London adults, 19–22 June 2026"
+  }
+  ,{
+    date: "",
+    question: "What percentage of Brits say they'd feel responsible for protecting their family if a war broke out?",
+    answer: 90,
+    source: "Public First poll of 1,983 UK adults, 6–9 March 2026"
   }
   ------------------------------------------------------------------------------- */
 ];
