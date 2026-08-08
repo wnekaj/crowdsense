@@ -177,14 +177,119 @@ function updateStreakBadge(){
 }
 
 // ===== stats =====
-function readStats(){
-  try{
-    var raw = localStorage.getItem("cs-stats");
-    if (raw){ var s = JSON.parse(raw); if (s && typeof s.played === "number") return s; }
-  }catch(_){}
+// Storage durability, in short: everything a player has is in this origin's
+// localStorage. Two things can take it away without the player doing
+// anything, and only one is fixable here.
+//   * Eviction under storage pressure (Chrome/Firefox) — mitigated by the
+//     navigator.storage.persist() request in index.html.
+//   * Safari/iOS deletes script-writable storage after 7 days without a visit
+//     to the site. Nothing client-side prevents that; installing the game to
+//     the home screen exempts it, and only an off-device backup truly fixes
+//     it. The heal* functions below recover everything that is still locally
+//     recoverable after a partial loss.
+function blankStats(){
   return { played:0, wins:0, tiers:{target:0,hot:0,warm:0,cool:0,cold:0}, firstErrSum:0, scoreSum:0, best:null };
 }
+function readStats(){
+  var raw = null;
+  try{ raw = localStorage.getItem("cs-stats"); }catch(_){ return blankStats(); }
+  if (raw){
+    var s = null;
+    try{ s = JSON.parse(raw); }catch(_){}
+    if (s && typeof s.played === "number"){
+      if (!s.tiers) s.tiers = blankStats().tiers;
+      return s;
+    }
+    // present but unusable — unparseable or the wrong shape. Keep a copy
+    // rather than silently discarding it, so nothing is thrown away.
+    try{ if (!localStorage.getItem("cs-stats-broken")) localStorage.setItem("cs-stats-broken", raw); }catch(_){}
+  }
+  return blankStats();
+}
 function writeStats(s){ try{ localStorage.setItem("cs-stats", JSON.stringify(s)); }catch(_){} }
+
+// Every finished game also writes its own cs-state-<date> record, so the
+// per-day history is an independent copy of the same facts. If the aggregate
+// is lost or corrupted while those records survive, rebuild from them.
+function statesFromHistory(){
+  var out = [];
+  try{
+    for (var i = 0; i < localStorage.length; i++){
+      var k = localStorage.key(i);
+      if (!k || k.indexOf("cs-state-") !== 0) continue;
+      var day = k.slice(9);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) continue;
+      var st = null;
+      try{ st = JSON.parse(localStorage.getItem(k) || "null"); }catch(_){ continue; }
+      if (!st || !st.done || !st.guesses || !st.guesses.length) continue;
+      out.push({ day: day, guesses: st.guesses });
+    }
+  }catch(_){}
+  out.sort(function(a,b){ return a.day < b.day ? -1 : (a.day > b.day ? 1 : 0); });
+  return out;
+}
+function statsFromHistory(){
+  var s = blankStats();
+  var days = statesFromHistory();
+  for (var i = 0; i < days.length; i++){
+    var q = pickQuestionForKey(days[i].day);
+    if (!q) continue;
+    var gs = days[i].guesses;
+    var errF = Math.abs(gs[gs.length-1] - q.answer);
+    var score = computeScore(gs, q.answer);
+    s.played += 1;
+    if (errF <= CONFIG.WIN_MARGIN) s.wins += 1;
+    var t = heat(errF).cls;
+    s.tiers[t] = (s.tiers[t]||0) + 1;
+    s.firstErrSum += Math.abs(gs[0] - q.answer);
+    s.scoreSum += score;
+    s.best = (s.best === null) ? score : Math.min(s.best, score);
+  }
+  return s;
+}
+// Repairs are one-directional: a player's totals are never reduced, and the
+// best score is never made worse, so a partial history can only ever help.
+function healStatsFromHistory(){
+  try{
+    var stored = readStats();
+    var rebuilt = statsFromHistory();
+    var out = (rebuilt.played > stored.played) ? rebuilt : stored;
+    if (rebuilt.best !== null && (out.best === null || out.best === undefined || rebuilt.best < out.best)){
+      out.best = rebuilt.best;
+    }
+    if (out !== stored || out.best !== stored.best) writeStats(out);
+  }catch(_){}
+}
+// The streak is consecutive days played, which the per-day records also imply.
+function healStreakFromHistory(){
+  try{
+    var days = statesFromHistory().map(function(d){ return d.day; });
+    if (!days.length) return;
+    var yday = getYesterdayKey(DAY_KEY);
+    var last = days[days.length-1];
+    // only a run that is still alive (ends today or yesterday) counts
+    var run = 0;
+    if (last === DAY_KEY || last === yday){
+      var expect = last;
+      for (var i = days.length - 1; i >= 0; i--){
+        if (days[i] !== expect) break;
+        run++;
+        expect = getYesterdayKey(expect);
+      }
+    }
+    // longest run anywhere in the history, for bestStreak
+    var longest = 1, cur = 1;
+    for (var j = 1; j < days.length; j++){
+      cur = (getYesterdayKey(days[j]) === days[j-1]) ? cur + 1 : 1;
+      if (cur > longest) longest = cur;
+    }
+    var s = readStreak();
+    if (run > s.count) writeStreak(run, last);
+    var storedBest = 0;
+    try{ storedBest = parseInt(localStorage.getItem("bestStreak")||"0",10) || 0; }catch(_){}
+    if (longest > storedBest){ try{ localStorage.setItem("bestStreak", String(longest)); }catch(_){} }
+  }catch(_){}
+}
 function recordResult(win, firstErr, finalErr, score){
   var s = readStats();
   s.played += 1;
@@ -1022,6 +1127,10 @@ function loadQuestions(){
   loadQuestions().then(function(bank){
     BANK = bank;
 
+    // recover anything the browser dropped before touching the streak, so a
+    // rebuilt run isn't immediately treated as a skipped day
+    healStatsFromHistory();
+    healStreakFromHistory();
     resetStreakIfSkippedDay();
     reconcileBestFromHistory();
     startDailyTicker();
