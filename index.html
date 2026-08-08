@@ -758,6 +758,28 @@
   </div>
 
   <script>
+    // Stats live in this origin's localStorage, so www. and the bare domain
+    // would be two separate sets of stats. Keep everyone on one origin.
+    (function(){
+      try{
+        var h = location.hostname;
+        if (h.indexOf("www.") === 0){
+          location.replace(location.protocol + "//" + h.slice(4) + location.pathname + location.search + location.hash);
+        }
+      }catch(_){}
+    })();
+    // Ask the browser not to evict our storage when space runs low. Chrome and
+    // Firefox honour this; Safari ignores it (see the note in app.js).
+    try{
+      if (navigator.storage && navigator.storage.persist && navigator.storage.persisted){
+        navigator.storage.persisted().then(function(already){
+          if (!already) navigator.storage.persist();
+        }).catch(function(){});
+      }
+    }catch(_){}
+  </script>
+
+  <script>
     // Site configuration — overrides the defaults in app.js, so you never
     // need to edit that file. See worker/README.md for the crowd layer.
     window.CS_CONFIG = Object.assign({
@@ -766,8 +788,8 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=84"></script>
-  <script src="app.js?v=84"></script>
+  <script src="questions.js?v=85"></script>
+  <script src="app.js?v=85"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){
