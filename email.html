@@ -29,7 +29,16 @@
       border:1px solid var(--line); border-radius:4px; padding:12px;
       background:#fff;
     }
-    textarea.field{ min-height:270px; resize:vertical }
+    textarea.field{ min-height:200px; resize:vertical }
+    select.field{ cursor:pointer }
+    /* roughly how the mail client will render it */
+    .preview{
+      border:1px solid var(--line); border-radius:4px; padding:16px 18px;
+      font-size:15px; line-height:1.6;
+    }
+    .preview p{ margin:0 0 14px }
+    .preview p:last-child{ margin-bottom:0 }
+    .preview a{ color:var(--accent-deep) }
     .row{ display:flex; align-items:center; justify-content:space-between; gap:10px }
     .copybtn{
       border:none; border-radius:4px; padding:8px 14px; cursor:pointer;
@@ -58,19 +67,34 @@
     <div class="meta" id="meta"></div>
     <div class="warn" id="warn"></div>
 
+    <label for="hook">Subject hook</label>
+    <select class="field" id="hook">
+      <option value="yesterday" selected>Yesterday's answer — the stat this email reveals</option>
+      <option value="today">Today's question — the stat this email asks</option>
+    </select>
+
     <label>Subject</label>
     <div class="row">
       <input class="field" id="subject" readonly />
       <button class="copybtn" data-copy="subject" type="button">Copy</button>
     </div>
 
-    <label>Body</label>
-    <textarea class="field" id="body" readonly></textarea>
+    <label>Preview</label>
+    <div class="preview" id="preview"></div>
+
+    <label>Body — HTML</label>
+    <textarea class="field" id="bodyHtml" readonly></textarea>
     <div class="row" style="justify-content:flex-end;margin-top:8px">
-      <button class="copybtn" data-copy="body" type="button">Copy</button>
+      <button class="copybtn" data-copy="bodyHtml" type="button">Copy</button>
     </div>
 
-    <p class="note">The body never contains the day's answer — only the question (plus yesterday's answer as a hook once there is one). Buttondown and Mailchimp append the legally required unsubscribe link automatically, so don't add one by hand. This page is unlisted but public; it reveals nothing a player couldn't already see.</p>
+    <label>Body — Markdown</label>
+    <textarea class="field" id="bodyMd" readonly></textarea>
+    <div class="row" style="justify-content:flex-end;margin-top:8px">
+      <button class="copybtn" data-copy="bodyMd" type="button">Copy</button>
+    </div>
+
+    <p class="note">Paste the HTML into Mailchimp's code view, or the Markdown into Buttondown. The body never contains the day's answer — only the question (plus yesterday's answer as a hook once there is one). Buttondown and Mailchimp append the legally required unsubscribe link automatically, so don't add one by hand. This page is unlisted but public; it reveals nothing a player couldn't already see.</p>
   </div>
 
   <div class="toast" id="toast">Copied</div>
@@ -80,7 +104,7 @@
     var ANCHOR = "2026-07-20";
     var SITE_URL = "https://crowdsense.uk/";
   </script>
-  <script src="questions.js?v=24"></script>
+  <script src="questions.js?v=92"></script>
   <script>
   (function(){
     function $(id){ return document.getElementById(id); }
@@ -119,6 +143,29 @@
       return new Intl.DateTimeFormat("en-GB",{timeZone:"UTC",weekday:"long",day:"numeric",month:"long"}).format(new Date(Date.UTC(p[0],p[1]-1,p[2])));
     }
 
+    // strip the **emphasis** markup the game understands
+    function plain(text){ return String(text || "").replace(/\*\*/g, ""); }
+    function esc(text){
+      return String(text || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    // "What percentage of Brits support X?" -> "of Brits support X"
+    // Questions phrased any other way carry their own "fact" instead.
+    function factFor(q){
+      if (q.fact) return q.fact;
+      return plain(q.question).replace(/^What percentage\s+/i,"").replace(/\?\s*$/,"");
+    }
+    // The reveal sentence: "13% of Londoners say they've attended a protest…"
+    function answerLine(q){
+      return q.answer + "% " + factFor(q) + ". Were you close?";
+    }
+    // Short subject-line hook. Hand-written per question; the derived form is
+    // a safety net for a question added without one.
+    function teaserFor(q){
+      if (q.teaser) return q.teaser;
+      return plain(q.question).replace(/^What percentage of\s+/i,"How many ");
+    }
+
     function build(){
       var key = $("day").value;
       if (!key) return;
@@ -129,32 +176,48 @@
       if (pre) warn = "Pre-launch date — this is the taster question, not a numbered puzzle.";
       else if (!hasDated(key)) warn = "No dated question for this day — the fallback rotation would run. Top up questions.js!";
       $("warn").textContent = warn;
-      $("meta").textContent = (pre ? "Taster" : "Puzzle No. " + no) + " · " + fmtLong(key);
+      $("meta").textContent = (pre ? "Taster" : "Puzzle #" + no) + " · " + fmtLong(key);
 
+      // yesterday's answer is the hook, once yesterday was a real (dated) puzzle
+      var yKey = shiftKey(key,-1);
+      var yq = hasDated(yKey) ? pickForKey(yKey) : null;
+
+      // The default subject teases the stat this email reveals, so the promise
+      // is one the email can keep. Day 1 has no yesterday, so it falls back to
+      // today's question.
+      var hookQ = ($("hook").value === "yesterday" && yq) ? yq : q;
       var subject = pre
         ? "Crowdsense — today's taster question"
-        : "Crowdsense No. " + no + " — can you read the public?";
+        : "Crowdsense #" + no + " — " + teaserFor(hookQ);
 
-      var lines = [];
-      lines.push("Today's question:");
-      lines.push("");
-      lines.push("“" + String(q.question).replace(/\*\*/g, "") + "”");
-      lines.push("");
-      lines.push("One guess. The closer the better. Play now: " + SITE_URL);
+      var question = plain(q.question);
 
-      // yesterday's answer as the hook, once yesterday was a real (dated) puzzle
-      var yKey = shiftKey(key,-1);
-      if (hasDated(yKey)){
-        var yq = pickForKey(yKey);
-        lines.push("");
-        lines.push("Yesterday: " + yq.answer + "% — " + String(yq.question).replace(/\*\*/g,"").replace(/^What percentage (of\s+)?/i,"").replace(/\?$/,"") + ". Were you close?");
+      var html = [];
+      html.push("<p><b>Today's question:</b></p>");
+      html.push("<p>“" + esc(question) + "”</p>");
+      html.push("<p>Play now: <a href=\"" + SITE_URL + "\">" + SITE_URL + "</a></p>");
+      if (yq) html.push("<p><b>Yesterday's answer:</b> " + esc(answerLine(yq)) + "</p>");
+      html.push("<p>—<br /><i>You're getting this because you subscribed at crowdsense.uk.</i></p>");
+
+      var md = [];
+      md.push("**Today's question:**");
+      md.push("");
+      md.push("“" + question + "”");
+      md.push("");
+      md.push("Play now: " + SITE_URL);
+      if (yq){
+        md.push("");
+        md.push("**Yesterday's answer:** " + answerLine(yq));
       }
-      lines.push("");
-      lines.push("—");
-      lines.push("You're getting this because you subscribed at crowdsense.uk.");
+      md.push("");
+      // two trailing spaces keep the rule and the sign-off on separate lines
+      md.push("—  ");
+      md.push("*You're getting this because you subscribed at crowdsense.uk.*");
 
       $("subject").value = subject;
-      $("body").value = lines.join("\n");
+      $("bodyHtml").value = html.join("\n");
+      $("bodyMd").value = md.join("\n");
+      $("preview").innerHTML = html.join("\n");
     }
 
     var toastTimer=null;
@@ -179,6 +242,7 @@
 
     $("day").value = todayKeyLondon();
     $("day").addEventListener("input", build);
+    $("hook").addEventListener("change", build);
     build();
   })();
   </script>
