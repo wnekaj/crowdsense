@@ -67,12 +67,6 @@
     <div class="meta" id="meta"></div>
     <div class="warn" id="warn"></div>
 
-    <label for="hook">Subject hook</label>
-    <select class="field" id="hook">
-      <option value="yesterday" selected>Yesterday's answer — the stat this email reveals</option>
-      <option value="today">Today's question — the stat this email asks</option>
-    </select>
-
     <label>Subject</label>
     <div class="row">
       <input class="field" id="subject" readonly />
@@ -182,13 +176,11 @@
       var yKey = shiftKey(key,-1);
       var yq = hasDated(yKey) ? pickForKey(yKey) : null;
 
-      // The default subject teases the stat this email reveals, so the promise
-      // is one the email can keep. Day 1 has no yesterday, so it falls back to
-      // today's question.
-      var hookQ = ($("hook").value === "yesterday" && yq) ? yq : q;
+      // The subject always teases today's question — the one the email is
+      // asking — so the number and the hook describe the same puzzle.
       var subject = pre
         ? "Crowdsense — today's taster question"
-        : "Crowdsense #" + no + " — " + teaserFor(hookQ);
+        : "Crowdsense #" + no + " — " + teaserFor(q);
 
       var question = plain(q.question);
 
@@ -242,7 +234,6 @@
 
     $("day").value = todayKeyLondon();
     $("day").addEventListener("input", build);
-    $("hook").addEventListener("change", build);
     build();
   })();
   </script>
