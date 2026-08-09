@@ -6,7 +6,7 @@
    Scheduling: each question carries a "date" (YYYY-MM-DD, London time) and
    runs on exactly that day. The undated Burnham-improvement taster runs on
    any day without a dated question — it is the fallback if the bank runs
-   dry. Top up before 13 August.
+   dry. Top up before 14 August.
    ========================================================================= */
 
 var CS_QUESTIONS = [
@@ -167,6 +167,12 @@ var CS_QUESTIONS = [
     date: "2026-08-13",  // Day 25
     question: "What percentage of Brits say they have not been ill at all in the past year?",
     answer: 35,
+    source: "Public First poll of 2,015 UK adults, 16–30 January 2026"
+  },
+  {
+    date: "2026-08-14",  // Day 26
+    question: "What percentage of Brits trust pharmacists to give them accurate medical advice?",
+    answer: 79,
     source: "Public First poll of 2,015 UK adults, 16–30 January 2026"
   }
 
