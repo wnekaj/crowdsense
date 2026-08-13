@@ -95,6 +95,7 @@ var els = {
   sourceNote: $("sourceNote"),
   crowdBlock: $("crowdBlock"), crowdHead: $("crowdHead"), histo: $("histo"),
   shareBtn: $("shareBtn"),
+  roundList: $("roundList"), nextRound: $("nextRound"),
   toast: $("toast"),
   helpBtn: $("helpBtn"), statsBtn: $("statsBtn"), archiveBtn: $("archiveBtn"), privacyBtn: $("privacyBtn"), contactBtn: $("contactBtn"),
   tour: $("tour"), tourSpot: $("tourSpot"), tourCard: $("tourCard"),
@@ -147,6 +148,37 @@ function computeScore(guesses, answer){
   var err1 = Math.abs(guesses[0] - answer);
   var errF = Math.abs(guesses[guesses.length-1] - answer);
   return Math.round(CONFIG.FIRST_WEIGHT * err1 + CONFIG.FINAL_WEIGHT * errF);
+}
+
+// ===== multi-round days (SANDBOX TEST) =====
+// Some days put the same question to several crossbreaks in turn — everyone,
+// then men, then 18-24s, and so on. Each round is revealed before the next is
+// asked, so what you learn compounds.
+//
+// Scoring: the day's score is the MEAN of the round errors, not the sum. That
+// keeps a five-round day on the same 0-100 scale as an ordinary day, so it
+// drops into the existing tiers (2/5/10/20), the Crowdsense average, the best
+// score and the bullseye count without distorting any of them. A sum would
+// make every multi-round day look roughly five times worse than a normal one
+// and would wreck the average.
+var ROUND = 0;
+function isMulti(q){
+  var t = q || Q;
+  return !!(t && t.parts && t.parts.length > 1);
+}
+function roundsOf(q){ return ((q || Q) || {}).parts || []; }
+// errors for the rounds played so far
+function roundErrors(guesses, q){
+  var gs = guesses || state.guesses, rs = roundsOf(q), out = [];
+  for (var i = 0; i < gs.length && i < rs.length; i++) out.push(Math.abs(gs[i] - rs[i].answer));
+  return out;
+}
+function meanErr(guesses, q){
+  var e = roundErrors(guesses, q);
+  if (!e.length) return 0;
+  var sum = 0;
+  for (var i = 0; i < e.length; i++) sum += e[i];
+  return Math.round(sum / e.length);
 }
 
 // ===== streak =====
@@ -240,13 +272,15 @@ function statsFromHistory(){
     var q = pickQuestionForKey(days[i].day);
     if (!q) continue;
     var gs = days[i].guesses;
-    var errF = Math.abs(gs[gs.length-1] - q.answer);
-    var score = computeScore(gs, q.answer);
+    // a multi-round day is scored on the mean of its rounds, same as when
+    // it was played, so a rebuild can't disagree with the live tally
+    var errF = isMulti(q) ? meanErr(gs, q) : Math.abs(gs[gs.length-1] - q.answer);
+    var score = isMulti(q) ? meanErr(gs, q) : computeScore(gs, q.answer);
     s.played += 1;
     if (errF <= CONFIG.WIN_MARGIN) s.wins += 1;
     var t = heat(errF).cls;
     s.tiers[t] = (s.tiers[t]||0) + 1;
-    s.firstErrSum += Math.abs(gs[0] - q.answer);
+    s.firstErrSum += isMulti(q) ? errF : Math.abs(gs[0] - q.answer);
     s.scoreSum += score;
     s.best = (s.best === null) ? score : Math.min(s.best, score);
   }
@@ -414,6 +448,103 @@ function renderDots(){
     els.guessDots.appendChild(dot);
   }
 }
+// ---- multi-round UI (SANDBOX TEST) ----
+// one pip per group, filled as each is answered
+function renderRoundPips(){
+  if (!els.guessDots) return;
+  els.guessDots.innerHTML = "";
+  if (!isMulti()) return;
+  els.guessDots.setAttribute("aria-label", "Groups answered");
+  var rs = roundsOf();
+  for (var i = 0; i < rs.length; i++){
+    var d = document.createElement("span");
+    d.className = "gdot" + (i < state.guesses.length ? " used" : "");
+    els.guessDots.appendChild(d);
+  }
+}
+// hand the input back for the next group
+function paintRound(){
+  renderQuestionText(roundsOf()[ROUND].question);
+  els.reveal.classList.add("hidden");
+  if (els.nextRound) els.nextRound.classList.add("hidden");
+  if (els.shareBtn) els.shareBtn.classList.add("hidden");
+  els.input.disabled = false;
+  els.slider.disabled = false;
+  els.guessBtn.disabled = false;
+  els.guessRow.classList.remove("hidden");
+  els.guessDots.classList.remove("hidden");
+  els.input.value = "";
+  els.slider.value = 50;
+  els.slider.style.setProperty("--fill", "50%");
+  renderRoundPips();
+  setKickerForTurn();
+  try{ els.input.focus(); }catch(_){}
+}
+// the running table of groups answered so far
+function renderRoundList(){
+  if (!els.roundList) return;
+  var rs = roundsOf(), errs = roundErrors();
+  if (!errs.length){ els.roundList.classList.add("hidden"); return; }
+  var html = "";
+  for (var i = 0; i < errs.length; i++){
+    var h = heat(errs[i]);
+    html += '<div class="rrow">' +
+      '<span class="rlabel">' + rs[i].label + '</span>' +
+      '<span class="rguess">you ' + state.guesses[i] + '%</span>' +
+      '<span class="rans">' + rs[i].answer + '%</span>' +
+      '<span class="rchip ' + h.cls + '">' + errs[i] + ' off</span>' +
+    '</div>';
+  }
+  // the score that actually counts, spelled out so the mean isn't a mystery
+  if (state.done){
+    html += '<div class="rrow rtotal">' +
+      '<span class="rlabel">Average across ' + errs.length + '</span>' +
+      '<span class="rguess"></span><span class="rans"></span>' +
+      '<span class="rchip ' + heat(meanErr()).cls + '">' + meanErr() + ' off</span>' +
+    '</div>';
+  }
+  els.roundList.innerHTML = html;
+  els.roundList.classList.remove("hidden");
+}
+// Reveal one group's answer. The last round goes through finishGame instead,
+// which adds the day's verdict, stats and share.
+function revealRound(i){
+  var r = roundsOf()[i];
+  var g = state.guesses[i];
+  els.verdict.textContent = verdictForErr(Math.abs(g - r.answer)).text;
+  els.verdict.className = "verdict " + (Math.abs(g - r.answer) <= CONFIG.WIN_MARGIN ? "win" : "loss");
+  els.bigAnswer.textContent = r.answer + "%";
+  els.sourceNote.textContent = Q.source ? ("Source: " + Q.source) : "";
+  els.youMarker.style.left = g + "%";
+  els.youLabel.style.left = g + "%";
+  els.youLabel.textContent = g;
+  els.youMarker.classList.remove("on");
+  els.youLabel.classList.remove("on");
+  els.reveal.classList.remove("hidden");
+  var marked = false;
+  els.reveal.classList.add("staging");
+  els.revealFill.style.width = "0%";
+  animateValue(0, r.answer, CONFIG.REVEAL_MS, function(v){
+    els.revealFill.style.width = v + "%";
+    if (!marked && v >= g){ marked = true; els.youMarker.classList.add("on"); els.youLabel.classList.add("on"); }
+  }, function(){
+    if (!marked){ els.youMarker.classList.add("on"); els.youLabel.classList.add("on"); }
+    setTimeout(function(){
+      els.reveal.classList.remove("staging");
+      renderRoundList();
+      if (els.nextRound){
+        els.nextRound.textContent = "Next: " + roundsOf()[i+1].label;
+        els.nextRound.classList.remove("hidden");
+      }
+    }, 350);
+  });
+}
+function nextRound(){
+  if (ROUND >= roundsOf().length - 1) return;
+  ROUND += 1;
+  paintRound();
+}
+
 function renderLedgerRow(n, g){
   if (CONFIG.MAX_GUESSES < 2) return; // single-guess mode: the reveal bar carries the guess
   var err = Math.abs(g - Q.answer);
@@ -440,18 +571,27 @@ function setKickerForTurn(){
       : "Come back tomorrow for question #" + (PUZZLE_NO + 1) + ".";
     return;
   }
+  if (isMulti()){
+    var n = roundsOf().length;
+    els.kicker.textContent = (ROUND === 0)
+      ? "Five groups, same question. Start with everyone."
+      : "Group " + (ROUND + 1) + " of " + n + ".";
+    return;
+  }
   if (state.guesses.length === 0) els.kicker.textContent = "Guess the percentage. First your instinct…";
   else els.kicker.textContent = "…now your judgement. One guess left.";
 }
 
-function verdictFor(guesses, answer, win){
-  var errF = Math.abs(guesses[guesses.length-1] - answer);
-  var off = errF + " off — ";
-  if (errF <= 2)  return { text: off + "on the pulse" };
-  if (errF <= 5)  return { text: off + "on the scent" };
-  if (errF <= 10) return { text: off + "in the mix" };
-  if (errF <= 20) return { text: off + "warm-ish" };
+function verdictForErr(err){
+  var off = err + " off — ";
+  if (err <= 2)  return { text: off + "on the pulse" };
+  if (err <= 5)  return { text: off + "on the scent" };
+  if (err <= 10) return { text: off + "in the mix" };
+  if (err <= 20) return { text: off + "warm-ish" };
   return { text: off + "out of touch" };
+}
+function verdictFor(guesses, answer, win){
+  return verdictForErr(Math.abs(guesses[guesses.length-1] - answer));
 }
 
 // ===== crowd layer =====
@@ -561,9 +701,13 @@ function animateCount(el, to, suffix, duration, from, onDone){
 // ===== finishing =====
 function finishGame(alreadyDone){
   state.done = true;
-  state.score = computeScore(state.guesses, Q.answer);
-  var errF = Math.abs(state.guesses[state.guesses.length-1] - Q.answer);
-  var err1 = Math.abs(state.guesses[0] - Q.answer);
+  // On a multi-round day the day's number is the mean of the round errors,
+  // and the bar settles on the last group's figure.
+  var MULTI = isMulti();
+  var dayAnswer = MULTI ? roundsOf()[roundsOf().length-1].answer : Q.answer;
+  state.score = MULTI ? meanErr() : computeScore(state.guesses, Q.answer);
+  var errF = MULTI ? meanErr() : Math.abs(state.guesses[state.guesses.length-1] - Q.answer);
+  var err1 = MULTI ? meanErr() : Math.abs(state.guesses[0] - Q.answer);
   state.win = errF <= CONFIG.WIN_MARGIN;
 
   els.input.disabled = true;
@@ -573,10 +717,10 @@ function finishGame(alreadyDone){
   els.guessDots.classList.add("hidden");
   els.track.parentElement.classList.add("hidden");
 
-  var v = verdictFor(state.guesses, Q.answer, state.win);
+  var v = MULTI ? verdictForErr(errF) : verdictFor(state.guesses, Q.answer, state.win);
   els.verdict.textContent = v.text;
   els.verdict.className = "verdict " + (state.win ? "win" : "loss");
-  els.bigAnswer.textContent = Q.answer + "%";
+  els.bigAnswer.textContent = dayAnswer + "%";
   var finalGuessVal = state.guesses[state.guesses.length-1];
   els.youMarker.style.left = finalGuessVal + "%";
   els.youLabel.style.left = finalGuessVal + "%";
@@ -588,7 +732,7 @@ function finishGame(alreadyDone){
   els.youMarker.classList.remove("on");
   els.youLabel.classList.remove("on");
   if (alreadyDone){
-    els.revealFill.style.width = Q.answer + "%";
+    els.revealFill.style.width = dayAnswer + "%";
     showGuessMark();
   } else {
     // Pointless-style reveal: the bar crawls along the 0-100 scale toward
@@ -598,7 +742,7 @@ function finishGame(alreadyDone){
     var marked = false;
     els.reveal.classList.add("staging");
     els.revealFill.style.width = "0%";
-    animateValue(0, Q.answer, CONFIG.REVEAL_MS, function(v){
+    animateValue(0, dayAnswer, CONFIG.REVEAL_MS, function(v){
       els.revealFill.style.width = v + "%";
       if (!marked && v >= finalGuessVal){ marked = true; showGuessMark(); }
     }, function(){
@@ -613,6 +757,11 @@ function finishGame(alreadyDone){
   }
   els.sourceNote.textContent = Q.source ? ("Source: " + Q.source) : "";
   els.reveal.classList.remove("hidden");
+  if (MULTI){
+    if (els.nextRound) els.nextRound.classList.add("hidden");
+    if (els.shareBtn) els.shareBtn.classList.remove("hidden");
+    renderRoundList();
+  }
 
   setKickerForTurn();
 
@@ -741,6 +890,20 @@ function submitGuess(){
     return;
   }
 
+  // multi-round day: bank the guess, reveal that group, wait for "Next"
+  if (isMulti()){
+    state.guesses.push(g);
+    saveState();
+    renderRoundPips();
+    els.input.disabled = true;
+    els.slider.disabled = true;
+    els.guessBtn.disabled = true;
+    els.guessRow.classList.add("hidden");
+    if (state.guesses.length >= roundsOf().length) finishGame(false);
+    else revealRound(ROUND);
+    return;
+  }
+
   state.guesses.push(g);
   renderLedgerRow(state.guesses.length, g);
   applyGuessToWindow(g);
@@ -780,11 +943,25 @@ function shareMeter(err){
   if (cls === "target") out += "🎯";
   return out;
 }
+// Multi-round day: one square per group, coloured by how that group went, so
+// the five squares carry the shape of the day rather than a single tier. A
+// bullseye group shows as 🎯, which keeps all five tiers distinguishable
+// (on the pulse and on the scent are both green otherwise).
+function shareMeterMulti(){
+  var sq = { target:"🎯", hot:"🟩", warm:"🟨", cool:"🟧", cold:"🟥" };
+  var e = roundErrors(), out = "";
+  for (var i = 0; i < e.length; i++) out += sq[heat(e[i]).cls];
+  return out;
+}
 function shareText(includeUrl){
   var lines = [];
   lines.push("Crowdsense #" + CUR.puzzleNo);
+  if (isMulti()){
+    lines.push(shareMeterMulti() + " " + state.score + " off");
+  } else {
   var finalErr = Math.abs(state.guesses[state.guesses.length-1] - Q.answer);
   lines.push(shareMeter(finalErr) + " " + state.score + " off");
+  }
   if (MODE === "daily" && state.crowdPct !== null && state.crowdPct !== undefined){
     lines.push("Closer than " + state.crowdPct + "% of players");
   }
@@ -832,7 +1009,11 @@ function doShare(){
 // ===== date ticker =====
 function startDailyTicker(){
   if (!els.dailyDate) return;
-  var dateStr = new Intl.DateTimeFormat("en-GB", { timeZone: safeTZ(), day:"numeric", month:"short" }).format(new Date());
+  // date the day being played, not the wall clock, so a ?day= preview doesn't
+  // show today's date beside another day's puzzle number
+  var p = DAY_KEY.split("-").map(Number);
+  var dateStr = new Intl.DateTimeFormat("en-GB", { timeZone:"UTC", day:"numeric", month:"short" })
+    .format(new Date(Date.UTC(p[0], p[1]-1, p[2])));
   els.dailyDate.textContent = dateStr;
 }
 
@@ -1025,6 +1206,34 @@ function setupGame(dayKey, mode){
 
   els.practiceBar.classList.toggle("hidden", mode !== "practice");
   els.practiceLabel.textContent = "";
+  // reset the multi-round furniture: a single-question day must never inherit
+  // a hidden share button or a stale group table from a multi-round one
+  if (els.shareBtn) els.shareBtn.classList.remove("hidden");
+  if (els.nextRound) els.nextRound.classList.add("hidden");
+  if (els.roundList){ els.roundList.innerHTML = ""; els.roundList.classList.add("hidden"); }
+
+  // multi-round day: play the groups in order
+  if (isMulti()){
+    ROUND = 0;
+    if (els.roundList){ els.roundList.innerHTML = ""; els.roundList.classList.add("hidden"); }
+    paintRound();
+    var savedM = loadState();
+    if (savedM && savedM.guesses.length){
+      state.guesses = savedM.guesses.slice(0, roundsOf().length);
+      ROUND = Math.min(state.guesses.length, roundsOf().length) - 1;
+      renderRoundPips();
+      if (savedM.done || state.guesses.length >= roundsOf().length){
+        finishGame(true);
+      } else {
+        // mid-run refresh: sit on the last group's reveal with Next showing
+        renderQuestionText(roundsOf()[ROUND].question);
+        els.input.disabled = true; els.slider.disabled = true; els.guessBtn.disabled = true;
+        els.guessRow.classList.add("hidden");
+        revealRound(ROUND);
+      }
+    }
+    return;
+  }
 
   // restore any saved result for this day, today's or a past one
   var saved = loadState();
@@ -1180,6 +1389,7 @@ els.slider.addEventListener("input", function(){
 });
 if (els.backToday) els.backToday.addEventListener("click", function(){ setupGame(DAY_KEY, "daily"); });
 if (els.shareBtn) els.shareBtn.addEventListener("click", doShare);
+if (els.nextRound) els.nextRound.addEventListener("click", nextRound);
 Array.prototype.forEach.call(document.querySelectorAll("form.email-form"), function(f){
   f.addEventListener("submit", handleEmailSubmit);
 });

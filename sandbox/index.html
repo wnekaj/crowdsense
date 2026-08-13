@@ -632,7 +632,30 @@
         background:transparent; color:#fff; border:1px solid rgba(255,255,255,.5);
         border-radius:4px; padding:3px 8px; cursor:pointer;
       }
-      .sbx-blocked{
+      /* SANDBOX TEST: multi-round day — the table of groups */
+    .rounds{ margin:18px 0 4px; border-top:1px solid var(--hairline) }
+    .rrow{
+      display:grid; grid-template-columns:1fr auto auto auto; gap:10px;
+      align-items:center; padding:9px 2px;
+      border-bottom:1px solid var(--hairline);
+      font-size:14px; font-variant-numeric:tabular-nums;
+    }
+    .rlabel{ font-weight:500; text-align:left }
+    .rguess{ color:var(--muted); font-size:13px }
+    .rans{ font-weight:700; min-width:44px; text-align:right }
+    .rchip{
+      min-width:62px; text-align:center; border-radius:3px;
+      padding:3px 7px; font-size:12px; font-weight:500; color:#fff;
+    }
+    .rchip.target{ background:var(--win) }
+    .rchip.hot{ background:var(--hot) }
+    .rchip.warm{ background:var(--warm) }
+    .rchip.cool{ background:var(--cool) }
+    .rchip.cold{ background:var(--cold) }
+    .rrow.rtotal{ border-bottom:none; font-weight:700 }
+    .rrow.rtotal .rlabel{ letter-spacing:.02em }
+    #nextRound{ margin-top:14px }
+    .sbx-blocked{
         width:min(560px,94vw); margin:24px auto; padding:16px 18px;
         border:1px solid #d5541a; border-radius:6px;
         font-size:14px; line-height:1.6;
@@ -730,6 +753,10 @@
           <p class="crowdhead" id="crowdHead"></p>
         </div>
 
+        <!-- SANDBOX TEST: running table of groups on a multi-round day -->
+        <div class="rounds hidden" id="roundList"></div>
+        <button id="nextRound" class="sharebtn hidden" type="button">Next group</button>
+
         <button id="shareBtn" class="sharebtn" type="button">Share your result</button>
       </div>
     </div>
@@ -750,6 +777,7 @@
       <div class="modal-body">
         <p>Each day we take one real question the British public have been polled on, and you guess what they said.</p>
         <p>Your score is simply how many percentage points you were off. You have <b>one guess</b>. How good is your crowdsense?</p>
+        <p>Some days put the same question to five different groups — everyone, then men, 18&ndash;24s, the over-65s, Londoners. Each answer is revealed before the next group is asked, and your score for the day is the <b>average</b> of the five.</p>
         <div class="legend">
           <div class="lg"><span class="chip target">🎯 On the pulse</span> Within 2</div>
           <div class="lg"><span class="chip hot">On the scent</span> Within 5</div>
