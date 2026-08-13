@@ -474,7 +474,9 @@ function renderRoundPips(){
 // hand the input back for the next group
 function paintRound(){
   renderQuestionText(roundsOf()[ROUND].question);
-  els.reveal.classList.add("hidden");
+  // The reveal stays on screen once the first group has been answered, so the
+  // bar and the running tally are visible while the next group is asked.
+  if (!state.guesses.length) els.reveal.classList.add("hidden");
   if (els.shareBtn) els.shareBtn.classList.add("hidden");
   els.input.disabled = false;
   els.slider.disabled = false;
@@ -502,19 +504,29 @@ function renderRoundList(){
   var html = "";
   for (var i = 0; i < errs.length; i++){
     var h = heat(errs[i]);
+    // each group keeps its own bar: the fill is where the public landed, the
+    // mark is where you guessed, in the colour of how close that was
     html += '<div class="rrow">' +
-      '<span class="rlabel">' + rs[i].label + '</span>' +
-      '<span class="rguess">you ' + state.guesses[i] + '%</span>' +
-      '<span class="rans">' + rs[i].answer + '%</span>' +
-      '<span class="rchip ' + h.cls + '">' + errs[i] + ' off</span>' +
+      '<div class="rhead">' +
+        '<span class="rlabel">' + rs[i].label + '</span>' +
+        '<span class="rguess">you ' + state.guesses[i] + '%</span>' +
+        '<span class="rans">' + rs[i].answer + '%</span>' +
+        '<span class="rchip ' + h.cls + '">' + errs[i] + ' off</span>' +
+      '</div>' +
+      '<div class="rbar">' +
+        '<div class="rfill" style="width:' + rs[i].answer + '%"></div>' +
+        '<div class="rmark t-' + h.cls + '" style="left:' + state.guesses[i] + '%"></div>' +
+      '</div>' +
     '</div>';
   }
   // the score that actually counts, spelled out so the mean isn't a mystery
   if (state.done){
     html += '<div class="rrow rtotal">' +
-      '<span class="rlabel">Average across ' + errs.length + '</span>' +
-      '<span class="rguess"></span><span class="rans"></span>' +
-      '<span class="rchip ' + heat(meanErr()).cls + '">' + meanErr() + ' off</span>' +
+      '<div class="rhead">' +
+        '<span class="rlabel">Average across ' + errs.length + '</span>' +
+        '<span class="rguess"></span><span class="rans"></span>' +
+        '<span class="rchip ' + heat(meanErr()).cls + '">' + meanErr() + ' off</span>' +
+      '</div>' +
     '</div>';
   }
   els.roundList.innerHTML = html;
@@ -522,6 +534,18 @@ function renderRoundList(){
 }
 // Reveal one group's answer. The last round goes through finishGame instead,
 // which adds the day's verdict, stats and share.
+// Paint the guess marker in the colour of how close that guess was, rather
+// than always orange.
+function tintGuessMark(err){
+  var cls = heat(err).cls;
+  ["target","hot","warm","cool","cold"].forEach(function(c){
+    els.youMarker.classList.remove("t-" + c);
+    els.youLabel.classList.remove("t-" + c);
+  });
+  els.youMarker.classList.add("t-" + cls);
+  els.youLabel.classList.add("t-" + cls);
+}
+
 // Mid-round reveal: the figure and nothing else. No verdict, no source and no
 // table until the day is over, so the run is four answers in a row rather than
 // four scored results, and the scoring lands once at the end.
@@ -532,7 +556,7 @@ function revealRound(i){
   els.verdict.className = "verdict";
   els.bigAnswer.textContent = r.answer + "%";
   els.sourceNote.textContent = "";
-  if (els.roundList){ els.roundList.innerHTML = ""; els.roundList.classList.add("hidden"); }
+  tintGuessMark(Math.abs(g - r.answer));
   els.youMarker.style.left = g + "%";
   els.youLabel.style.left = g + "%";
   els.youLabel.textContent = g;
@@ -549,10 +573,31 @@ function revealRound(i){
     if (!marked){ els.youMarker.classList.add("on"); els.youLabel.classList.add("on"); }
     setTimeout(function(){
       els.reveal.classList.remove("staging");
+      renderRoundList();
       // hold on the figure long enough to read it, then move straight on
       ROUND_TIMER = setTimeout(nextRound, ROUND_HOLD_MS);
     }, 350);
   });
+}
+// Put a already-answered group's bar back without replaying the animation —
+// used after a refresh, so the run looks the same as when it was left.
+function paintRestoredReveal(i){
+  if (i < 0) return;
+  var r = roundsOf()[i], g = state.guesses[i];
+  els.verdict.textContent = "";
+  els.verdict.className = "verdict";
+  els.sourceNote.textContent = "";
+  els.bigAnswer.textContent = r.answer + "%";
+  els.revealFill.style.width = r.answer + "%";
+  els.youMarker.style.left = g + "%";
+  els.youLabel.style.left = g + "%";
+  els.youLabel.textContent = g;
+  tintGuessMark(Math.abs(g - r.answer));
+  els.youMarker.classList.add("on");
+  els.youLabel.classList.add("on");
+  els.reveal.classList.remove("staging");
+  els.reveal.classList.remove("hidden");
+  renderRoundList();
 }
 function nextRound(){
   clearRoundTimer();
@@ -747,6 +792,8 @@ function finishGame(alreadyDone){
   }
   els.youMarker.classList.remove("on");
   els.youLabel.classList.remove("on");
+  // the marker sits on the last group's bar, so it takes that group's colour
+  if (MULTI) tintGuessMark(Math.abs(finalGuessVal - dayAnswer));
   if (alreadyDone){
     els.revealFill.style.width = dayAnswer + "%";
     showGuessMark();
@@ -911,10 +958,10 @@ function submitGuess(){
     state.guesses.push(g);
     saveState();
     renderRoundPips();
+    // the guess bar stays in place while the figure comes up — only locked
     els.input.disabled = true;
     els.slider.disabled = true;
     els.guessBtn.disabled = true;
-    els.guessRow.classList.add("hidden");
     if (state.guesses.length >= roundsOf().length) finishGame(false);
     else revealRound(ROUND);
     return;
@@ -1247,7 +1294,9 @@ function setupGame(dayKey, mode){
       if (savedM.done || state.guesses.length >= roundsOf().length){
         finishGame(true);
       } else {
-        // mid-run refresh: pick up at the next group that hasn't been asked
+        // mid-run refresh: put the last group's bar and the tally back, then
+        // pick up at the next group that hasn't been asked
+        paintRestoredReveal(state.guesses.length - 1);
         ROUND = state.guesses.length;
         paintRound();
       }
