@@ -198,12 +198,11 @@ var CS_QUESTIONS = [
     answer: 23,
     source: "Public First poll of 2,015 UK adults, 16–30 January 2026",
     teaser: "How many Brits go to the gym weekly?",
-    // SANDBOX TEST: a five-round day. The same question is put to five
+    // SANDBOX TEST: a four-round day. The same question is put to four
     // crossbreaks in turn, each revealed before the next is asked, so what you
-    // learn carries forward. The day's score is the mean of the five errors.
+    // learn carries forward. The day's score is the mean of the four errors.
     // Figures are the "at least once a week" bands summed per column:
-    //   total 3+13+7=23 · men 4+14+9=27 · 18-24 7+21+13=41
-    //   65+ 1+5+2=8 · London 6+17+15=38
+    //   total 3+13+7=23 · men 4+14+9=27 · 18-24 7+21+13=41 · 65+ 1+5+2=8
     parts: [
       { label: "Everyone", answer: 23,
         question: "What percentage of Brits say they go to the gym at least once a week?" },
@@ -212,9 +211,7 @@ var CS_QUESTIONS = [
       { label: "18–24s", answer: 41,
         question: "Same question, **18–24 year-olds**. What percentage go at least once a week?" },
       { label: "Over-65s", answer: 8,
-        question: "Same question, the **over-65s**. What percentage go at least once a week?" },
-      { label: "Londoners", answer: 38,
-        question: "Same question, **Londoners**. What percentage go at least once a week?" }
+        question: "Same question, the **over-65s**. What percentage go at least once a week?" }
     ]
   },
   {
