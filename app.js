@@ -830,11 +830,18 @@ function doShare(){
 }
 
 // ===== date ticker =====
-function startDailyTicker(){
-  if (!els.dailyDate) return;
-  var dateStr = new Intl.DateTimeFormat("en-GB", { timeZone: safeTZ(), day:"numeric", month:"short" }).format(new Date());
-  els.dailyDate.textContent = dateStr;
+// "12 Aug" for a day key, read as a plain calendar date rather than an instant
+function formatDayShort(key){
+  var p = String(key || "").split("-").map(Number);
+  if (p.length !== 3 || !isFinite(p[0])) return "";
+  return new Intl.DateTimeFormat("en-GB", { timeZone:"UTC", day:"numeric", month:"short" })
+    .format(new Date(Date.UTC(p[0], p[1]-1, p[2])));
 }
+function paintDayDate(key){
+  if (!els.dailyDate) return;
+  els.dailyDate.textContent = formatDayShort(key);
+}
+function startDailyTicker(){ paintDayDate(DAY_KEY); }
 
 // ===== modals =====
 function openModal(id){ var m = $(id); if (m) m.classList.remove("hidden"); }
@@ -1003,6 +1010,9 @@ function setupGame(dayKey, mode){
   minAllowed = 0; maxAllowed = 100;
 
   els.puzzleNo.textContent = "#" + CUR.puzzleNo;
+  // the date has to follow the day being played, not the wall clock, or a past
+  // question shows today's date beside that day's puzzle number
+  paintDayDate(dayKey);
   renderQuestionText(Q.question);
   els.ledger.innerHTML = "";
   els.reveal.classList.add("hidden");
