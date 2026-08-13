@@ -654,7 +654,6 @@
     .rchip.cold{ background:var(--cold) }
     .rrow.rtotal{ border-bottom:none; font-weight:700 }
     .rrow.rtotal .rlabel{ letter-spacing:.02em }
-    #nextRound{ margin-top:14px }
     .sbx-blocked{
         width:min(560px,94vw); margin:24px auto; padding:16px 18px;
         border:1px solid #d5541a; border-radius:6px;
@@ -753,9 +752,8 @@
           <p class="crowdhead" id="crowdHead"></p>
         </div>
 
-        <!-- SANDBOX TEST: running table of groups on a multi-round day -->
+        <!-- SANDBOX TEST: table of groups, shown once the day is finished -->
         <div class="rounds hidden" id="roundList"></div>
-        <button id="nextRound" class="sharebtn hidden" type="button">Next group</button>
 
         <button id="shareBtn" class="sharebtn" type="button">Share your result</button>
       </div>
@@ -777,7 +775,7 @@
       <div class="modal-body">
         <p>Each day we take one real question the British public have been polled on, and you guess what they said.</p>
         <p>Your score is simply how many percentage points you were off. You have <b>one guess</b>. How good is your crowdsense?</p>
-        <p>Some days put the same question to five different groups — everyone, then men, 18&ndash;24s, the over-65s, Londoners. Each answer is revealed before the next group is asked, and your score for the day is the <b>average</b> of the five.</p>
+        <p>Some days put the same question to four different groups — everyone, then men, 18&ndash;24s, the over-65s. Each answer is revealed before the next group is asked, and your score for the day is the <b>average</b> of the four.</p>
         <div class="legend">
           <div class="lg"><span class="chip target">🎯 On the pulse</span> Within 2</div>
           <div class="lg"><span class="chip hot">On the scent</span> Within 5</div>

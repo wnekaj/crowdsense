@@ -95,7 +95,7 @@ var els = {
   sourceNote: $("sourceNote"),
   crowdBlock: $("crowdBlock"), crowdHead: $("crowdHead"), histo: $("histo"),
   shareBtn: $("shareBtn"),
-  roundList: $("roundList"), nextRound: $("nextRound"),
+  roundList: $("roundList"),
   toast: $("toast"),
   helpBtn: $("helpBtn"), statsBtn: $("statsBtn"), archiveBtn: $("archiveBtn"), privacyBtn: $("privacyBtn"), contactBtn: $("contactBtn"),
   tour: $("tour"), tourSpot: $("tourSpot"), tourCard: $("tourCard"),
@@ -162,6 +162,15 @@ function computeScore(guesses, answer){
 // make every multi-round day look roughly five times worse than a normal one
 // and would wreck the average.
 var ROUND = 0;
+// How long the answer stays up before the next group is asked. The reveal
+// animation runs first (CONFIG.REVEAL_MS), so this is reading time on top.
+var ROUND_HOLD_MS = 1500;
+var ROUND_TIMER = null;
+// Any navigation away mid-run must kill the pending advance, or a stale timer
+// would drag the player back into the run from wherever they went.
+function clearRoundTimer(){
+  if (ROUND_TIMER){ clearTimeout(ROUND_TIMER); ROUND_TIMER = null; }
+}
 function isMulti(q){
   var t = q || Q;
   return !!(t && t.parts && t.parts.length > 1);
@@ -466,16 +475,21 @@ function renderRoundPips(){
 function paintRound(){
   renderQuestionText(roundsOf()[ROUND].question);
   els.reveal.classList.add("hidden");
-  if (els.nextRound) els.nextRound.classList.add("hidden");
   if (els.shareBtn) els.shareBtn.classList.add("hidden");
   els.input.disabled = false;
   els.slider.disabled = false;
   els.guessBtn.disabled = false;
   els.guessRow.classList.remove("hidden");
   els.guessDots.classList.remove("hidden");
-  els.input.value = "";
-  els.slider.value = 50;
-  els.slider.style.setProperty("--fill", "50%");
+  // The slider stays where the player left it between groups: the answer for
+  // one group is the natural starting point for the next, so resetting to 50
+  // would throw away the anchor they've just been given. The box is kept in
+  // step with it rather than blanked.
+  var held = Math.round(Number(els.slider.value));
+  if (!isFinite(held) || held < 0 || held > 100) held = 50;
+  els.slider.value = held;
+  els.slider.style.setProperty("--fill", held + "%");
+  els.input.value = String(held);
   renderRoundPips();
   setKickerForTurn();
   try{ els.input.focus(); }catch(_){}
@@ -508,13 +522,17 @@ function renderRoundList(){
 }
 // Reveal one group's answer. The last round goes through finishGame instead,
 // which adds the day's verdict, stats and share.
+// Mid-round reveal: the figure and nothing else. No verdict, no source and no
+// table until the day is over, so the run is four answers in a row rather than
+// four scored results, and the scoring lands once at the end.
 function revealRound(i){
   var r = roundsOf()[i];
   var g = state.guesses[i];
-  els.verdict.textContent = verdictForErr(Math.abs(g - r.answer)).text;
-  els.verdict.className = "verdict " + (Math.abs(g - r.answer) <= CONFIG.WIN_MARGIN ? "win" : "loss");
+  els.verdict.textContent = "";
+  els.verdict.className = "verdict";
   els.bigAnswer.textContent = r.answer + "%";
-  els.sourceNote.textContent = Q.source ? ("Source: " + Q.source) : "";
+  els.sourceNote.textContent = "";
+  if (els.roundList){ els.roundList.innerHTML = ""; els.roundList.classList.add("hidden"); }
   els.youMarker.style.left = g + "%";
   els.youLabel.style.left = g + "%";
   els.youLabel.textContent = g;
@@ -531,15 +549,13 @@ function revealRound(i){
     if (!marked){ els.youMarker.classList.add("on"); els.youLabel.classList.add("on"); }
     setTimeout(function(){
       els.reveal.classList.remove("staging");
-      renderRoundList();
-      if (els.nextRound){
-        els.nextRound.textContent = "Next: " + roundsOf()[i+1].label;
-        els.nextRound.classList.remove("hidden");
-      }
+      // hold on the figure long enough to read it, then move straight on
+      ROUND_TIMER = setTimeout(nextRound, ROUND_HOLD_MS);
     }, 350);
   });
 }
 function nextRound(){
+  clearRoundTimer();
   if (ROUND >= roundsOf().length - 1) return;
   ROUND += 1;
   paintRound();
@@ -758,7 +774,7 @@ function finishGame(alreadyDone){
   els.sourceNote.textContent = Q.source ? ("Source: " + Q.source) : "";
   els.reveal.classList.remove("hidden");
   if (MULTI){
-    if (els.nextRound) els.nextRound.classList.add("hidden");
+    clearRoundTimer();
     if (els.shareBtn) els.shareBtn.classList.remove("hidden");
     renderRoundList();
   }
@@ -1213,9 +1229,9 @@ function setupGame(dayKey, mode){
   els.practiceBar.classList.toggle("hidden", mode !== "practice");
   els.practiceLabel.textContent = "";
   // reset the multi-round furniture: a single-question day must never inherit
-  // a hidden share button or a stale group table from a multi-round one
+  // a hidden share button, a stale group table or a pending auto-advance
+  clearRoundTimer();
   if (els.shareBtn) els.shareBtn.classList.remove("hidden");
-  if (els.nextRound) els.nextRound.classList.add("hidden");
   if (els.roundList){ els.roundList.innerHTML = ""; els.roundList.classList.add("hidden"); }
 
   // multi-round day: play the groups in order
@@ -1226,16 +1242,14 @@ function setupGame(dayKey, mode){
     var savedM = loadState();
     if (savedM && savedM.guesses.length){
       state.guesses = savedM.guesses.slice(0, roundsOf().length);
-      ROUND = Math.min(state.guesses.length, roundsOf().length) - 1;
+      ROUND = Math.min(state.guesses.length, roundsOf().length - 1);
       renderRoundPips();
       if (savedM.done || state.guesses.length >= roundsOf().length){
         finishGame(true);
       } else {
-        // mid-run refresh: sit on the last group's reveal with Next showing
-        renderQuestionText(roundsOf()[ROUND].question);
-        els.input.disabled = true; els.slider.disabled = true; els.guessBtn.disabled = true;
-        els.guessRow.classList.add("hidden");
-        revealRound(ROUND);
+        // mid-run refresh: pick up at the next group that hasn't been asked
+        ROUND = state.guesses.length;
+        paintRound();
       }
     }
     return;
@@ -1395,7 +1409,6 @@ els.slider.addEventListener("input", function(){
 });
 if (els.backToday) els.backToday.addEventListener("click", function(){ setupGame(DAY_KEY, "daily"); });
 if (els.shareBtn) els.shareBtn.addEventListener("click", doShare);
-if (els.nextRound) els.nextRound.addEventListener("click", nextRound);
 Array.prototype.forEach.call(document.querySelectorAll("form.email-form"), function(f){
   f.addEventListener("submit", handleEmailSubmit);
 });
