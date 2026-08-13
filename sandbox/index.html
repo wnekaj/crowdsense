@@ -351,7 +351,7 @@
     .reveal > *{ transition:opacity .45s ease }
     .reveal.staging > :not(.revealbar-wrap){ opacity:0; pointer-events:none }
 
-    .revealbar-wrap{ margin:6px 0 18px; position:relative; padding-top:20px }
+    .revealbar-wrap{ margin:2px 0 18px; position:relative; padding-top:52px }
     .revealbar{
       position:relative; height:14px; border-radius:4px;
       background:var(--hairline);
@@ -377,20 +377,22 @@
       pointer-events:none;
     }
     .youmark.on, .youlabel.on{ opacity:1 }
-    /* SANDBOX TEST: the answer as a small tag on a leader line out of the bar */
+    /* SANDBOX TEST: the answer stands above the bar on a short stem, using the
+       empty space there. Orange marks it as the answer; your own guess keeps
+       the colour of how close it was. */
     .revealtag{
-      position:absolute; top:27px; transform:translateY(-50%);
-      display:flex; align-items:center; gap:5px;
+      position:absolute; top:22px; transform:translateX(-50%);
+      /* column-reverse so the stem is the lower element, running down to the
+         bar, with the figure sitting on top of it */
+      display:flex; flex-direction:column-reverse; align-items:center; gap:2px;
       white-space:nowrap; pointer-events:none;
     }
-    .rt-line{ display:block; width:14px; height:1px; background:var(--ink); opacity:.5 }
+    .rt-line{ display:block; width:1px; height:8px; background:var(--accent) }
     .rt-num{
       font-family:var(--display);
-      font-size:17px; font-weight:700; letter-spacing:.01em;
-      color:var(--ink); font-variant-numeric:tabular-nums;
+      font-size:17px; font-weight:700; letter-spacing:.01em; line-height:1.2;
+      color:var(--accent); font-variant-numeric:tabular-nums;
     }
-    /* near the right-hand end there is no room, so the tag reads back inwards */
-    .revealtag.flip{ flex-direction:row-reverse; transform:translate(-100%,-50%) }
     /* the guess mark takes the colour of how close it was, on the big bar and
        on each group's kept bar alike */
     .youmark.t-target, .rmark.t-target{ background:var(--win) }

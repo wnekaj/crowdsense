@@ -541,9 +541,9 @@ function paintRevealTag(v){
   if (!els.revealTag) return;
   var pct = Math.max(0, Math.min(100, v));
   els.revealTag.classList.remove("hidden");
-  els.revealTag.style.left = pct + "%";
-  // past about three-quarters there is no room to the right, so it reads back
-  els.revealTag.classList.toggle("flip", pct > 72);
+  // the tag is centred on the end of the fill, nudged in at the extremes so a
+  // figure near 0 or 100 can't hang off the edge of the bar
+  els.revealTag.style.left = Math.min(Math.max(pct, 7), 93) + "%";
   var num = els.revealTag.querySelector(".rt-num");
   if (num) num.textContent = Math.round(pct) + "%";
 }
