@@ -377,6 +377,20 @@
       pointer-events:none;
     }
     .youmark.on, .youlabel.on{ opacity:1 }
+    /* SANDBOX TEST: the answer as a small tag on a leader line out of the bar */
+    .revealtag{
+      position:absolute; top:27px; transform:translateY(-50%);
+      display:flex; align-items:center; gap:5px;
+      white-space:nowrap; pointer-events:none;
+    }
+    .rt-line{ display:block; width:14px; height:1px; background:var(--ink); opacity:.5 }
+    .rt-num{
+      font-family:var(--display);
+      font-size:17px; font-weight:700; letter-spacing:.01em;
+      color:var(--ink); font-variant-numeric:tabular-nums;
+    }
+    /* near the right-hand end there is no room, so the tag reads back inwards */
+    .revealtag.flip{ flex-direction:row-reverse; transform:translate(-100%,-50%) }
     /* the guess mark takes the colour of how close it was, on the big bar and
        on each group's kept bar alike */
     .youmark.t-target, .rmark.t-target{ background:var(--win) }
@@ -763,6 +777,11 @@
             <div class="revealfill" id="revealFill"></div>
             <div class="youmark" id="youMarker" title="Your guess"></div>
           </div>
+          <!-- SANDBOX TEST: the figure rides the end of the bar instead of
+               landing underneath it at display size -->
+          <span class="revealtag hidden" id="revealTag" aria-hidden="true">
+            <i class="rt-line"></i><b class="rt-num"></b>
+          </span>
           <div class="scale"><span>0</span><span>50</span><span>100</span></div>
         </div>
         <p class="verdict" id="verdict"></p>

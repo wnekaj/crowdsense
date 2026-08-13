@@ -95,7 +95,7 @@ var els = {
   sourceNote: $("sourceNote"),
   crowdBlock: $("crowdBlock"), crowdHead: $("crowdHead"), histo: $("histo"),
   shareBtn: $("shareBtn"),
-  roundList: $("roundList"),
+  roundList: $("roundList"), revealTag: $("revealTag"),
   toast: $("toast"),
   helpBtn: $("helpBtn"), statsBtn: $("statsBtn"), archiveBtn: $("archiveBtn"), privacyBtn: $("privacyBtn"), contactBtn: $("contactBtn"),
   tour: $("tour"), tourSpot: $("tourSpot"), tourCard: $("tourCard"),
@@ -534,6 +534,23 @@ function renderRoundList(){
 }
 // Reveal one group's answer. The last round goes through finishGame instead,
 // which adds the day's verdict, stats and share.
+// SANDBOX TEST: the answer rides the end of the bar on a short leader line,
+// at reading size, rather than landing underneath it as a display number.
+// Called on every animation frame so the figure counts up as the bar travels.
+function paintRevealTag(v){
+  if (!els.revealTag) return;
+  var pct = Math.max(0, Math.min(100, v));
+  els.revealTag.classList.remove("hidden");
+  els.revealTag.style.left = pct + "%";
+  // past about three-quarters there is no room to the right, so it reads back
+  els.revealTag.classList.toggle("flip", pct > 72);
+  var num = els.revealTag.querySelector(".rt-num");
+  if (num) num.textContent = Math.round(pct) + "%";
+}
+function hideRevealTag(){
+  if (els.revealTag) els.revealTag.classList.add("hidden");
+}
+
 // Paint the guess marker in the colour of how close that guess was, rather
 // than always orange.
 function tintGuessMark(err){
@@ -554,7 +571,8 @@ function revealRound(i){
   var g = state.guesses[i];
   els.verdict.textContent = "";
   els.verdict.className = "verdict";
-  els.bigAnswer.textContent = r.answer + "%";
+  els.bigAnswer.textContent = "";
+  els.bigAnswer.classList.add("hidden");
   els.sourceNote.textContent = "";
   tintGuessMark(Math.abs(g - r.answer));
   els.youMarker.style.left = g + "%";
@@ -566,8 +584,10 @@ function revealRound(i){
   var marked = false;
   els.reveal.classList.add("staging");
   els.revealFill.style.width = "0%";
+  paintRevealTag(0);
   animateValue(0, r.answer, CONFIG.REVEAL_MS, function(v){
     els.revealFill.style.width = v + "%";
+    paintRevealTag(v);
     if (!marked && v >= g){ marked = true; els.youMarker.classList.add("on"); els.youLabel.classList.add("on"); }
   }, function(){
     if (!marked){ els.youMarker.classList.add("on"); els.youLabel.classList.add("on"); }
@@ -587,8 +607,10 @@ function paintRestoredReveal(i){
   els.verdict.textContent = "";
   els.verdict.className = "verdict";
   els.sourceNote.textContent = "";
-  els.bigAnswer.textContent = r.answer + "%";
+  els.bigAnswer.textContent = "";
+  els.bigAnswer.classList.add("hidden");
   els.revealFill.style.width = r.answer + "%";
+  paintRevealTag(r.answer);
   els.youMarker.style.left = g + "%";
   els.youLabel.style.left = g + "%";
   els.youLabel.textContent = g;
@@ -781,7 +803,10 @@ function finishGame(alreadyDone){
   var v = MULTI ? verdictForErr(errF) : verdictFor(state.guesses, Q.answer, state.win);
   els.verdict.textContent = v.text;
   els.verdict.className = "verdict " + (state.win ? "win" : "loss");
-  els.bigAnswer.textContent = dayAnswer + "%";
+  // multi-round days carry the figure on the bar instead of below it
+  els.bigAnswer.textContent = MULTI ? "" : (dayAnswer + "%");
+  els.bigAnswer.classList.toggle("hidden", MULTI);
+  if (!MULTI) hideRevealTag();
   var finalGuessVal = state.guesses[state.guesses.length-1];
   els.youMarker.style.left = finalGuessVal + "%";
   els.youLabel.style.left = finalGuessVal + "%";
@@ -796,6 +821,7 @@ function finishGame(alreadyDone){
   if (MULTI) tintGuessMark(Math.abs(finalGuessVal - dayAnswer));
   if (alreadyDone){
     els.revealFill.style.width = dayAnswer + "%";
+    if (MULTI) paintRevealTag(dayAnswer);
     showGuessMark();
   } else {
     // Pointless-style reveal: the bar crawls along the 0-100 scale toward
@@ -805,8 +831,10 @@ function finishGame(alreadyDone){
     var marked = false;
     els.reveal.classList.add("staging");
     els.revealFill.style.width = "0%";
+    if (MULTI) paintRevealTag(0);
     animateValue(0, dayAnswer, CONFIG.REVEAL_MS, function(v){
       els.revealFill.style.width = v + "%";
+      if (MULTI) paintRevealTag(v);
       if (!marked && v >= finalGuessVal){ marked = true; showGuessMark(); }
     }, function(){
       if (!marked) showGuessMark();
@@ -1278,6 +1306,8 @@ function setupGame(dayKey, mode){
   // reset the multi-round furniture: a single-question day must never inherit
   // a hidden share button, a stale group table or a pending auto-advance
   clearRoundTimer();
+  hideRevealTag();
+  els.bigAnswer.classList.remove("hidden");
   if (els.shareBtn) els.shareBtn.classList.remove("hidden");
   if (els.roundList){ els.roundList.innerHTML = ""; els.roundList.classList.add("hidden"); }
 
