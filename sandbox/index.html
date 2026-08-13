@@ -377,6 +377,18 @@
       pointer-events:none;
     }
     .youmark.on, .youlabel.on{ opacity:1 }
+    /* the guess mark takes the colour of how close it was, on the big bar and
+       on each group's kept bar alike */
+    .youmark.t-target, .rmark.t-target{ background:var(--win) }
+    .youmark.t-hot,    .rmark.t-hot{    background:var(--hot) }
+    .youmark.t-warm,   .rmark.t-warm{   background:var(--warm) }
+    .youmark.t-cool,   .rmark.t-cool{   background:var(--cool) }
+    .youmark.t-cold,   .rmark.t-cold{   background:var(--cold) }
+    .youlabel.t-target{ color:var(--win) }
+    .youlabel.t-hot{    color:var(--hot) }
+    .youlabel.t-warm{   color:#9a8434 }
+    .youlabel.t-cool{   color:var(--cool) }
+    .youlabel.t-cold{   color:var(--cold) }
     .verdict{
       font-family:var(--display); font-weight:500;
       font-size:16px; letter-spacing:.01em;
@@ -632,14 +644,24 @@
         background:transparent; color:#fff; border:1px solid rgba(255,255,255,.5);
         border-radius:4px; padding:3px 8px; cursor:pointer;
       }
-      /* SANDBOX TEST: multi-round day — the table of groups */
+      /* SANDBOX TEST: multi-round day — the running tally of groups */
     .rounds{ margin:18px 0 4px; border-top:1px solid var(--hairline) }
     .rrow{
-      display:grid; grid-template-columns:1fr auto auto auto; gap:10px;
-      align-items:center; padding:9px 2px;
+      padding:9px 2px 11px;
       border-bottom:1px solid var(--hairline);
       font-size:14px; font-variant-numeric:tabular-nums;
     }
+    .rhead{
+      display:grid; grid-template-columns:1fr auto auto auto; gap:10px;
+      align-items:center;
+    }
+    /* each answered group keeps its own bar */
+    .rbar{
+      position:relative; height:7px; border-radius:3px; margin-top:7px;
+      background:var(--hairline); overflow:hidden;
+    }
+    .rfill{ position:absolute; left:0; top:0; bottom:0; background:var(--ink) }
+    .rmark{ position:absolute; top:0; bottom:0; width:2px; transform:translateX(-1px) }
     .rlabel{ font-weight:500; text-align:left }
     .rguess{ color:var(--muted); font-size:13px }
     .rans{ font-weight:700; min-width:44px; text-align:right }
@@ -652,7 +674,7 @@
     .rchip.warm{ background:var(--warm) }
     .rchip.cool{ background:var(--cool) }
     .rchip.cold{ background:var(--cold) }
-    .rrow.rtotal{ border-bottom:none; font-weight:700 }
+    .rrow.rtotal{ border-bottom:none; font-weight:700; padding-bottom:9px }
     .rrow.rtotal .rlabel{ letter-spacing:.02em }
     .sbx-blocked{
         width:min(560px,94vw); margin:24px auto; padding:16px 18px;
