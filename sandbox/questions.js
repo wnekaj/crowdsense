@@ -6,7 +6,7 @@
    Scheduling: each question carries a "date" (YYYY-MM-DD, London time) and
    runs on exactly that day. The undated Burnham-improvement taster runs on
    any day without a dated question — it is the fallback if the bank runs
-   dry. Top up before 18 August.
+   dry. Top up before 22 August.
 
    Email-only fields, both optional and ignored by the game:
      teaser — the short hook used in the daily email's subject line. If a
@@ -255,6 +255,35 @@ var CS_QUESTIONS = [
     answer: 41,
     source: "Public First poll of 4,005 UK adults, 24–30 October 2025",
     teaser: "How many Brits are non-believers?"
+  },
+  {
+    date: "2026-08-19",  // Day 31
+    question: "What percentage of Brits say they always ask if anyone else wants one when they make a cup of tea?",
+    answer: 80,
+    source: "Public First poll of 4,005 UK adults, 24–30 October 2025",
+    teaser: "Do Brits offer you a cuppa?"
+  },
+  {
+    date: "2026-08-20",  // Day 32
+    question: "What percentage of Brits say they like to take the mick out of other people?",
+    answer: 34,
+    source: "Public First poll of 4,005 UK adults, 24–30 October 2025",
+    teaser: "How many Brits take the mick?"
+  },
+  {
+    date: "2026-08-21",  // Day 33
+    // deliberately the disagree side of the statement, not the agree side
+    question: "What percentage of Brits disagree that everyone should buy a round at the pub?",
+    answer: 20,
+    source: "Public First poll of 4,005 UK adults, 24–30 October 2025",
+    teaser: "Who objects to buying a round?"
+  },
+  {
+    date: "2026-08-22",  // Day 34
+    question: "What percentage of Brits think families should eat together?",
+    answer: 75,
+    source: "Public First poll of 4,005 UK adults, 24–30 October 2025",
+    teaser: "Should families eat together?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
