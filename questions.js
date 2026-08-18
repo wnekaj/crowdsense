@@ -243,7 +243,7 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-08-19",  // Day 31
-    question: "What percentage of Brits say they always ask if anyone else wants one when they make a cup of tea?",
+    question: "What percentage of Brits say they always ask if anyone else wants a cup of tea when they make one?",
     answer: 80,
     source: "Public First poll of 4,005 UK adults, 24–30 October 2025",
     teaser: "Do Brits offer you a cuppa?"
