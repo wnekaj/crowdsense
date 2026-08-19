@@ -95,7 +95,7 @@ var els = {
   sourceNote: $("sourceNote"),
   crowdBlock: $("crowdBlock"), crowdHead: $("crowdHead"), histo: $("histo"),
   shareBtn: $("shareBtn"),
-  roundList: $("roundList"), revealTag: $("revealTag"),
+  roundList: $("roundList"), revealTag: $("revealTag"), sourceBottom: $("sourceBottom"),
   toast: $("toast"),
   helpBtn: $("helpBtn"), statsBtn: $("statsBtn"), archiveBtn: $("archiveBtn"), privacyBtn: $("privacyBtn"), contactBtn: $("contactBtn"),
   tour: $("tour"), tourSpot: $("tourSpot"), tourCard: $("tourCard"),
@@ -496,44 +496,27 @@ function paintRound(){
   setKickerForTurn();
   try{ els.input.focus(); }catch(_){}
 }
-// the running table of groups answered so far
+// The running tally: one cell per part, laid out in a row — the category
+// name with a coloured box beneath carrying that part's score. Parts not yet
+// asked keep their place as a blank grey box, so the row never jumps and
+// nothing is given away about what is coming.
 function renderRoundList(){
   if (!els.roundList) return;
   var rs = roundsOf(), errs = roundErrors();
   if (!errs.length){ els.roundList.classList.add("hidden"); return; }
   var html = "";
-  for (var i = 0; i < errs.length; i++){
-    var h = heat(errs[i]);
-    // each group keeps its own bar: the fill is where the public landed, the
-    // mark is where you guessed, in the colour of how close that was
-    html += '<div class="rrow">' +
-      '<div class="rhead">' +
-        '<span class="rlabel">' + rs[i].label + '</span>' +
-        '<span class="rguess">you ' + state.guesses[i] + '%</span>' +
-        '<span class="rans">' + rs[i].answer + '%</span>' +
-        '<span class="rchip ' + h.cls + '">' + errs[i] + ' off</span>' +
-      '</div>' +
-      '<div class="rbar">' +
-        '<div class="rfill" style="width:' + rs[i].answer + '%"></div>' +
-        '<div class="rmark t-' + h.cls + '" style="left:' + state.guesses[i] + '%"></div>' +
-      '</div>' +
-    '</div>';
-  }
-  // the score that actually counts, spelled out so the mean isn't a mystery
-  if (state.done){
-    html += '<div class="rrow rtotal">' +
-      '<div class="rhead">' +
-        '<span class="rlabel">Average across ' + errs.length + '</span>' +
-        '<span class="rguess"></span><span class="rans"></span>' +
-        '<span class="rchip ' + heat(meanErr()).cls + '">' + meanErr() + ' off</span>' +
-      '</div>' +
+  for (var i = 0; i < rs.length; i++){
+    var done = i < errs.length;
+    var cls = done ? heat(errs[i]).cls : "pending";
+    html += '<div class="rcell">' +
+      '<span class="rlabel">' + (done ? rs[i].label : "") + '</span>' +
+      '<span class="rchip ' + cls + '">' + (done ? (errs[i] + " off") : "") + '</span>' +
     '</div>';
   }
   els.roundList.innerHTML = html;
   els.roundList.classList.remove("hidden");
 }
-// Reveal one group's answer. The last round goes through finishGame instead,
-// which adds the day's verdict, stats and share.
+
 // SANDBOX TEST: the answer rides the end of the bar on a short leader line,
 // at reading size, rather than landing underneath it as a display number.
 // Called on every animation frame so the figure counts up as the bar travels.
@@ -802,7 +785,8 @@ function finishGame(alreadyDone){
 
   var v = MULTI ? verdictForErr(errF) : verdictFor(state.guesses, Q.answer, state.win);
   els.verdict.textContent = v.text;
-  els.verdict.className = "verdict " + (state.win ? "win" : "loss");
+  // on a multi-part day this line is the whole result, so it is set larger
+  els.verdict.className = "verdict " + (state.win ? "win" : "loss") + (MULTI ? " dayscore" : "");
   // multi-round days carry the figure on the bar instead of below it
   els.bigAnswer.textContent = MULTI ? "" : (dayAnswer + "%");
   els.bigAnswer.classList.toggle("hidden", MULTI);
@@ -846,7 +830,14 @@ function finishGame(alreadyDone){
       }, 350);
     });
   }
-  els.sourceNote.textContent = Q.source ? ("Source: " + Q.source) : "";
+  // multi-part days carry the source at the foot of the page instead, clear
+  // of the result; single-question days keep it under the reveal as before
+  var src = Q.source ? ("Source: " + Q.source) : "";
+  els.sourceNote.textContent = MULTI ? "" : src;
+  if (els.sourceBottom){
+    els.sourceBottom.textContent = MULTI ? src : "";
+    els.sourceBottom.classList.toggle("hidden", !MULTI || !src);
+  }
   els.reveal.classList.remove("hidden");
   if (MULTI){
     clearRoundTimer();
@@ -1308,6 +1299,8 @@ function setupGame(dayKey, mode){
   clearRoundTimer();
   hideRevealTag();
   els.bigAnswer.classList.remove("hidden");
+  els.verdict.className = "verdict";
+  if (els.sourceBottom){ els.sourceBottom.textContent = ""; els.sourceBottom.classList.add("hidden"); }
   if (els.shareBtn) els.shareBtn.classList.remove("hidden");
   if (els.roundList){ els.roundList.innerHTML = ""; els.roundList.classList.add("hidden"); }
 
