@@ -805,14 +805,17 @@
         <div class="bignum" id="bigAnswer"></div>
         <p class="source-note" id="sourceNote"></p>
 
+        <!-- SANDBOX TEST: running Crowdsense score, then the tally of parts -->
+        <p class="runavg hidden" id="runAvg" aria-live="polite"></p>
+        <div class="rounds hidden" id="roundList"></div>
+
+        <!-- how you did against everyone else — sits directly above the share
+             button so a multi-part day compares day scores in the same place a
+             single-question day compares guesses -->
         <div class="crowd hidden" id="crowdBlock">
           <div class="histo" id="histo" aria-label="Distribution of all players' guesses"></div>
           <p class="crowdhead" id="crowdHead"></p>
         </div>
-
-        <!-- SANDBOX TEST: running Crowdsense score, then the tally of parts -->
-        <p class="runavg hidden" id="runAvg" aria-live="polite"></p>
-        <div class="rounds hidden" id="roundList"></div>
 
         <button id="shareBtn" class="sharebtn" type="button">Share your result</button>
       </div>
