@@ -177,6 +177,14 @@ function isMulti(q){
   return !!(t && t.parts && t.parts.length > 1);
 }
 function roundsOf(q){ return ((q || Q) || {}).parts || []; }
+// A part's question reads "<category>: <stem>", with the category in bold.
+// A part may override it outright with its own "question".
+function partQuestion(i, q){
+  var t = q || Q, p = roundsOf(t)[i];
+  if (!p) return "";
+  if (p.question) return p.question;
+  return "**" + (p.ask || p.label) + "**: " + (t.stem || "");
+}
 // errors for the rounds played so far
 function roundErrors(guesses, q){
   var gs = guesses || state.guesses, rs = roundsOf(q), out = [];
@@ -477,7 +485,7 @@ function renderRoundPips(){
 }
 // hand the input back for the next group
 function paintRound(){
-  renderQuestionText(roundsOf()[ROUND].question);
+  renderQuestionText(partQuestion(ROUND));
   // The reveal stays on screen once the first group has been answered, so the
   // bar and the running tally are visible while the next group is asked.
   if (!state.guesses.length) els.reveal.classList.add("hidden");
@@ -681,7 +689,15 @@ function verdictFor(guesses, answer, win){
 // ===== crowd layer =====
 // isFresh = the guess was just made. Restored results only read the
 // distribution; they must never re-submit a guess made on an earlier visit.
+// On a multi-part day there is no single guess to pool, so the crowd layer
+// compares DAY SCORES instead: each player contributes the mean they ended on,
+// and the line reads the same way ("closer than X% of players") because a
+// lower score is a better read. The request carries mode=score so the worker
+// can keep those in their own bucket, away from single-guess days.
+//   Worker side, when this ships: accept "mode" on POST /guess and
+//   GET /dist, and key the counts table by (puzzle, mode).
 function crowdFlow(finalGuess, isFresh){
+  if (CROWD_DEMO) return crowdDemo();
   if (!CONFIG.CROWD_API_URL) return;
   var base = String(CONFIG.CROWD_API_URL).replace(/\/+$/, "");
   // Keyed to the day being played, so past questions pool with the players
@@ -696,9 +712,14 @@ function crowdFlow(finalGuess, isFresh){
   var already = false;
   try{ already = !!localStorage.getItem(sentKey); }catch(_){}
 
+  // a multi-part day pools the day's score; every other day pools the guess
+  var MULTI = isMulti();
+  var value = MULTI ? meanErr() : finalGuess;
+  var mode = MULTI ? "score" : "guess";
+
   var p;
   if (already || !isFresh){
-    p = fetch(base + "/dist?puzzle=" + crowdPuzzle).then(function(r){
+    p = fetch(base + "/dist?puzzle=" + crowdPuzzle + "&mode=" + mode).then(function(r){
       if (!r.ok) throw new Error("HTTP " + r.status);
       return r.json();
     });
@@ -706,15 +727,62 @@ function crowdFlow(finalGuess, isFresh){
     p = fetch(base + "/guess", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ puzzle: crowdPuzzle, guess: finalGuess })
+      body: JSON.stringify({ puzzle: crowdPuzzle, guess: value, mode: mode })
     }).then(function(r){
       if (!r.ok) throw new Error("HTTP " + r.status);
       try{ localStorage.setItem(sentKey, "1"); }catch(_){}
       return r.json();
     });
   }
-  p.then(function(dist){ renderCrowd(dist, finalGuess); })
+  p.then(function(dist){ MULTI ? renderCrowdScore(dist, value) : renderCrowd(dist, finalGuess); })
    .catch(function(err){ console.warn("Crowd layer unavailable", err); });
+}
+
+// Multi-part day: counts are indexed by day score (0-100, lower is better),
+// so "further away" means a higher score than yours.
+function renderCrowdScore(dist, myScore){
+  if (!dist || !dist.total || !Array.isArray(dist.counts)) return;
+  var counts = dist.counts, total = dist.total;
+  var worse = 0;
+  for (var v = 0; v <= 100; v++){ if (counts[v] && v > myScore) worse += counts[v]; }
+  var pct = Math.round(100 * worse / total);
+  state.crowdPct = pct;
+  els.crowdHead.innerHTML = (total === 1)
+    ? "First player today"
+    : "Closer than <b>" + pct + "%</b> of players";
+
+  // Scores bunch up near zero, so unlike the guess histogram this one is a
+  // point per bar across 0-19, with everything worse folded into a 20+ bar.
+  var BINS = 21;
+  var bins = new Array(BINS).fill(0);
+  function binOf(v){ return Math.min(BINS - 1, v); }
+  for (var g = 0; g <= 100; g++){ if (counts[g]) bins[binOf(g)] += counts[g]; }
+  var maxBin = Math.max.apply(null, bins) || 1;
+  els.histo.innerHTML = "";
+  var youBin = binOf(myScore);
+  for (var bnd = 0; bnd < BINS; bnd++){
+    var bar = document.createElement("div");
+    // bin 0 is a perfect day — the equivalent of the truth marker
+    bar.className = "hbar" + (bnd === youBin ? " you" : "") + (bnd === 0 ? " truth" : "");
+    bar.style.height = Math.max(4, Math.round(100 * bins[bnd] / maxBin)) + "%";
+    bar.title = (bnd === BINS - 1 ? (BINS - 1) + "+ off: " : bnd + " off: ") +
+      bins[bnd] + (bins[bnd] === 1 ? " player" : " players");
+    els.histo.appendChild(bar);
+  }
+  els.crowdBlock.classList.remove("hidden");
+}
+
+// SANDBOX ONLY: ?crowd=demo fills the comparison with made-up numbers so the
+// layout can be judged while the real crowd layer is switched off here. It
+// never talks to the API and never records anything.
+var CROWD_DEMO = /[?&]crowd=demo/.test(location.search);
+function crowdDemo(){
+  var counts = new Array(101).fill(0);
+  var shape = [6,14,22,26,21,15,10,7,5,3,2,2,1,1,1];   // scores 0..14
+  for (var i = 0; i < shape.length; i++) counts[i] = shape[i];
+  var total = shape.reduce(function(a, c){ return a + c; }, 0);
+  if (isMulti()) renderCrowdScore({ counts: counts, total: total }, meanErr());
+  else renderCrowd({ counts: counts, total: total }, state.guesses[state.guesses.length-1]);
 }
 
 function renderCrowd(dist, myGuess){
@@ -842,6 +910,8 @@ function finishGame(alreadyDone){
       if (!marked) showGuessMark();
       setTimeout(function(){
         els.reveal.classList.remove("staging");
+        // the last cell and the day's Crowdsense score land with the figure
+        if (MULTI) renderRoundList();
         // update the header badge only now the answer is on screen, so a
         // bullseye 🎯 never gives itself away before the reveal lands
         updateStreakBadge();
@@ -860,7 +930,10 @@ function finishGame(alreadyDone){
   if (MULTI){
     clearRoundTimer();
     if (els.shareBtn) els.shareBtn.classList.remove("hidden");
-    renderRoundList();
+    // A staged reveal fills the last cell and the day's score only once the
+    // bar has landed — otherwise the final Crowdsense score is on screen
+    // before the figure it is derived from. Restored days paint at once.
+    if (!els.reveal.classList.contains("staging")) renderRoundList();
   }
 
   setKickerForTurn();

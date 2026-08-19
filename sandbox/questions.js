@@ -198,20 +198,24 @@ var CS_QUESTIONS = [
     answer: 23,
     source: "Public First poll of 2,015 UK adults, 16–30 January 2026",
     teaser: "How many Brits go to the gym weekly?",
-    // SANDBOX TEST: a four-round day. The same question is put to four
+    // SANDBOX TEST: a four-part day. The same question is put to four
     // crossbreaks in turn, each revealed before the next is asked, so what you
     // learn carries forward. The day's score is the mean of the four errors.
+    //
+    // TEMPLATE SHAPE — a multi-part question needs only:
+    //   stem   the question asked of every part, written once
+    //   parts  label (short, for the score box) · ask (how the category reads
+    //          in the question, defaults to label) · answer
+    // The question text for each part is built as "**ask**: stem".
+    //
     // Figures are the "at least once a week" bands summed per column:
     //   total 3+13+7=23 · men 4+14+9=27 · 18-24 7+21+13=41 · 65+ 1+5+2=8
+    stem: "What percentage say they go to the gym at least once a week?",
     parts: [
-      { label: "Everyone", answer: 23,
-        question: "What percentage of Brits say they go to the gym at least once a week?" },
-      { label: "Men", answer: 27,
-        question: "Same question, **men** only. What percentage go at least once a week?" },
-      { label: "18–24s", answer: 41,
-        question: "Same question, **18–24 year-olds**. What percentage go at least once a week?" },
-      { label: "Over-65s", answer: 8,
-        question: "Same question, the **over-65s**. What percentage go at least once a week?" }
+      { label: "Everyone",  ask: "Everyone",          answer: 23 },
+      { label: "Men",       ask: "Men",               answer: 27 },
+      { label: "18–24s",    ask: "18–24 year-olds",   answer: 41 },
+      { label: "Over-65s",  ask: "Over-65s",          answer: 8 }
     ]
   },
   {
