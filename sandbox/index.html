@@ -349,7 +349,9 @@
     }
     /* Pointless-style reveal: while the bar fills, hold everything else back */
     .reveal > *{ transition:opacity .45s ease }
-    .reveal.staging > :not(.revealbar-wrap){ opacity:0; pointer-events:none }
+    /* during the count-up only the bar is live — except the tally and the
+       running score, which stay put so they don't blink out between goes */
+    .reveal.staging > :not(.revealbar-wrap):not(.rounds):not(.runavg){ opacity:0; pointer-events:none }
 
     .revealbar-wrap{ margin:2px 0 18px; position:relative; padding-top:52px }
     .revealbar{
@@ -687,6 +689,20 @@
     /* parts not yet asked: keeps the row from jumping as it fills, and
        gives nothing away about what is coming */
     .rchip.pending{ background:var(--hairline) }
+    /* the running Crowdsense score across the parts answered so far */
+    .runavg{
+      margin:18px 0 0; text-align:center;
+      font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
+    }
+    .runavg b{
+      font-size:16px; font-weight:700; letter-spacing:0; margin-left:7px;
+      font-variant-numeric:tabular-nums; color:var(--ink);
+    }
+    .runavg b.target{ color:var(--win) }
+    .runavg b.hot{ color:var(--hot) }
+    .runavg b.warm{ color:#9a8434 }
+    .runavg b.cool{ color:var(--cool) }
+    .runavg b.cold{ color:var(--cold) }
     /* the day's score, once every part is in */
     .verdict.dayscore{ font-size:22px; font-weight:700; margin-top:10px }
     /* on a multi-part day the source sits at the foot of the page instead */
@@ -794,7 +810,8 @@
           <p class="crowdhead" id="crowdHead"></p>
         </div>
 
-        <!-- SANDBOX TEST: table of groups, shown once the day is finished -->
+        <!-- SANDBOX TEST: running Crowdsense score, then the tally of parts -->
+        <p class="runavg hidden" id="runAvg" aria-live="polite"></p>
         <div class="rounds hidden" id="roundList"></div>
 
         <button id="shareBtn" class="sharebtn" type="button">Share your result</button>

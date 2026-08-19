@@ -96,6 +96,7 @@ var els = {
   crowdBlock: $("crowdBlock"), crowdHead: $("crowdHead"), histo: $("histo"),
   shareBtn: $("shareBtn"),
   roundList: $("roundList"), revealTag: $("revealTag"), sourceBottom: $("sourceBottom"),
+  runAvg: $("runAvg"),
   toast: $("toast"),
   helpBtn: $("helpBtn"), statsBtn: $("statsBtn"), archiveBtn: $("archiveBtn"), privacyBtn: $("privacyBtn"), contactBtn: $("contactBtn"),
   tour: $("tour"), tourSpot: $("tourSpot"), tourCard: $("tourCard"),
@@ -182,13 +183,16 @@ function roundErrors(guesses, q){
   for (var i = 0; i < gs.length && i < rs.length; i++) out.push(Math.abs(gs[i] - rs[i].answer));
   return out;
 }
-function meanErr(guesses, q){
+function meanErrExact(guesses, q){
   var e = roundErrors(guesses, q);
   if (!e.length) return 0;
   var sum = 0;
   for (var i = 0; i < e.length; i++) sum += e[i];
-  return Math.round(sum / e.length);
+  return sum / e.length;
 }
+// the score that is recorded and shown as the verdict, on the same whole-number
+// scale as every other day
+function meanErr(guesses, q){ return Math.round(meanErrExact(guesses, q)); }
 
 // ===== streak =====
 function readStreak(){
@@ -500,6 +504,17 @@ function paintRound(){
 // name with a coloured box beneath carrying that part's score. Parts not yet
 // asked keep their place as a blank grey box, so the row never jumps and
 // nothing is given away about what is coming.
+// The Crowdsense score for the day so far: the running average of the parts
+// answered, to one decimal, coloured by the tier it currently falls in — the
+// same treatment the stats tile gives the lifetime average.
+function renderRunAvg(){
+  if (!els.runAvg) return;
+  var errs = roundErrors();
+  if (!errs.length){ els.runAvg.classList.add("hidden"); return; }
+  var avg = meanErrExact();
+  els.runAvg.innerHTML = 'Crowdsense <b class="' + heat(avg).cls + '">' + avg.toFixed(1) + '</b>';
+  els.runAvg.classList.remove("hidden");
+}
 function renderRoundList(){
   if (!els.roundList) return;
   var rs = roundsOf(), errs = roundErrors();
@@ -508,13 +523,16 @@ function renderRoundList(){
   for (var i = 0; i < rs.length; i++){
     var done = i < errs.length;
     var cls = done ? heat(errs[i]).cls : "pending";
+    // an exact read earns a bullseye in its box
+    var txt = done ? ((errs[i] === 0 ? "🎯 " : "") + errs[i] + " off") : "";
     html += '<div class="rcell">' +
       '<span class="rlabel">' + (done ? rs[i].label : "") + '</span>' +
-      '<span class="rchip ' + cls + '">' + (done ? (errs[i] + " off") : "") + '</span>' +
+      '<span class="rchip ' + cls + '">' + txt + '</span>' +
     '</div>';
   }
   els.roundList.innerHTML = html;
   els.roundList.classList.remove("hidden");
+  renderRunAvg();
 }
 
 // SANDBOX TEST: the answer rides the end of the bar on a short leader line,
@@ -1303,11 +1321,11 @@ function setupGame(dayKey, mode){
   if (els.sourceBottom){ els.sourceBottom.textContent = ""; els.sourceBottom.classList.add("hidden"); }
   if (els.shareBtn) els.shareBtn.classList.remove("hidden");
   if (els.roundList){ els.roundList.innerHTML = ""; els.roundList.classList.add("hidden"); }
+  if (els.runAvg){ els.runAvg.innerHTML = ""; els.runAvg.classList.add("hidden"); }
 
   // multi-round day: play the groups in order
   if (isMulti()){
-    ROUND = 0;
-    if (els.roundList){ els.roundList.innerHTML = ""; els.roundList.classList.add("hidden"); }
+    ROUND = 0;   // the tally and running score were cleared just above
     paintRound();
     var savedM = loadState();
     if (savedM && savedM.guesses.length){
