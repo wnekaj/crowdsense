@@ -670,11 +670,21 @@
       flex:1 1 0; min-width:0;
       display:flex; flex-direction:column; align-items:center; gap:6px;
     }
+    /* Category and its figure, stacked: at four cells across a phone there is
+       no room to set them on one line without truncating. Every cell reserves
+       both lines so the boxes below stay level. */
     .rlabel{
-      font-size:11.5px; color:var(--muted); letter-spacing:.02em;
+      display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+      gap:1px; min-height:2.9em; max-width:100%; text-align:center;
+    }
+    .rcat{
+      font-size:11.5px; color:var(--muted); letter-spacing:.02em; line-height:1.2;
       white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;
     }
-    .rlabel:empty::before{ content:"\00a0" }   /* hold the line's height */
+    .rlabel b{
+      font-size:14px; color:var(--ink); font-weight:700; line-height:1.2;
+      font-variant-numeric:tabular-nums;
+    }
     .rchip{
       width:100%; text-align:center; border-radius:4px;
       padding:8px 2px; font-size:13px; font-weight:600; color:#fff;
