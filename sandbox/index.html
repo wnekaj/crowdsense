@@ -713,8 +713,13 @@
     .runavg b.warm{ color:#9a8434 }
     .runavg b.cool{ color:var(--cool) }
     .runavg b.cold{ color:var(--cold) }
-    /* the day's score, once every part is in */
-    .verdict.dayscore{ font-size:22px; font-weight:700; margin-top:10px }
+    /* once every part is in, the running line becomes the day's result */
+    .runavg.dayscore{
+      font-size:19px; letter-spacing:0; text-transform:none;
+      color:var(--ink); font-family:var(--display); font-weight:500;
+      margin-top:20px;
+    }
+    .runavg.dayscore b{ font-size:22px; margin-left:4px; margin-right:2px }
     /* on a multi-part day the source sits at the foot of the page instead */
     .source-bottom{ margin:0 0 14px; text-align:center }
     .sbx-blocked{

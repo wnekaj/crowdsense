@@ -296,7 +296,7 @@ function statsFromHistory(){
     var gs = days[i].guesses;
     // a multi-round day is scored on the mean of its rounds, same as when
     // it was played, so a rebuild can't disagree with the live tally
-    var errF = isMulti(q) ? meanErr(gs, q) : Math.abs(gs[gs.length-1] - q.answer);
+    var errF = isMulti(q) ? meanErrExact(gs, q) : Math.abs(gs[gs.length-1] - q.answer);
     var score = isMulti(q) ? meanErr(gs, q) : computeScore(gs, q.answer);
     s.played += 1;
     if (errF <= CONFIG.WIN_MARGIN) s.wins += 1;
@@ -526,7 +526,13 @@ function renderRunAvg(){
   var errs = roundErrors();
   if (!errs.length){ els.runAvg.classList.add("hidden"); return; }
   var avg = meanErrExact();
-  els.runAvg.innerHTML = 'Crowdsense <b class="' + heat(avg).cls + '">' + avg.toFixed(1) + '</b>';
+  var h = heat(avg);
+  var done = state.done && errs.length >= roundsOf().length;
+  // once every part is in, this line IS the result: score and category
+  // together, so there is no second verdict line saying the same thing
+  els.runAvg.className = "runavg" + (done ? " dayscore" : "");
+  els.runAvg.innerHTML = 'Crowdsense <b class="' + h.cls + '">' + avg.toFixed(1) + '</b>' +
+    (done ? (' — ' + h.label) : '');
   els.runAvg.classList.remove("hidden");
 }
 function renderRoundList(){
@@ -858,7 +864,9 @@ function finishGame(alreadyDone){
   var MULTI = isMulti();
   var dayAnswer = MULTI ? roundsOf()[roundsOf().length-1].answer : Q.answer;
   state.score = MULTI ? meanErr() : computeScore(state.guesses, Q.answer);
-  var errF = MULTI ? meanErr() : Math.abs(state.guesses[state.guesses.length-1] - Q.answer);
+  // the exact mean drives the tier and the win, so the category recorded is
+  // the one shown next to the decimal; the SCORE stays a whole number
+  var errF = MULTI ? meanErrExact() : Math.abs(state.guesses[state.guesses.length-1] - Q.answer);
   var err1 = MULTI ? meanErr() : Math.abs(state.guesses[0] - Q.answer);
   state.win = errF <= CONFIG.WIN_MARGIN;
 
@@ -869,10 +877,11 @@ function finishGame(alreadyDone){
   els.guessDots.classList.add("hidden");
   els.track.parentElement.classList.add("hidden");
 
-  var v = MULTI ? verdictForErr(errF) : verdictFor(state.guesses, Q.answer, state.win);
+  // a multi-part day says it once, in the Crowdsense line below the bar
+  var v = MULTI ? { text: "" } : verdictFor(state.guesses, Q.answer, state.win);
   els.verdict.textContent = v.text;
-  // on a multi-part day this line is the whole result, so it is set larger
-  els.verdict.className = "verdict " + (state.win ? "win" : "loss") + (MULTI ? " dayscore" : "");
+  els.verdict.className = "verdict " + (state.win ? "win" : "loss");
+  els.verdict.classList.toggle("hidden", MULTI);
   // multi-round days carry the figure on the bar instead of below it
   els.bigAnswer.textContent = MULTI ? "" : (dayAnswer + "%");
   els.bigAnswer.classList.toggle("hidden", MULTI);
@@ -1392,6 +1401,7 @@ function setupGame(dayKey, mode){
   hideRevealTag();
   els.bigAnswer.classList.remove("hidden");
   els.verdict.className = "verdict";
+  els.verdict.classList.remove("hidden");
   if (els.sourceBottom){ els.sourceBottom.textContent = ""; els.sourceBottom.classList.add("hidden"); }
   if (els.shareBtn) els.shareBtn.classList.remove("hidden");
   if (els.roundList){ els.roundList.innerHTML = ""; els.roundList.classList.add("hidden"); }
