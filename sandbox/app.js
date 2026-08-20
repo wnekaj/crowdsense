@@ -92,6 +92,7 @@ var els = {
   ledger: $("ledger"),
   reveal: $("reveal"), verdict: $("verdict"), bigAnswer: $("bigAnswer"),
   revealFill: $("revealFill"), youMarker: $("youMarker"), youLabel: $("youLabel"),
+  revealBarWrap: $("revealBarWrap"),
   sourceNote: $("sourceNote"),
   crowdBlock: $("crowdBlock"), crowdHead: $("crowdHead"), histo: $("histo"),
   shareBtn: $("shareBtn"),
@@ -486,8 +487,13 @@ function renderRoundPips(){
 // hand the input back for the next group
 function paintRound(){
   renderQuestionText(partQuestion(ROUND));
-  // The reveal stays on screen once the first group has been answered, so the
-  // bar and the running tally are visible while the next group is asked.
+  // The bar belongs to the part that has just been revealed, so it is taken
+  // away while the next part is asked — leaving it up made the day look
+  // finished. The tally and the running score stay, and they now carry the
+  // figure, so nothing is lost by clearing the bar.
+  if (els.revealBarWrap) els.revealBarWrap.classList.add("hidden");
+  hideRevealTag();
+  // the reveal itself only holds the tally between parts
   if (!state.guesses.length) els.reveal.classList.add("hidden");
   if (els.shareBtn) els.shareBtn.classList.add("hidden");
   els.input.disabled = false;
@@ -534,7 +540,9 @@ function renderRoundList(){
     // an exact read earns a bullseye in its box
     var txt = done ? ((errs[i] === 0 ? "🎯 " : "") + errs[i] + " off") : "";
     html += '<div class="rcell">' +
-      '<span class="rlabel">' + (done ? rs[i].label : "") + '</span>' +
+      '<span class="rlabel">' +
+        (done ? ('<span class="rcat">' + rs[i].label + '</span><b>' + rs[i].answer + '%</b>') : "") +
+      '</span>' +
       '<span class="rchip ' + cls + '">' + txt + '</span>' +
     '</div>';
   }
@@ -590,6 +598,7 @@ function revealRound(i){
   els.youMarker.classList.remove("on");
   els.youLabel.classList.remove("on");
   els.reveal.classList.remove("hidden");
+  if (els.revealBarWrap) els.revealBarWrap.classList.remove("hidden");
   var marked = false;
   els.reveal.classList.add("staging");
   els.revealFill.style.width = "0%";
@@ -608,24 +617,15 @@ function revealRound(i){
     }, 350);
   });
 }
-// Put a already-answered group's bar back without replaying the animation —
-// used after a refresh, so the run looks the same as when it was left.
+// A refresh mid-run comes back between parts, where there is no bar — just
+// the tally of what has been answered so far.
 function paintRestoredReveal(i){
   if (i < 0) return;
-  var r = roundsOf()[i], g = state.guesses[i];
   els.verdict.textContent = "";
   els.verdict.className = "verdict";
   els.sourceNote.textContent = "";
   els.bigAnswer.textContent = "";
   els.bigAnswer.classList.add("hidden");
-  els.revealFill.style.width = r.answer + "%";
-  paintRevealTag(r.answer);
-  els.youMarker.style.left = g + "%";
-  els.youLabel.style.left = g + "%";
-  els.youLabel.textContent = g;
-  tintGuessMark(Math.abs(g - r.answer));
-  els.youMarker.classList.add("on");
-  els.youLabel.classList.add("on");
   els.reveal.classList.remove("staging");
   els.reveal.classList.remove("hidden");
   renderRoundList();
@@ -887,6 +887,7 @@ function finishGame(alreadyDone){
   }
   els.youMarker.classList.remove("on");
   els.youLabel.classList.remove("on");
+  if (els.revealBarWrap) els.revealBarWrap.classList.remove("hidden");
   // the marker sits on the last group's bar, so it takes that group's colour
   if (MULTI) tintGuessMark(Math.abs(finalGuessVal - dayAnswer));
   if (alreadyDone){
