@@ -6,7 +6,7 @@
    Scheduling: each question carries a "date" (YYYY-MM-DD, London time) and
    runs on exactly that day. The undated Burnham-improvement taster runs on
    any day without a dated question — it is the fallback if the bank runs
-   dry. Top up before 22 August.
+   dry. Top up before 23 August.
 
    Email-only fields, both optional and ignored by the game:
      teaser — the short hook used in the daily email's subject line. If a
@@ -288,6 +288,13 @@ var CS_QUESTIONS = [
     answer: 75,
     source: "Public First poll of 4,005 UK adults, 24–30 October 2025",
     teaser: "Should families eat together?"
+  },
+  {
+    date: "2026-08-23",  // Day 35
+    question: "What percentage of Brits agree that Britain is the greatest country in the world?",
+    answer: 44,
+    source: "Public First poll of 4,005 UK adults, 24–30 October 2025",
+    teaser: "Is Britain the greatest country?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
