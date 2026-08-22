@@ -206,13 +206,15 @@ var CS_QUESTIONS = [
     //   stem   the question asked of every part, written once
     //   parts  label (short, for the score box) · ask (how the category reads
     //          in the question, defaults to label) · answer
+    // The first part is the whole population — "All adults" by default — and
+    // the question reverts to it once the day is over.
     // The question text for each part is built as "**ask**: stem".
     //
     // Figures are the "at least once a week" bands summed per column:
     //   total 3+13+7=23 · men 4+14+9=27 · 18-24 7+21+13=41 · 65+ 1+5+2=8
     stem: "What percentage say they go to the gym at least once a week?",
     parts: [
-      { label: "Everyone",  ask: "Everyone",          answer: 23 },
+      { label: "All adults", ask: "All adults",       answer: 23 },
       { label: "Men",       ask: "Men",               answer: 27 },
       { label: "18–24s",    ask: "18–24 year-olds",   answer: 41 },
       { label: "Over-65s",  ask: "Over-65s",          answer: 8 }
