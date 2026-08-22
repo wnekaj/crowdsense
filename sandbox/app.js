@@ -545,11 +545,20 @@ function renderRoundList(){
     var cls = done ? heat(errs[i]).cls : "pending";
     // an exact read earns a bullseye in its box
     var txt = done ? ((errs[i] === 0 ? "🎯 " : "") + errs[i] + " off") : "";
+    // a miniature of the reveal bar: the fill is where the public landed, the
+    // mark is where you guessed, in the colour of how close that was
+    var bar = '<div class="rbar">' +
+      (done
+        ? ('<div class="rfill" style="width:' + rs[i].answer + '%"></div>' +
+           '<div class="rmark t-' + cls + '" style="left:' + state.guesses[i] + '%"></div>')
+        : "") +
+    '</div>';
     html += '<div class="rcell">' +
       '<span class="rlabel">' +
         (done ? ('<span class="rcat">' + rs[i].label + '</span><b>' + rs[i].answer + '%</b>') : "") +
       '</span>' +
       '<span class="rchip ' + cls + '">' + txt + '</span>' +
+      bar +
     '</div>';
   }
   els.roundList.innerHTML = html;
@@ -572,6 +581,14 @@ function paintRevealTag(v){
 }
 function hideRevealTag(){
   if (els.revealTag) els.revealTag.classList.add("hidden");
+}
+
+// Once every part is in, the big bar is retired: each part keeps a miniature
+// of it under its own score box, so a single bar showing only the last part
+// would be the odd one out.
+function hideDayBar(){
+  if (els.revealBarWrap) els.revealBarWrap.classList.add("hidden");
+  hideRevealTag();
 }
 
 // Paint the guess marker in the colour of how close that guess was, rather
@@ -597,6 +614,7 @@ function revealRound(i){
   els.bigAnswer.textContent = "";
   els.bigAnswer.classList.add("hidden");
   els.sourceNote.textContent = "";
+  els.sourceNote.classList.add("hidden");
   tintGuessMark(Math.abs(g - r.answer));
   els.youMarker.style.left = g + "%";
   els.youLabel.style.left = g + "%";
@@ -630,6 +648,7 @@ function paintRestoredReveal(i){
   els.verdict.textContent = "";
   els.verdict.className = "verdict";
   els.sourceNote.textContent = "";
+  els.sourceNote.classList.add("hidden");
   els.bigAnswer.textContent = "";
   els.bigAnswer.classList.add("hidden");
   els.reveal.classList.remove("staging");
@@ -901,7 +920,7 @@ function finishGame(alreadyDone){
   if (MULTI) tintGuessMark(Math.abs(finalGuessVal - dayAnswer));
   if (alreadyDone){
     els.revealFill.style.width = dayAnswer + "%";
-    if (MULTI) paintRevealTag(dayAnswer);
+    if (MULTI) hideDayBar();
     showGuessMark();
   } else {
     // Pointless-style reveal: the bar crawls along the 0-100 scale toward
@@ -920,8 +939,9 @@ function finishGame(alreadyDone){
       if (!marked) showGuessMark();
       setTimeout(function(){
         els.reveal.classList.remove("staging");
-        // the last cell and the day's Crowdsense score land with the figure
-        if (MULTI) renderRoundList();
+        // the last cell and the day's Crowdsense score land with the figure,
+        // and the big bar steps aside now every part has its own
+        if (MULTI){ renderRoundList(); hideDayBar(); }
         // update the header badge only now the answer is on screen, so a
         // bullseye 🎯 never gives itself away before the reveal lands
         updateStreakBadge();
@@ -932,6 +952,7 @@ function finishGame(alreadyDone){
   // of the result; single-question days keep it under the reveal as before
   var src = Q.source ? ("Source: " + Q.source) : "";
   els.sourceNote.textContent = MULTI ? "" : src;
+  els.sourceNote.classList.toggle("hidden", MULTI);
   if (els.sourceBottom){
     els.sourceBottom.textContent = MULTI ? src : "";
     els.sourceBottom.classList.toggle("hidden", !MULTI || !src);
@@ -1402,6 +1423,7 @@ function setupGame(dayKey, mode){
   els.bigAnswer.classList.remove("hidden");
   els.verdict.className = "verdict";
   els.verdict.classList.remove("hidden");
+  els.sourceNote.classList.remove("hidden");
   if (els.sourceBottom){ els.sourceBottom.textContent = ""; els.sourceBottom.classList.add("hidden"); }
   if (els.shareBtn) els.shareBtn.classList.remove("hidden");
   if (els.roundList){ els.roundList.innerHTML = ""; els.roundList.classList.add("hidden"); }
