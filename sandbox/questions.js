@@ -215,9 +215,9 @@ var CS_QUESTIONS = [
     stem: "What percentage say they go to the gym at least once a week?",
     parts: [
       { label: "All adults", ask: "All adults",       answer: 23 },
-      { label: "Men",       ask: "Men",               answer: 27 },
-      { label: "18–24s",    ask: "18–24 year-olds",   answer: 41 },
-      { label: "Over-65s",  ask: "Over-65s",          answer: 8 }
+      { label: "Men",        ask: "men",              answer: 27 },
+      { label: "18–24s",     ask: "18–24 year-olds",  answer: 41 },
+      { label: "Over-65s",   ask: "over-65s",         answer: 8 }
     ]
   },
   {
@@ -293,10 +293,25 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-08-23",  // Day 35
-    question: "What percentage of Brits agree that Britain is the greatest country in the world?",
-    answer: 44,
+    // SANDBOX TEST ONLY — live runs the greatest-country question on this day.
+    // A second multi-part day, to see the template carry a different subject.
+    question: "What percentage of Brits say they use Instagram?",
+    answer: 53,
     source: "Public First poll of 4,005 UK adults, 24–30 October 2025",
-    teaser: "Is Britain the greatest country?"
+    teaser: "How many Brits use Instagram?",
+    stem: "What percentage say they use Instagram?",
+    // 53 and 49 are read straight off the total and male columns. The tables
+    // publish 18-24 / 25-34 and 55-64 / 65+ separately, with no combined
+    // bands, so those two are the weighted means of the pairs:
+    //   18-34  (82 x 557 + 79 x 681) / 1238 = 80.4  -> 80
+    //   55+    (30 x 562 + 17 x 841) / 1403 = 22.2  -> 22
+    // CHECK THESE against the crossbreaks before this ever goes live.
+    parts: [
+      { label: "All adults", ask: "All adults",       answer: 53 },
+      { label: "Men",        ask: "men",              answer: 49 },
+      { label: "18–34s",     ask: "18–34 year-olds",  answer: 80 },
+      { label: "55+",        ask: "55 and over",      answer: 22 }
+    ]
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
