@@ -279,7 +279,7 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-08-24",  // Day 36 — the first multi-part day
-    question: "What percentage of Brits say they use Instagram?",
+    question: "What percentage of Brits say they currently use Instagram?",
     answer: 53,
     source: "Public First poll of 4,005 UK adults, 24–30 October 2025",
     teaser: "How many Brits use Instagram?",
@@ -291,7 +291,7 @@ var CS_QUESTIONS = [
     //          in the question, defaults to label) · answer
     // Part one is the whole population — "All adults" by default — and the
     // heading returns to the neutral "question" above once the day is over.
-    stem: "What percentage say they use Instagram?",
+    stem: "What percentage say they currently use Instagram?",
     // 53 and 49 are read straight off the total and male columns. The tables
     // publish 18-24 / 25-34 and 55-64 / 65+ separately, with no combined
     // bands, so those two are the weighted means of the pairs:
