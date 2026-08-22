@@ -6,7 +6,7 @@
    Scheduling: each question carries a "date" (YYYY-MM-DD, London time) and
    runs on exactly that day. The undated Burnham-improvement taster runs on
    any day without a dated question — it is the fallback if the bank runs
-   dry. Top up before 23 August.
+   dry. Top up before 24 August.
 
    Email-only fields, both optional and ignored by the game:
      teaser — the short hook used in the daily email's subject line. If a
@@ -197,28 +197,7 @@ var CS_QUESTIONS = [
     question: "What percentage of Brits say they go to the gym at least once a week?",
     answer: 23,
     source: "Public First poll of 2,015 UK adults, 16–30 January 2026",
-    teaser: "How many Brits go to the gym weekly?",
-    // SANDBOX TEST: a four-part day. The same question is put to four
-    // crossbreaks in turn, each revealed before the next is asked, so what you
-    // learn carries forward. The day's score is the mean of the four errors.
-    //
-    // TEMPLATE SHAPE — a multi-part question needs only:
-    //   stem   the question asked of every part, written once
-    //   parts  label (short, for the score box) · ask (how the category reads
-    //          in the question, defaults to label) · answer
-    // The first part is the whole population — "All adults" by default — and
-    // the question reverts to it once the day is over.
-    // The question text for each part is built as "**ask**: stem".
-    //
-    // Figures are the "at least once a week" bands summed per column:
-    //   total 3+13+7=23 · men 4+14+9=27 · 18-24 7+21+13=41 · 65+ 1+5+2=8
-    stem: "What percentage say they go to the gym at least once a week?",
-    parts: [
-      { label: "All adults", ask: "All adults",       answer: 23 },
-      { label: "Men",        ask: "men",              answer: 27 },
-      { label: "18–24s",     ask: "18–24 year-olds",  answer: 41 },
-      { label: "Over-65s",   ask: "over-65s",         answer: 8 }
-    ]
+    teaser: "How many Brits go to the gym weekly?"
   },
   {
     date: "2026-08-13",  // Day 25
@@ -293,24 +272,36 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-08-23",  // Day 35
-    // SANDBOX TEST ONLY — live runs the greatest-country question on this day.
-    // A second multi-part day, to see the template carry a different subject.
+    question: "What percentage of Brits agree that Britain is the greatest country in the world?",
+    answer: 44,
+    source: "Public First poll of 4,005 UK adults, 24–30 October 2025",
+    teaser: "Is Britain the greatest country?"
+  },
+  {
+    date: "2026-08-24",  // Day 36 — the first multi-part day
     question: "What percentage of Brits say they use Instagram?",
     answer: 53,
     source: "Public First poll of 4,005 UK adults, 24–30 October 2025",
     teaser: "How many Brits use Instagram?",
+    // MULTI-PART DAY. The same question is put to four groups in turn, each
+    // revealed before the next is asked. The day's score is the mean of the
+    // four errors, so it sits on the same scale as an ordinary day.
+    //   stem   the question asked of every part, written once
+    //   parts  label (short, for the score box) · ask (how the category reads
+    //          in the question, defaults to label) · answer
+    // Part one is the whole population — "All adults" by default — and the
+    // heading returns to the neutral "question" above once the day is over.
     stem: "What percentage say they use Instagram?",
     // 53 and 49 are read straight off the total and male columns. The tables
     // publish 18-24 / 25-34 and 55-64 / 65+ separately, with no combined
     // bands, so those two are the weighted means of the pairs:
     //   18-34  (82 x 557 + 79 x 681) / 1238 = 80.4  -> 80
     //   55+    (30 x 562 + 17 x 841) / 1403 = 22.2  -> 22
-    // CHECK THESE against the crossbreaks before this ever goes live.
     parts: [
       { label: "All adults", ask: "All adults",       answer: 53 },
-      { label: "Men",        ask: "men",              answer: 49 },
+      { label: "Men",        ask: "Men",              answer: 49 },
       { label: "18–34s",     ask: "18–34 year-olds",  answer: 80 },
-      { label: "55+",        ask: "55 and over",      answer: 22 }
+      { label: "55+",        ask: "55s and over",     answer: 22 }
     ]
   }
 

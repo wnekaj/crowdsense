@@ -92,9 +92,12 @@ var els = {
   ledger: $("ledger"),
   reveal: $("reveal"), verdict: $("verdict"), bigAnswer: $("bigAnswer"),
   revealFill: $("revealFill"), youMarker: $("youMarker"), youLabel: $("youLabel"),
+  revealBarWrap: $("revealBarWrap"),
   sourceNote: $("sourceNote"),
   crowdBlock: $("crowdBlock"), crowdHead: $("crowdHead"), histo: $("histo"),
   shareBtn: $("shareBtn"),
+  roundList: $("roundList"), revealTag: $("revealTag"), sourceBottom: $("sourceBottom"),
+  runAvg: $("runAvg"),
   toast: $("toast"),
   helpBtn: $("helpBtn"), statsBtn: $("statsBtn"), archiveBtn: $("archiveBtn"), privacyBtn: $("privacyBtn"), contactBtn: $("contactBtn"),
   tour: $("tour"), tourSpot: $("tourSpot"), tourCard: $("tourCard"),
@@ -148,6 +151,57 @@ function computeScore(guesses, answer){
   var errF = Math.abs(guesses[guesses.length-1] - answer);
   return Math.round(CONFIG.FIRST_WEIGHT * err1 + CONFIG.FINAL_WEIGHT * errF);
 }
+
+// ===== multi-part days =====
+// Some days put the same question to several crossbreaks in turn — everyone,
+// then men, then 18-24s, and so on. Each round is revealed before the next is
+// asked, so what you learn compounds.
+//
+// Scoring: the day's score is the MEAN of the round errors, not the sum. That
+// keeps a five-round day on the same 0-100 scale as an ordinary day, so it
+// drops into the existing tiers (2/5/10/20), the Crowdsense average, the best
+// score and the bullseye count without distorting any of them. A sum would
+// make every multi-round day look roughly five times worse than a normal one
+// and would wreck the average.
+var ROUND = 0;
+// How long the answer stays up before the next group is asked. The reveal
+// animation runs first (CONFIG.REVEAL_MS), so this is reading time on top.
+var ROUND_HOLD_MS = 1500;
+var ROUND_TIMER = null;
+// Any navigation away mid-run must kill the pending advance, or a stale timer
+// would drag the player back into the run from wherever they went.
+function clearRoundTimer(){
+  if (ROUND_TIMER){ clearTimeout(ROUND_TIMER); ROUND_TIMER = null; }
+}
+function isMulti(q){
+  var t = q || Q;
+  return !!(t && t.parts && t.parts.length > 1);
+}
+function roundsOf(q){ return ((q || Q) || {}).parts || []; }
+// A part's question reads "<category>: <stem>", with the category in bold.
+// A part may override it outright with its own "question".
+function partQuestion(i, q){
+  var t = q || Q, p = roundsOf(t)[i];
+  if (!p) return "";
+  if (p.question) return p.question;
+  return "**" + (p.ask || p.label) + "**: " + (t.stem || "");
+}
+// errors for the rounds played so far
+function roundErrors(guesses, q){
+  var gs = guesses || state.guesses, rs = roundsOf(q), out = [];
+  for (var i = 0; i < gs.length && i < rs.length; i++) out.push(Math.abs(gs[i] - rs[i].answer));
+  return out;
+}
+function meanErrExact(guesses, q){
+  var e = roundErrors(guesses, q);
+  if (!e.length) return 0;
+  var sum = 0;
+  for (var i = 0; i < e.length; i++) sum += e[i];
+  return sum / e.length;
+}
+// the score that is recorded and shown as the verdict, on the same whole-number
+// scale as every other day
+function meanErr(guesses, q){ return Math.round(meanErrExact(guesses, q)); }
 
 // ===== streak =====
 function readStreak(){
@@ -240,13 +294,15 @@ function statsFromHistory(){
     var q = pickQuestionForKey(days[i].day);
     if (!q) continue;
     var gs = days[i].guesses;
-    var errF = Math.abs(gs[gs.length-1] - q.answer);
-    var score = computeScore(gs, q.answer);
+    // a multi-round day is scored on the mean of its rounds, same as when
+    // it was played, so a rebuild can't disagree with the live tally
+    var errF = isMulti(q) ? meanErrExact(gs, q) : Math.abs(gs[gs.length-1] - q.answer);
+    var score = isMulti(q) ? meanErr(gs, q) : computeScore(gs, q.answer);
     s.played += 1;
     if (errF <= CONFIG.WIN_MARGIN) s.wins += 1;
     var t = heat(errF).cls;
     s.tiers[t] = (s.tiers[t]||0) + 1;
-    s.firstErrSum += Math.abs(gs[0] - q.answer);
+    s.firstErrSum += isMulti(q) ? errF : Math.abs(gs[0] - q.answer);
     s.scoreSum += score;
     s.best = (s.best === null) ? score : Math.min(s.best, score);
   }
@@ -414,6 +470,200 @@ function renderDots(){
     els.guessDots.appendChild(dot);
   }
 }
+// ---- multi-part UI ----
+// one pip per group, filled as each is answered
+function renderRoundPips(){
+  if (!els.guessDots) return;
+  els.guessDots.innerHTML = "";
+  if (!isMulti()) return;
+  els.guessDots.setAttribute("aria-label", "Groups answered");
+  var rs = roundsOf();
+  for (var i = 0; i < rs.length; i++){
+    var d = document.createElement("span");
+    d.className = "gdot" + (i < state.guesses.length ? " used" : "");
+    els.guessDots.appendChild(d);
+  }
+}
+// hand the input back for the next group
+function paintRound(){
+  renderQuestionText(partQuestion(ROUND));
+  // The bar belongs to the part that has just been revealed, so it is taken
+  // away while the next part is asked — leaving it up made the day look
+  // finished. The tally and the running score stay, and they now carry the
+  // figure, so nothing is lost by clearing the bar.
+  if (els.revealBarWrap) els.revealBarWrap.classList.add("hidden");
+  hideRevealTag();
+  // the reveal itself only holds the tally between parts
+  if (!state.guesses.length) els.reveal.classList.add("hidden");
+  if (els.shareBtn) els.shareBtn.classList.add("hidden");
+  els.input.disabled = false;
+  els.slider.disabled = false;
+  els.guessBtn.disabled = false;
+  els.guessRow.classList.remove("hidden");
+  els.guessDots.classList.remove("hidden");
+  // The slider stays where the player left it between groups: the answer for
+  // one group is the natural starting point for the next, so resetting to 50
+  // would throw away the anchor they've just been given. The box is kept in
+  // step with it rather than blanked.
+  var held = Math.round(Number(els.slider.value));
+  if (!isFinite(held) || held < 0 || held > 100) held = 50;
+  els.slider.value = held;
+  els.slider.style.setProperty("--fill", held + "%");
+  els.input.value = String(held);
+  renderRoundPips();
+  setKickerForTurn();
+  try{ els.input.focus(); }catch(_){}
+}
+// The running tally: one cell per part, laid out in a row — the category
+// name with a coloured box beneath carrying that part's score. Parts not yet
+// asked keep their place as a blank grey box, so the row never jumps and
+// nothing is given away about what is coming.
+// The Crowdsense score for the day so far: the running average of the parts
+// answered, to one decimal, coloured by the tier it currently falls in — the
+// same treatment the stats tile gives the lifetime average.
+function renderRunAvg(){
+  if (!els.runAvg) return;
+  var errs = roundErrors();
+  if (!errs.length){ els.runAvg.classList.add("hidden"); return; }
+  var avg = meanErrExact();
+  var h = heat(avg);
+  var done = state.done && errs.length >= roundsOf().length;
+  // once every part is in, this line IS the result: score and category
+  // together, so there is no second verdict line saying the same thing
+  els.runAvg.className = "runavg" + (done ? " dayscore" : "");
+  els.runAvg.innerHTML = 'Crowdsense score <b class="' + h.cls + '">' + avg.toFixed(1) + '</b>' +
+    (done ? (' — ' + h.label) : '');
+  els.runAvg.classList.remove("hidden");
+}
+function renderRoundList(){
+  if (!els.roundList) return;
+  var rs = roundsOf(), errs = roundErrors();
+  if (!errs.length){ els.roundList.classList.add("hidden"); return; }
+  var html = "";
+  for (var i = 0; i < rs.length; i++){
+    var done = i < errs.length;
+    var cls = done ? heat(errs[i]).cls : "pending";
+    // an exact read earns a bullseye in its box
+    var txt = done ? ((errs[i] === 0 ? "🎯 " : "") + errs[i] + " off") : "";
+    // a miniature of the reveal bar: the fill is where the public landed, the
+    // mark is where you guessed, in the colour of how close that was
+    var bar = '<div class="rbar">' +
+      (done
+        ? ('<div class="rfill" style="width:' + rs[i].answer + '%"></div>' +
+           '<div class="rmark t-' + cls + '" style="left:' + state.guesses[i] + '%"></div>')
+        : "") +
+    '</div>';
+    html += '<div class="rcell">' +
+      '<span class="rlabel">' +
+        (done ? ('<span class="rcat">' + rs[i].label + '</span><b>' + rs[i].answer + '%</b>') : "") +
+      '</span>' +
+      '<span class="rchip ' + cls + '">' + txt + '</span>' +
+      bar +
+    '</div>';
+  }
+  els.roundList.innerHTML = html;
+  els.roundList.classList.remove("hidden");
+  renderRunAvg();
+}
+
+// The answer rides the end of the bar on a short leader line,
+// at reading size, rather than landing underneath it as a display number.
+// Called on every animation frame so the figure counts up as the bar travels.
+function paintRevealTag(v){
+  if (!els.revealTag) return;
+  var pct = Math.max(0, Math.min(100, v));
+  els.revealTag.classList.remove("hidden");
+  if (els.revealBarWrap) els.revealBarWrap.classList.add("tagged");
+  // the tag is centred on the end of the fill, nudged in at the extremes so a
+  // figure near 0 or 100 can't hang off the edge of the bar
+  els.revealTag.style.left = Math.min(Math.max(pct, 7), 93) + "%";
+  var num = els.revealTag.querySelector(".rt-num");
+  if (num) num.textContent = Math.round(pct) + "%";
+}
+function hideRevealTag(){
+  if (els.revealTag) els.revealTag.classList.add("hidden");
+  if (els.revealBarWrap) els.revealBarWrap.classList.remove("tagged");
+}
+
+// Once every part is in, the big bar is retired: each part keeps a miniature
+// of it under its own score box, so a single bar showing only the last part
+// would be the odd one out.
+function hideDayBar(){
+  if (els.revealBarWrap) els.revealBarWrap.classList.add("hidden");
+  hideRevealTag();
+}
+
+// Paint the guess marker in the colour of how close that guess was, rather
+// than always orange.
+function tintGuessMark(err){
+  var cls = heat(err).cls;
+  ["target","hot","warm","cool","cold"].forEach(function(c){
+    els.youMarker.classList.remove("t-" + c);
+    els.youLabel.classList.remove("t-" + c);
+  });
+  els.youMarker.classList.add("t-" + cls);
+  els.youLabel.classList.add("t-" + cls);
+}
+
+// Mid-round reveal: the figure and nothing else. No verdict, no source and no
+// table until the day is over, so the run is four answers in a row rather than
+// four scored results, and the scoring lands once at the end.
+function revealRound(i){
+  var r = roundsOf()[i];
+  var g = state.guesses[i];
+  els.verdict.textContent = "";
+  els.verdict.className = "verdict";
+  els.bigAnswer.textContent = "";
+  els.bigAnswer.classList.add("hidden");
+  els.sourceNote.textContent = "";
+  els.sourceNote.classList.add("hidden");
+  tintGuessMark(Math.abs(g - r.answer));
+  els.youMarker.style.left = g + "%";
+  els.youLabel.style.left = g + "%";
+  els.youLabel.textContent = g;
+  els.youMarker.classList.remove("on");
+  els.youLabel.classList.remove("on");
+  els.reveal.classList.remove("hidden");
+  if (els.revealBarWrap) els.revealBarWrap.classList.remove("hidden");
+  var marked = false;
+  els.reveal.classList.add("staging");
+  els.revealFill.style.width = "0%";
+  paintRevealTag(0);
+  animateValue(0, r.answer, CONFIG.REVEAL_MS, function(v){
+    els.revealFill.style.width = v + "%";
+    paintRevealTag(v);
+    if (!marked && v >= g){ marked = true; els.youMarker.classList.add("on"); els.youLabel.classList.add("on"); }
+  }, function(){
+    if (!marked){ els.youMarker.classList.add("on"); els.youLabel.classList.add("on"); }
+    setTimeout(function(){
+      els.reveal.classList.remove("staging");
+      renderRoundList();
+      // hold on the figure long enough to read it, then move straight on
+      ROUND_TIMER = setTimeout(nextRound, ROUND_HOLD_MS);
+    }, 350);
+  });
+}
+// A refresh mid-run comes back between parts, where there is no bar — just
+// the tally of what has been answered so far.
+function paintRestoredReveal(i){
+  if (i < 0) return;
+  els.verdict.textContent = "";
+  els.verdict.className = "verdict";
+  els.sourceNote.textContent = "";
+  els.sourceNote.classList.add("hidden");
+  els.bigAnswer.textContent = "";
+  els.bigAnswer.classList.add("hidden");
+  els.reveal.classList.remove("staging");
+  els.reveal.classList.remove("hidden");
+  renderRoundList();
+}
+function nextRound(){
+  clearRoundTimer();
+  if (ROUND >= roundsOf().length - 1) return;
+  ROUND += 1;
+  paintRound();
+}
+
 function renderLedgerRow(n, g){
   if (CONFIG.MAX_GUESSES < 2) return; // single-guess mode: the reveal bar carries the guess
   var err = Math.abs(g - Q.answer);
@@ -440,23 +690,43 @@ function setKickerForTurn(){
       : "Come back tomorrow for question #" + (PUZZLE_NO + 1) + ".";
     return;
   }
+  if (isMulti()){
+    var n = roundsOf().length;
+    els.kicker.textContent = (ROUND === 0)
+      ? "Five groups, same question. Start with everyone."
+      : "Group " + (ROUND + 1) + " of " + n + ".";
+    return;
+  }
   if (state.guesses.length === 0) els.kicker.textContent = "Guess the percentage. First your instinct…";
   else els.kicker.textContent = "…now your judgement. One guess left.";
 }
 
-function verdictFor(guesses, answer, win){
-  var errF = Math.abs(guesses[guesses.length-1] - answer);
-  var off = errF + " off — ";
-  if (errF <= 2)  return { text: off + "on the pulse" };
-  if (errF <= 5)  return { text: off + "on the scent" };
-  if (errF <= 10) return { text: off + "in the mix" };
-  if (errF <= 20) return { text: off + "warm-ish" };
+function verdictForErr(err){
+  var off = err + " off — ";
+  if (err <= 2)  return { text: off + "on the pulse" };
+  if (err <= 5)  return { text: off + "on the scent" };
+  if (err <= 10) return { text: off + "in the mix" };
+  if (err <= 20) return { text: off + "warm-ish" };
   return { text: off + "out of touch" };
+}
+function verdictFor(guesses, answer, win){
+  return verdictForErr(Math.abs(guesses[guesses.length-1] - answer));
 }
 
 // ===== crowd layer =====
 // isFresh = the guess was just made. Restored results only read the
 // distribution; they must never re-submit a guess made on an earlier visit.
+// On a multi-part day there is no single guess to pool, so the crowd layer
+// compares DAY SCORES instead: each player contributes the mean they ended on,
+// and the line reads the same way ("closer than X% of players") because a
+// lower score is a better read.
+//
+// No worker change is needed for this. Each day has its own puzzle number and
+// every player that day plays the same format, so the pool for a multi-part
+// day contains only scores, and the worker's distribution of them is exactly
+// what renderCrowdScore wants. The mode=score marker rides along so the stored
+// rows can be told apart later; the worker ignores it. The one thing to
+// remember is that for those puzzle numbers the "guess" column holds a score.
 function crowdFlow(finalGuess, isFresh){
   if (!CONFIG.CROWD_API_URL) return;
   var base = String(CONFIG.CROWD_API_URL).replace(/\/+$/, "");
@@ -472,9 +742,14 @@ function crowdFlow(finalGuess, isFresh){
   var already = false;
   try{ already = !!localStorage.getItem(sentKey); }catch(_){}
 
+  // a multi-part day pools the day's score; every other day pools the guess
+  var MULTI = isMulti();
+  var value = MULTI ? meanErr() : finalGuess;
+  var mode = MULTI ? "score" : "guess";
+
   var p;
   if (already || !isFresh){
-    p = fetch(base + "/dist?puzzle=" + crowdPuzzle).then(function(r){
+    p = fetch(base + "/dist?puzzle=" + crowdPuzzle + "&mode=" + mode).then(function(r){
       if (!r.ok) throw new Error("HTTP " + r.status);
       return r.json();
     });
@@ -482,15 +757,49 @@ function crowdFlow(finalGuess, isFresh){
     p = fetch(base + "/guess", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ puzzle: crowdPuzzle, guess: finalGuess })
+      body: JSON.stringify({ puzzle: crowdPuzzle, guess: value, mode: mode })
     }).then(function(r){
       if (!r.ok) throw new Error("HTTP " + r.status);
       try{ localStorage.setItem(sentKey, "1"); }catch(_){}
       return r.json();
     });
   }
-  p.then(function(dist){ renderCrowd(dist, finalGuess); })
+  p.then(function(dist){ MULTI ? renderCrowdScore(dist, value) : renderCrowd(dist, finalGuess); })
    .catch(function(err){ console.warn("Crowd layer unavailable", err); });
+}
+
+// Multi-part day: counts are indexed by day score (0-100, lower is better),
+// so "further away" means a higher score than yours.
+function renderCrowdScore(dist, myScore){
+  if (!dist || !dist.total || !Array.isArray(dist.counts)) return;
+  var counts = dist.counts, total = dist.total;
+  var worse = 0;
+  for (var v = 0; v <= 100; v++){ if (counts[v] && v > myScore) worse += counts[v]; }
+  var pct = Math.round(100 * worse / total);
+  state.crowdPct = pct;
+  els.crowdHead.innerHTML = (total === 1)
+    ? "First player today"
+    : "Closer than <b>" + pct + "%</b> of players";
+
+  // Scores bunch up near zero, so unlike the guess histogram this one is a
+  // point per bar across 0-19, with everything worse folded into a 20+ bar.
+  var BINS = 21;
+  var bins = new Array(BINS).fill(0);
+  function binOf(v){ return Math.min(BINS - 1, v); }
+  for (var g = 0; g <= 100; g++){ if (counts[g]) bins[binOf(g)] += counts[g]; }
+  var maxBin = Math.max.apply(null, bins) || 1;
+  els.histo.innerHTML = "";
+  var youBin = binOf(myScore);
+  for (var bnd = 0; bnd < BINS; bnd++){
+    var bar = document.createElement("div");
+    // bin 0 is a perfect day — the equivalent of the truth marker
+    bar.className = "hbar" + (bnd === youBin ? " you" : "") + (bnd === 0 ? " truth" : "");
+    bar.style.height = Math.max(4, Math.round(100 * bins[bnd] / maxBin)) + "%";
+    bar.title = (bnd === BINS - 1 ? (BINS - 1) + "+ off: " : bnd + " off: ") +
+      bins[bnd] + (bins[bnd] === 1 ? " player" : " players");
+    els.histo.appendChild(bar);
+  }
+  els.crowdBlock.classList.remove("hidden");
 }
 
 function renderCrowd(dist, myGuess){
@@ -561,9 +870,15 @@ function animateCount(el, to, suffix, duration, from, onDone){
 // ===== finishing =====
 function finishGame(alreadyDone){
   state.done = true;
-  state.score = computeScore(state.guesses, Q.answer);
-  var errF = Math.abs(state.guesses[state.guesses.length-1] - Q.answer);
-  var err1 = Math.abs(state.guesses[0] - Q.answer);
+  // On a multi-round day the day's number is the mean of the round errors,
+  // and the bar settles on the last group's figure.
+  var MULTI = isMulti();
+  var dayAnswer = MULTI ? roundsOf()[roundsOf().length-1].answer : Q.answer;
+  state.score = MULTI ? meanErr() : computeScore(state.guesses, Q.answer);
+  // the exact mean drives the tier and the win, so the category recorded is
+  // the one shown next to the decimal; the SCORE stays a whole number
+  var errF = MULTI ? meanErrExact() : Math.abs(state.guesses[state.guesses.length-1] - Q.answer);
+  var err1 = MULTI ? meanErr() : Math.abs(state.guesses[0] - Q.answer);
   state.win = errF <= CONFIG.WIN_MARGIN;
 
   els.input.disabled = true;
@@ -573,10 +888,15 @@ function finishGame(alreadyDone){
   els.guessDots.classList.add("hidden");
   els.track.parentElement.classList.add("hidden");
 
-  var v = verdictFor(state.guesses, Q.answer, state.win);
+  // a multi-part day says it once, in the Crowdsense line below the bar
+  var v = MULTI ? { text: "" } : verdictFor(state.guesses, Q.answer, state.win);
   els.verdict.textContent = v.text;
   els.verdict.className = "verdict " + (state.win ? "win" : "loss");
-  els.bigAnswer.textContent = Q.answer + "%";
+  els.verdict.classList.toggle("hidden", MULTI);
+  // multi-round days carry the figure on the bar instead of below it
+  els.bigAnswer.textContent = MULTI ? "" : (dayAnswer + "%");
+  els.bigAnswer.classList.toggle("hidden", MULTI);
+  if (!MULTI) hideRevealTag();
   var finalGuessVal = state.guesses[state.guesses.length-1];
   els.youMarker.style.left = finalGuessVal + "%";
   els.youLabel.style.left = finalGuessVal + "%";
@@ -587,8 +907,12 @@ function finishGame(alreadyDone){
   }
   els.youMarker.classList.remove("on");
   els.youLabel.classList.remove("on");
+  if (els.revealBarWrap) els.revealBarWrap.classList.remove("hidden");
+  // the marker sits on the last group's bar, so it takes that group's colour
+  if (MULTI) tintGuessMark(Math.abs(finalGuessVal - dayAnswer));
   if (alreadyDone){
-    els.revealFill.style.width = Q.answer + "%";
+    els.revealFill.style.width = dayAnswer + "%";
+    if (MULTI){ hideDayBar(); renderQuestionText(Q.question); }
     showGuessMark();
   } else {
     // Pointless-style reveal: the bar crawls along the 0-100 scale toward
@@ -598,21 +922,48 @@ function finishGame(alreadyDone){
     var marked = false;
     els.reveal.classList.add("staging");
     els.revealFill.style.width = "0%";
-    animateValue(0, Q.answer, CONFIG.REVEAL_MS, function(v){
+    if (MULTI) paintRevealTag(0);
+    animateValue(0, dayAnswer, CONFIG.REVEAL_MS, function(v){
       els.revealFill.style.width = v + "%";
+      if (MULTI) paintRevealTag(v);
       if (!marked && v >= finalGuessVal){ marked = true; showGuessMark(); }
     }, function(){
       if (!marked) showGuessMark();
       setTimeout(function(){
         els.reveal.classList.remove("staging");
+        // the last cell and the day's Crowdsense score land with the figure,
+        // and the big bar steps aside now every part has its own
+        if (MULTI){
+          renderRoundList();
+          hideDayBar();
+          // the day is over, so the heading stops asking about the last group
+          // and returns to the question's own neutral wording
+          renderQuestionText(Q.question);
+        }
         // update the header badge only now the answer is on screen, so a
         // bullseye 🎯 never gives itself away before the reveal lands
         updateStreakBadge();
       }, 350);
     });
   }
-  els.sourceNote.textContent = Q.source ? ("Source: " + Q.source) : "";
+  // multi-part days carry the source at the foot of the page instead, clear
+  // of the result; single-question days keep it under the reveal as before
+  var src = Q.source ? ("Source: " + Q.source) : "";
+  els.sourceNote.textContent = MULTI ? "" : src;
+  els.sourceNote.classList.toggle("hidden", MULTI);
+  if (els.sourceBottom){
+    els.sourceBottom.textContent = MULTI ? src : "";
+    els.sourceBottom.classList.toggle("hidden", !MULTI || !src);
+  }
   els.reveal.classList.remove("hidden");
+  if (MULTI){
+    clearRoundTimer();
+    if (els.shareBtn) els.shareBtn.classList.remove("hidden");
+    // A staged reveal fills the last cell and the day's score only once the
+    // bar has landed — otherwise the final Crowdsense score is on screen
+    // before the figure it is derived from. Restored days paint at once.
+    if (!els.reveal.classList.contains("staging")) renderRoundList();
+  }
 
   setKickerForTurn();
 
@@ -741,6 +1092,20 @@ function submitGuess(){
     return;
   }
 
+  // multi-round day: bank the guess, reveal that group, wait for "Next"
+  if (isMulti()){
+    state.guesses.push(g);
+    saveState();
+    renderRoundPips();
+    // the guess bar stays in place while the figure comes up — only locked
+    els.input.disabled = true;
+    els.slider.disabled = true;
+    els.guessBtn.disabled = true;
+    if (state.guesses.length >= roundsOf().length) finishGame(false);
+    else revealRound(ROUND);
+    return;
+  }
+
   state.guesses.push(g);
   renderLedgerRow(state.guesses.length, g);
   applyGuessToWindow(g);
@@ -780,11 +1145,25 @@ function shareMeter(err){
   if (cls === "target") out += "🎯";
   return out;
 }
+// Multi-round day: one square per group, coloured by how that group went, so
+// the five squares carry the shape of the day rather than a single tier. A
+// bullseye group shows as 🎯, which keeps all five tiers distinguishable
+// (on the pulse and on the scent are both green otherwise).
+function shareMeterMulti(){
+  var sq = { target:"🎯", hot:"🟩", warm:"🟨", cool:"🟧", cold:"🟥" };
+  var e = roundErrors(), out = "";
+  for (var i = 0; i < e.length; i++) out += sq[heat(e[i]).cls];
+  return out;
+}
 function shareText(includeUrl){
   var lines = [];
   lines.push("Crowdsense #" + CUR.puzzleNo);
+  if (isMulti()){
+    lines.push(shareMeterMulti() + " " + state.score + " off");
+  } else {
   var finalErr = Math.abs(state.guesses[state.guesses.length-1] - Q.answer);
   lines.push(shareMeter(finalErr) + " " + state.score + " off");
+  }
   if (MODE === "daily" && state.crowdPct !== null && state.crowdPct !== undefined){
     lines.push("Closer than " + state.crowdPct + "% of players");
   }
@@ -1035,6 +1414,40 @@ function setupGame(dayKey, mode){
 
   els.practiceBar.classList.toggle("hidden", mode !== "practice");
   els.practiceLabel.textContent = "";
+  // reset the multi-round furniture: a single-question day must never inherit
+  // a hidden share button, a stale group table or a pending auto-advance
+  clearRoundTimer();
+  hideRevealTag();
+  els.bigAnswer.classList.remove("hidden");
+  els.verdict.className = "verdict";
+  els.verdict.classList.remove("hidden");
+  els.sourceNote.classList.remove("hidden");
+  if (els.sourceBottom){ els.sourceBottom.textContent = ""; els.sourceBottom.classList.add("hidden"); }
+  if (els.shareBtn) els.shareBtn.classList.remove("hidden");
+  if (els.roundList){ els.roundList.innerHTML = ""; els.roundList.classList.add("hidden"); }
+  if (els.runAvg){ els.runAvg.innerHTML = ""; els.runAvg.classList.add("hidden"); }
+
+  // multi-round day: play the groups in order
+  if (isMulti()){
+    ROUND = 0;   // the tally and running score were cleared just above
+    paintRound();
+    var savedM = loadState();
+    if (savedM && savedM.guesses.length){
+      state.guesses = savedM.guesses.slice(0, roundsOf().length);
+      ROUND = Math.min(state.guesses.length, roundsOf().length - 1);
+      renderRoundPips();
+      if (savedM.done || state.guesses.length >= roundsOf().length){
+        finishGame(true);
+      } else {
+        // mid-run refresh: put the last group's bar and the tally back, then
+        // pick up at the next group that hasn't been asked
+        paintRestoredReveal(state.guesses.length - 1);
+        ROUND = state.guesses.length;
+        paintRound();
+      }
+    }
+    return;
+  }
 
   // restore any saved result for this day, today's or a past one
   var saved = loadState();

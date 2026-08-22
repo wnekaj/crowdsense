@@ -152,7 +152,7 @@ function computeScore(guesses, answer){
   return Math.round(CONFIG.FIRST_WEIGHT * err1 + CONFIG.FINAL_WEIGHT * errF);
 }
 
-// ===== multi-round days (SANDBOX TEST) =====
+// ===== multi-part days =====
 // Some days put the same question to several crossbreaks in turn — everyone,
 // then men, then 18-24s, and so on. Each round is revealed before the next is
 // asked, so what you learn compounds.
@@ -178,17 +178,13 @@ function isMulti(q){
   return !!(t && t.parts && t.parts.length > 1);
 }
 function roundsOf(q){ return ((q || Q) || {}).parts || []; }
-// A part's question reads "#N <category>: <stem>", with the category in bold.
-// Every part after the first is narrowed to a subgroup, so it reads "Just
-// men", "Just over-65s" and so on. A part may override the lot with its own
-// "question".
+// A part's question reads "<category>: <stem>", with the category in bold.
+// A part may override it outright with its own "question".
 function partQuestion(i, q){
   var t = q || Q, p = roundsOf(t)[i];
   if (!p) return "";
   if (p.question) return p.question;
-  var who = p.ask || p.label;
-  if (i > 0) who = "Just " + who;
-  return "#" + (i + 1) + " **" + who + "**: " + (t.stem || "");
+  return "**" + (p.ask || p.label) + "**: " + (t.stem || "");
 }
 // errors for the rounds played so far
 function roundErrors(guesses, q){
@@ -474,7 +470,7 @@ function renderDots(){
     els.guessDots.appendChild(dot);
   }
 }
-// ---- multi-round UI (SANDBOX TEST) ----
+// ---- multi-part UI ----
 // one pip per group, filled as each is answered
 function renderRoundPips(){
   if (!els.guessDots) return;
@@ -570,13 +566,14 @@ function renderRoundList(){
   renderRunAvg();
 }
 
-// SANDBOX TEST: the answer rides the end of the bar on a short leader line,
+// The answer rides the end of the bar on a short leader line,
 // at reading size, rather than landing underneath it as a display number.
 // Called on every animation frame so the figure counts up as the bar travels.
 function paintRevealTag(v){
   if (!els.revealTag) return;
   var pct = Math.max(0, Math.min(100, v));
   els.revealTag.classList.remove("hidden");
+  if (els.revealBarWrap) els.revealBarWrap.classList.add("tagged");
   // the tag is centred on the end of the fill, nudged in at the extremes so a
   // figure near 0 or 100 can't hang off the edge of the bar
   els.revealTag.style.left = Math.min(Math.max(pct, 7), 93) + "%";
@@ -585,6 +582,7 @@ function paintRevealTag(v){
 }
 function hideRevealTag(){
   if (els.revealTag) els.revealTag.classList.add("hidden");
+  if (els.revealBarWrap) els.revealBarWrap.classList.remove("tagged");
 }
 
 // Once every part is in, the big bar is retired: each part keeps a miniature
@@ -721,12 +719,15 @@ function verdictFor(guesses, answer, win){
 // On a multi-part day there is no single guess to pool, so the crowd layer
 // compares DAY SCORES instead: each player contributes the mean they ended on,
 // and the line reads the same way ("closer than X% of players") because a
-// lower score is a better read. The request carries mode=score so the worker
-// can keep those in their own bucket, away from single-guess days.
-//   Worker side, when this ships: accept "mode" on POST /guess and
-//   GET /dist, and key the counts table by (puzzle, mode).
+// lower score is a better read.
+//
+// No worker change is needed for this. Each day has its own puzzle number and
+// every player that day plays the same format, so the pool for a multi-part
+// day contains only scores, and the worker's distribution of them is exactly
+// what renderCrowdScore wants. The mode=score marker rides along so the stored
+// rows can be told apart later; the worker ignores it. The one thing to
+// remember is that for those puzzle numbers the "guess" column holds a score.
 function crowdFlow(finalGuess, isFresh){
-  if (CROWD_DEMO) return crowdDemo();
   if (!CONFIG.CROWD_API_URL) return;
   var base = String(CONFIG.CROWD_API_URL).replace(/\/+$/, "");
   // Keyed to the day being played, so past questions pool with the players
@@ -799,19 +800,6 @@ function renderCrowdScore(dist, myScore){
     els.histo.appendChild(bar);
   }
   els.crowdBlock.classList.remove("hidden");
-}
-
-// SANDBOX ONLY: ?crowd=demo fills the comparison with made-up numbers so the
-// layout can be judged while the real crowd layer is switched off here. It
-// never talks to the API and never records anything.
-var CROWD_DEMO = /[?&]crowd=demo/.test(location.search);
-function crowdDemo(){
-  var counts = new Array(101).fill(0);
-  var shape = [6,14,22,26,21,15,10,7,5,3,2,2,1,1,1];   // scores 0..14
-  for (var i = 0; i < shape.length; i++) counts[i] = shape[i];
-  var total = shape.reduce(function(a, c){ return a + c; }, 0);
-  if (isMulti()) renderCrowdScore({ counts: counts, total: total }, meanErr());
-  else renderCrowd({ counts: counts, total: total }, state.guesses[state.guesses.length-1]);
 }
 
 function renderCrowd(dist, myGuess){
