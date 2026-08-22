@@ -476,11 +476,17 @@
     .runavg b.cold{ color:var(--cold) }
     /* once every part is in, the running line becomes the day's result */
     .runavg.dayscore{
-      font-size:19px; letter-spacing:0; text-transform:none;
+      font-size:18px; letter-spacing:0; text-transform:none;
       color:var(--ink); font-family:var(--display); font-weight:500;
       margin-top:6px;
     }
-    .runavg.dayscore b{ font-size:22px; margin-left:4px; margin-right:2px }
+    /* the day's score is the headline of the result, so the figure itself is
+       set much larger than the words either side of it */
+    .runavg.dayscore b{
+      font-size:34px; line-height:1; margin-left:6px; margin-right:4px;
+      font-family:var(--display);
+    }
+    .runavg.dayscore .ra-cat{ white-space:nowrap }
     /* on a multi-part day the source sits at the foot of the page instead */
     .source-bottom{ margin:0 0 14px; text-align:center }
     .verdict{

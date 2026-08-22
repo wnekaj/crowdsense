@@ -531,8 +531,10 @@ function renderRunAvg(){
   // once every part is in, this line IS the result: score and category
   // together, so there is no second verdict line saying the same thing
   els.runAvg.className = "runavg" + (done ? " dayscore" : "");
+  // the category is kept in one piece so a narrow screen breaks the line
+  // before the dash rather than orphaning the last word of it
   els.runAvg.innerHTML = 'Crowdsense score <b class="' + h.cls + '">' + avg.toFixed(1) + '</b>' +
-    (done ? (' — ' + h.label) : '');
+    (done ? (' <span class="ra-cat">— ' + h.label + '</span>') : '');
   els.runAvg.classList.remove("hidden");
 }
 function renderRoundList(){
