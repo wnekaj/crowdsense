@@ -699,6 +699,19 @@
     /* parts not yet asked: keeps the row from jumping as it fills, and
        gives nothing away about what is coming */
     .rchip.pending{ background:var(--hairline) }
+    /* a miniature of the reveal bar under each box: fill to the figure, a
+       mark where you guessed. Empty cells keep theirs blank so the row is level. */
+    .rbar{
+      position:relative; width:100%; height:5px; margin-top:6px;
+      border-radius:3px; background:var(--hairline); overflow:hidden;
+    }
+    .rfill{ position:absolute; left:0; top:0; bottom:0; background:var(--ink) }
+    .rmark{ position:absolute; top:0; bottom:0; width:2px; transform:translateX(-1px) }
+    .rmark.t-target{ background:var(--win) }
+    .rmark.t-hot{    background:var(--hot) }
+    .rmark.t-warm{   background:var(--warm) }
+    .rmark.t-cool{   background:var(--cool) }
+    .rmark.t-cold{   background:var(--cold) }
     /* the running Crowdsense score across the parts answered so far */
     .runavg{
       margin:18px 0 0; text-align:center;
@@ -717,7 +730,7 @@
     .runavg.dayscore{
       font-size:19px; letter-spacing:0; text-transform:none;
       color:var(--ink); font-family:var(--display); font-weight:500;
-      margin-top:20px;
+      margin-top:6px;
     }
     .runavg.dayscore b{ font-size:22px; margin-left:4px; margin-right:2px }
     /* on a multi-part day the source sits at the foot of the page instead */
