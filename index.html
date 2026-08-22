@@ -299,9 +299,14 @@
     }
     /* Pointless-style reveal: while the bar fills, hold everything else back */
     .reveal > *{ transition:opacity .45s ease }
-    .reveal.staging > :not(.revealbar-wrap){ opacity:0; pointer-events:none }
+    /* during the count-up only the bar is live — except the tally and the
+       running score, which stay put so they don't blink out between parts */
+    .reveal.staging > :not(.revealbar-wrap):not(.rounds):not(.runavg){ opacity:0; pointer-events:none }
 
     .revealbar-wrap{ margin:6px 0 18px; position:relative; padding-top:20px }
+    /* when the answer stands above the bar on its stem, the wrap opens up
+       to make room for it; ordinary days keep the tighter spacing */
+    .revealbar-wrap.tagged{ margin:2px 0 18px; padding-top:52px }
     .revealbar{
       position:relative; height:14px; border-radius:4px;
       background:var(--hairline);
@@ -327,6 +332,107 @@
       pointer-events:none;
     }
     .youmark.on, .youlabel.on{ opacity:1 }
+    /* the answer stands above the bar on a short stem, using the
+       empty space there. Orange marks it as the answer; your own guess keeps
+       the colour of how close it was. */
+    .revealtag{
+      position:absolute; top:22px; transform:translateX(-50%);
+      /* column-reverse so the stem is the lower element, running down to the
+         bar, with the figure sitting on top of it */
+      display:flex; flex-direction:column-reverse; align-items:center; gap:2px;
+      white-space:nowrap; pointer-events:none;
+    }
+    .rt-line{ display:block; width:1px; height:8px; background:var(--accent) }
+    .rt-num{
+      font-family:var(--display);
+      font-size:17px; font-weight:700; letter-spacing:.01em; line-height:1.2;
+      color:var(--accent); font-variant-numeric:tabular-nums;
+    }
+    /* the guess mark takes the colour of how close it was, on the big bar and
+       on each group's kept bar alike */
+    .youmark.t-target{ background:var(--win) }
+    .youmark.t-hot{    background:var(--hot) }
+    .youmark.t-warm{   background:var(--warm) }
+    .youmark.t-cool{   background:var(--cool) }
+    .youmark.t-cold{   background:var(--cold) }
+    .youlabel.t-target{ color:var(--win) }
+    .youlabel.t-hot{    color:var(--hot) }
+    .youlabel.t-warm{   color:#9a8434 }
+    .youlabel.t-cool{   color:var(--cool) }
+    .youlabel.t-cold{   color:var(--cold) }
+    /*  multi-part day — the running tally.
+       One cell per part, laid out in a row: the category name, with a
+       coloured box beneath it carrying the score for that part. */
+    .rounds{ display:flex; gap:8px; margin:20px 0 18px }
+    .rcell{
+      flex:1 1 0; min-width:0;
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+    }
+    /* Category and its figure, stacked: at four cells across a phone there is
+       no room to set them on one line without truncating. Every cell reserves
+       both lines so the boxes below stay level. */
+    .rlabel{
+      display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+      gap:1px; min-height:2.9em; max-width:100%; text-align:center;
+    }
+    .rcat{
+      font-size:11.5px; color:var(--muted); letter-spacing:.02em; line-height:1.2;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;
+    }
+    .rlabel b{
+      font-size:14px; color:var(--ink); font-weight:700; line-height:1.2;
+      font-variant-numeric:tabular-nums;
+    }
+    .rchip{
+      width:100%; text-align:center; border-radius:4px;
+      padding:8px 2px; font-size:13px; font-weight:600; color:#fff;
+      font-variant-numeric:tabular-nums;
+      min-height:34px; display:flex; align-items:center; justify-content:center;
+    }
+    .rchip.target{ background:var(--win) }
+    .rchip.hot{ background:var(--hot) }
+    .rchip.warm{ background:var(--warm) }
+    .rchip.cool{ background:var(--cool) }
+    .rchip.cold{ background:var(--cold) }
+    /* parts not yet asked: keeps the row from jumping as it fills, and
+       gives nothing away about what is coming */
+    .rchip.pending{ background:var(--hairline) }
+    /* a miniature of the reveal bar under each box: fill to the figure, a
+       mark where you guessed. Empty cells keep theirs blank so the row is level. */
+    .rbar{
+      position:relative; width:100%; height:5px; margin-top:6px;
+      border-radius:3px; background:var(--hairline); overflow:hidden;
+    }
+    .rfill{ position:absolute; left:0; top:0; bottom:0; background:var(--ink) }
+    .rmark{ position:absolute; top:0; bottom:0; width:2px; transform:translateX(-1px) }
+    .rmark.t-target{ background:var(--win) }
+    .rmark.t-hot{    background:var(--hot) }
+    .rmark.t-warm{   background:var(--warm) }
+    .rmark.t-cool{   background:var(--cool) }
+    .rmark.t-cold{   background:var(--cold) }
+    /* the running Crowdsense score across the parts answered so far */
+    .runavg{
+      margin:18px 0 0; text-align:center;
+      font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
+    }
+    .runavg b{
+      font-size:16px; font-weight:700; letter-spacing:0; margin-left:7px;
+      font-variant-numeric:tabular-nums; color:var(--ink);
+    }
+    .runavg b.target{ color:var(--win) }
+    .runavg b.hot{ color:var(--hot) }
+    .runavg b.warm{ color:#9a8434 }
+    .runavg b.cool{ color:var(--cool) }
+    .runavg b.cold{ color:var(--cold) }
+    /* once every part is in, the running line becomes the day's result */
+    .runavg.dayscore{
+      font-size:19px; letter-spacing:0; text-transform:none;
+      color:var(--ink); font-family:var(--display); font-weight:500;
+      margin-top:6px;
+    }
+    .runavg.dayscore b{ font-size:22px; margin-left:4px; margin-right:2px }
+    /* on a multi-part day the source sits at the foot of the page instead */
+    .source-bottom{ margin:0 0 14px; text-align:center }
     .verdict{
       font-family:var(--display); font-weight:500;
       font-size:16px; letter-spacing:.01em;
@@ -641,12 +747,21 @@
             <div class="revealfill" id="revealFill"></div>
             <div class="youmark" id="youMarker" title="Your guess"></div>
           </div>
+          <!-- the figure rides the end of the fill on a short stem -->
+          <span class="revealtag hidden" id="revealTag" aria-hidden="true">
+            <i class="rt-line"></i><b class="rt-num"></b>
+          </span>
           <div class="scale"><span>0</span><span>50</span><span>100</span></div>
         </div>
         <p class="verdict" id="verdict"></p>
         <div class="bignum" id="bigAnswer"></div>
         <p class="source-note" id="sourceNote"></p>
 
+        <!-- multi-part days: the running Crowdsense score, then a cell per part -->
+        <p class="runavg hidden" id="runAvg" aria-live="polite"></p>
+        <div class="rounds hidden" id="roundList"></div>
+
+        <!-- how you did against everyone else — directly above the share button -->
         <div class="crowd hidden" id="crowdBlock">
           <div class="histo" id="histo" aria-label="Distribution of all players' guesses"></div>
           <p class="crowdhead" id="crowdHead"></p>
@@ -657,6 +772,8 @@
     </div>
 
     <div class="below">
+      <!-- multi-part days put their source down here, clear of the result -->
+      <p class="source-note source-bottom hidden" id="sourceBottom"></p>
       <p class="privacy"><button type="button" id="privacyBtn" class="linkbtn">Privacy</button> · <button type="button" id="contactBtn" class="linkbtn">Contact</button></p>
     </div>
   </main>
@@ -788,8 +905,8 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=98"></script>
-  <script src="app.js?v=98"></script>
+  <script src="questions.js?v=99"></script>
+  <script src="app.js?v=99"></script>
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){
