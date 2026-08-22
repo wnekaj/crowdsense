@@ -531,7 +531,7 @@ function renderRunAvg(){
   // once every part is in, this line IS the result: score and category
   // together, so there is no second verdict line saying the same thing
   els.runAvg.className = "runavg" + (done ? " dayscore" : "");
-  els.runAvg.innerHTML = 'Crowdsense <b class="' + h.cls + '">' + avg.toFixed(1) + '</b>' +
+  els.runAvg.innerHTML = 'Crowdsense score <b class="' + h.cls + '">' + avg.toFixed(1) + '</b>' +
     (done ? (' — ' + h.label) : '');
   els.runAvg.classList.remove("hidden");
 }
@@ -920,7 +920,7 @@ function finishGame(alreadyDone){
   if (MULTI) tintGuessMark(Math.abs(finalGuessVal - dayAnswer));
   if (alreadyDone){
     els.revealFill.style.width = dayAnswer + "%";
-    if (MULTI) hideDayBar();
+    if (MULTI){ hideDayBar(); renderQuestionText(partQuestion(0)); }
     showGuessMark();
   } else {
     // Pointless-style reveal: the bar crawls along the 0-100 scale toward
@@ -941,7 +941,13 @@ function finishGame(alreadyDone){
         els.reveal.classList.remove("staging");
         // the last cell and the day's Crowdsense score land with the figure,
         // and the big bar steps aside now every part has its own
-        if (MULTI){ renderRoundList(); hideDayBar(); }
+        if (MULTI){
+          renderRoundList();
+          hideDayBar();
+          // the day is over, so the heading stops asking about the last group
+          // and returns to the neutral whole-population question
+          renderQuestionText(partQuestion(0));
+        }
         // update the header badge only now the answer is on screen, so a
         // bullseye 🎯 never gives itself away before the reveal lands
         updateStreakBadge();
