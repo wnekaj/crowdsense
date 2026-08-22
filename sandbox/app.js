@@ -178,13 +178,17 @@ function isMulti(q){
   return !!(t && t.parts && t.parts.length > 1);
 }
 function roundsOf(q){ return ((q || Q) || {}).parts || []; }
-// A part's question reads "<category>: <stem>", with the category in bold.
-// A part may override it outright with its own "question".
+// A part's question reads "#N <category>: <stem>", with the category in bold.
+// Every part after the first is narrowed to a subgroup, so it reads "Just
+// men", "Just over-65s" and so on. A part may override the lot with its own
+// "question".
 function partQuestion(i, q){
   var t = q || Q, p = roundsOf(t)[i];
   if (!p) return "";
   if (p.question) return p.question;
-  return "**" + (p.ask || p.label) + "**: " + (t.stem || "");
+  var who = p.ask || p.label;
+  if (i > 0) who = "Just " + who;
+  return "#" + (i + 1) + " **" + who + "**: " + (t.stem || "");
 }
 // errors for the rounds played so far
 function roundErrors(guesses, q){
@@ -920,7 +924,7 @@ function finishGame(alreadyDone){
   if (MULTI) tintGuessMark(Math.abs(finalGuessVal - dayAnswer));
   if (alreadyDone){
     els.revealFill.style.width = dayAnswer + "%";
-    if (MULTI){ hideDayBar(); renderQuestionText(partQuestion(0)); }
+    if (MULTI){ hideDayBar(); renderQuestionText(Q.question); }
     showGuessMark();
   } else {
     // Pointless-style reveal: the bar crawls along the 0-100 scale toward
@@ -945,8 +949,8 @@ function finishGame(alreadyDone){
           renderRoundList();
           hideDayBar();
           // the day is over, so the heading stops asking about the last group
-          // and returns to the neutral whole-population question
-          renderQuestionText(partQuestion(0));
+          // and returns to the question's own neutral wording
+          renderQuestionText(Q.question);
         }
         // update the header badge only now the answer is on screen, so a
         // bullseye 🎯 never gives itself away before the reveal lands
