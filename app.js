@@ -1147,25 +1147,16 @@ function shareMeter(err){
   if (cls === "target") out += "🎯";
   return out;
 }
-// Multi-round day: one square per group, coloured by how that group went, so
-// the five squares carry the shape of the day rather than a single tier. A
-// bullseye group shows as 🎯, which keeps all five tiers distinguishable
-// (on the pulse and on the scent are both green otherwise).
-function shareMeterMulti(){
-  var sq = { target:"🎯", hot:"🟩", warm:"🟨", cool:"🟧", cold:"🟥" };
-  var e = roundErrors(), out = "";
-  for (var i = 0; i < e.length; i++) out += sq[heat(e[i]).cls];
-  return out;
-}
 function shareText(includeUrl){
   var lines = [];
   lines.push("Crowdsense #" + CUR.puzzleNo);
-  if (isMulti()){
-    lines.push(shareMeterMulti() + " " + state.score + " off");
-  } else {
-  var finalErr = Math.abs(state.guesses[state.guesses.length-1] - Q.answer);
-  lines.push(shareMeter(finalErr) + " " + state.score + " off");
-  }
+  // Every day shares the same five-square meter, read off the day's overall
+  // score. On a multi-part day that is the mean of the parts, taken exact so
+  // the meter agrees with the category shown on the page.
+  var err = isMulti()
+    ? meanErrExact()
+    : Math.abs(state.guesses[state.guesses.length-1] - Q.answer);
+  lines.push(shareMeter(err) + " " + state.score + " off");
   if (MODE === "daily" && state.crowdPct !== null && state.crowdPct !== undefined){
     lines.push("Closer than " + state.crowdPct + "% of players");
   }
