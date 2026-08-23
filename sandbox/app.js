@@ -533,7 +533,7 @@ function renderRunAvg(){
   els.runAvg.className = "runavg" + (done ? " dayscore" : "");
   // the category is kept in one piece so a narrow screen breaks the line
   // before the dash rather than orphaning the last word of it
-  els.runAvg.innerHTML = 'Crowdsense score <b class="' + h.cls + '">' + avg.toFixed(1) + '</b>' +
+  els.runAvg.innerHTML = 'Crowdsense <b class="' + h.cls + '">' + avg.toFixed(1) + '</b>' +
     (done ? (' <span class="ra-cat">— ' + h.label + '</span>') : '');
   els.runAvg.classList.remove("hidden");
 }
