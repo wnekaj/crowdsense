@@ -607,6 +607,46 @@ function tintGuessMark(err){
   els.youLabel.classList.add("t-" + cls);
 }
 
+// A guess dead on the figure showers the screen with bullseyes, over a ring
+// burst breaking out from the number itself. On a multi-part day every exact
+// part earns one, as it lands — not just a clean sweep of them all.
+// Called only on a fresh reveal, so a day reopened later never replays it.
+function showerBullseyes(){
+  if (!document.body) return;
+  var at = bullseyeAnchor();
+  var el = document.createElement("div");
+  el.className = "bullseye";
+  el.setAttribute("aria-hidden", "true");
+  var html = '<span class="bmark" style="left:' + at.x + 'px; top:' + at.y +
+    'px"><i></i><i></i><i></i></span>';
+  // scattered across the width at mixed sizes, delays and speeds, so they
+  // fall as a shower rather than a row
+  for (var i = 0; i < 26; i++){
+    html += '<b style="left:' + (Math.random() * 98).toFixed(1) + '%;' +
+      ' top:' + (-10 - Math.random() * 25).toFixed(0) + '%;' +
+      ' font-size:' + (16 + Math.round(Math.random() * 24)) + 'px;' +
+      ' animation-delay:' + (Math.random() * 0.5).toFixed(2) + 's;' +
+      ' animation-duration:' + (1 + Math.random() * 0.7).toFixed(2) + 's;' +
+      ' --spin:' + Math.round(-140 + Math.random() * 280) + 'deg">🎯</b>';
+  }
+  el.innerHTML = html;
+  document.body.appendChild(el);
+  setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 2600);
+}
+// the figure the rings break out from: the display number on an ordinary day,
+// the Crowdsense line on a multi-part one
+function bullseyeAnchor(){
+  var ids = ["bigAnswer", "runAvg", "reveal"];
+  for (var i = 0; i < ids.length; i++){
+    var el = document.getElementById(ids[i]);
+    if (el && !el.classList.contains("hidden")){
+      var r = el.getBoundingClientRect();
+      if (r.width && r.height) return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    }
+  }
+  return { x: innerWidth / 2, y: innerHeight / 2 };
+}
+
 // Mid-round reveal: the figure and nothing else. No verdict, no source and no
 // table until the day is over, so the run is four answers in a row rather than
 // four scored results, and the scoring lands once at the end.
@@ -640,6 +680,7 @@ function revealRound(i){
     setTimeout(function(){
       els.reveal.classList.remove("staging");
       renderRoundList();
+      if (g === r.answer) showerBullseyes();
       // hold on the figure long enough to read it, then move straight on
       ROUND_TIMER = setTimeout(nextRound, ROUND_HOLD_MS);
     }, 350);
@@ -942,6 +983,7 @@ function finishGame(alreadyDone){
           // and returns to the question's own neutral wording
           renderQuestionText(Q.question);
         }
+        if (finalGuessVal === dayAnswer) showerBullseyes();
         // update the header badge only now the answer is on screen, so a
         // bullseye 🎯 never gives itself away before the reveal lands
         updateStreakBadge();
