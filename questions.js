@@ -303,6 +303,16 @@ var CS_QUESTIONS = [
       { label: "18–34s",     ask: "18–34 year-olds",  answer: 80 },
       { label: "55+",        ask: "55s and over",     answer: 22 }
     ]
+  },
+  {
+    date: "2026-08-25",  // Day 37 — back to the standard single-question format
+    question: "What percentage of Brits say they have sung the national anthem at a public event in the past year?",
+    answer: 40,
+    source: "Public First poll of 4,005 UK adults, 24–30 October 2025",
+    teaser: "How many Brits sang the anthem this year?",
+    // 40 is the net of the four recency bands in the total column, which the
+    // tables publish separately rather than as a running total:
+    //   past week 5 + past month 10 + past six months 12 + past year 13 = 40
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
