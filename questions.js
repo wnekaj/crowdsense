@@ -313,6 +313,45 @@ var CS_QUESTIONS = [
     // 40 is the net of the four recency bands in the total column, which the
     // tables publish separately rather than as a running total:
     //   past week 5 + past month 10 + past six months 12 + past year 13 = 40
+  },
+  {
+    date: "2026-08-26",  // Day 38
+    question: "What percentage of Brits say they have ever ridden in a fully self-driving car?",
+    answer: 17,
+    // NOTE: this question was put to 1,220 respondents, not the whole sample.
+    // 17 is "yes, multiple times" 7 + "yes, once" 10.
+    source: "Public First poll of 1,220 UK adults, 2–9 May 2026",
+    teaser: "Who's ridden in a driverless car?"
+  },
+  {
+    date: "2026-08-27",  // Day 39
+    question: "What percentage of Brits say they have already been in a relationship with an AI boyfriend or girlfriend?",
+    answer: 6,
+    source: "Public First poll of 2,051 UK adults, 2–9 May 2026",
+    teaser: "How many Brits have had an AI partner?"
+  },
+  {
+    date: "2026-08-28",  // Day 40
+    question: "What percentage of Brits say that someone in a committed relationship using an AI for sexual or intimate interactions is cheating?",
+    answer: 53,
+    // 53 is "definitely cheating" 27 + "probably cheating" 26
+    source: "Public First poll of 2,051 UK adults, 2–9 May 2026",
+    teaser: "Is using an AI for intimacy cheating?"
+  },
+  {
+    date: "2026-08-29",  // Day 41
+    question: "What percentage of Brits say they have shared political content with friends or family in the past month?",
+    answer: 18,
+    source: "Public First poll of 2,005 UK adults, 24–28 April 2026",
+    teaser: "How many Brits share political content?"
+  },
+  {
+    date: "2026-08-30",  // Day 42
+    question: "What percentage of Brits agree we should pause the development of AI until we can be sure it is safe?",
+    answer: 60,
+    // 60 is the three agree bands: strongly 24 + moderately 16 + a little 20
+    source: "Public First poll of 2,051 UK adults, 2–9 May 2026",
+    teaser: "How many Brits want to pause AI?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
