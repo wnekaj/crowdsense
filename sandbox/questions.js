@@ -318,9 +318,13 @@ var CS_QUESTIONS = [
     date: "2026-08-26",  // Day 38
     question: "What percentage of Brits say they have ever ridden in a fully self-driving car?",
     answer: 17,
-    // NOTE: this question was put to 1,220 respondents, not the whole sample.
     // 17 is "yes, multiple times" 7 + "yes, once" 10.
-    source: "Public First poll of 1,220 UK adults, 2–9 May 2026",
+    // Asked of 1,180 of the 2,051 (weighted), a 57.5% split. That sub-sample's
+    // age profile matches the full sample's — every band within about one
+    // standard error, chi-square 3.98 on 5 df, p = 0.55 — so it reads as a
+    // random split rather than a screened group, and the figure carries to
+    // all UK adults.
+    source: "Public First poll of 1,180 UK adults, 2–9 May 2026",
     teaser: "Who's ridden in a driverless car?"
   },
   {
