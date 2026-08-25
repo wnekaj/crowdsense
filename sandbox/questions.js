@@ -329,10 +329,10 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-08-27",  // Day 39
-    question: "What percentage of Brits say they have already been in a relationship with an AI boyfriend or girlfriend?",
-    answer: 6,
+    question: "What percentage of Brits say they have already had an AI as a friend?",
+    answer: 10,
     source: "Public First poll of 2,051 UK adults, 2–9 May 2026",
-    teaser: "How many Brits have had an AI partner?"
+    teaser: "How many Brits have an AI friend?"
   },
   {
     date: "2026-08-28",  // Day 40
