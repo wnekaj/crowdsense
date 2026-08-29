@@ -351,11 +351,10 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-08-30",  // Day 42
-    question: "What percentage of Brits agree we should pause the development of AI until we can be sure it is safe?",
-    answer: 60,
-    // 60 is the three agree bands: strongly 24 + moderately 16 + a little 20
-    source: "Public First poll of 2,051 UK adults, 2–9 May 2026",
-    teaser: "How many Brits want to pause AI?"
+    question: "What percentage of Brits say they have a favourable view of Zack Polanski?",
+    answer: 23,
+    source: "Public First poll of 2,007 UK adults, 13–17 August 2026",
+    teaser: "How popular is Zack Polanski?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
