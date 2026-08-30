@@ -355,6 +355,14 @@ var CS_QUESTIONS = [
     answer: 23,
     source: "Public First poll of 2,007 UK adults, 13–17 August 2026",
     teaser: "How popular is Zack Polanski?"
+  },
+  {
+    date: "2026-08-31",  // Day 43
+    question: "What percentage of Brits say they have a negative view of Donald Trump?",
+    answer: 70,
+    // 70 is "negative" 17 + "very negative" 53
+    source: "Public First poll of 2,042 UK adults, 6–9 February 2026",
+    teaser: "How many Brits view Trump negatively?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
