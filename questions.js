@@ -363,6 +363,15 @@ var CS_QUESTIONS = [
     // 70 is "negative" 17 + "very negative" 53
     source: "Public First poll of 2,042 UK adults, 6–9 February 2026",
     teaser: "How many Brits view Trump negatively?"
+  },
+  {
+    date: "2026-09-01",  // Day 44
+    question: "What percentage of Brits say they would consider travelling to be one of their hobbies or interests?",
+    answer: 56,
+    // pick-any-that-apply list; travelling came third, behind listening to
+    // music 67 and reading 61
+    source: "Public First poll of 2,202 UK adults, 13 March – 2 April 2025",
+    teaser: "How many Brits call travelling a hobby?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
