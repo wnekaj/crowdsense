@@ -372,6 +372,38 @@ var CS_QUESTIONS = [
     // music 67 and reading 61
     source: "Public First poll of 2,202 UK adults, 13 March – 2 April 2025",
     teaser: "How many Brits call travelling a hobby?"
+  },
+  {
+    date: "2026-09-02",  // Day 45
+    question: "What percentage of Brits say they currently consider themselves to be 'sporty'?",
+    answer: 36,
+    source: "Public First poll of 2,202 UK adults, 13 March – 2 April 2025",
+    teaser: "How many Brits think they're sporty?"
+  },
+  {
+    date: "2026-09-03",  // Day 46
+    question: "What percentage of Brits agree that they would rather not try than try and fail?",
+    answer: 24,
+    // the tables print the net: strongly agree 4 + agree 20 = total agree 24
+    source: "Public First poll of 2,202 UK adults, 13 March – 2 April 2025",
+    teaser: "Would Brits rather not try than fail?"
+  },
+  {
+    date: "2026-09-04",  // Day 47
+    question: "What percentage of Brits count fantasy leagues among the sports content they enjoy?",
+    answer: 9,
+    // from "what type of sports-related content do you enjoy consuming?" — a
+    // pick-all list led by live sport 57, final scores 32 and highlights 31
+    source: "Public First poll of 2,202 UK adults, 13 March – 2 April 2025",
+    teaser: "How many Brits enjoy fantasy leagues?"
+  },
+  {
+    date: "2026-09-05",  // Day 48
+    question: "What percentage of Brits say they have watched tennis coverage in the past six months?",
+    answer: 25,
+    // pick-all list led by football 60; tennis and rugby tie on 25
+    source: "Public First poll of 2,202 UK adults, 13 March – 2 April 2025",
+    teaser: "How many Brits watched tennis?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
