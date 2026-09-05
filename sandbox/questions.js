@@ -404,6 +404,20 @@ var CS_QUESTIONS = [
     // pick-all list led by football 60; tennis and rugby tie on 25
     source: "Public First poll of 2,202 UK adults, 13 March – 2 April 2025",
     teaser: "How many Brits watched tennis?"
+  },
+  {
+    date: "2026-09-06",  // Day 49
+    question: "What percentage of Brits agree that it is silly not to vote in elections?",
+    answer: 65,
+    // CHECK BEFORE THE DAY. 65 is as supplied, but the total column was off
+    // the edge of the crosstab I was given, and reconstructing the net from
+    // the crossbreaks that were visible lands higher:
+    //   by gender  men 39+26=65, women 40+28=68, weighted -> 66.5
+    //   by age     55/60/59/66/72/84 across the six bands, weighted -> 66.9
+    // 65 is also exactly the men's column on its own, which may be a
+    // coincidence or may be the column that got read.
+    source: "Public First poll of 3,019 UK adults, 13–16 March 2026",
+    teaser: "Is it silly not to vote?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
