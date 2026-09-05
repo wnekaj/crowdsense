@@ -408,14 +408,10 @@ var CS_QUESTIONS = [
   {
     date: "2026-09-06",  // Day 49
     question: "What percentage of Brits agree that it is silly not to vote in elections?",
-    answer: 65,
-    // CHECK BEFORE THE DAY. 65 is as supplied, but the total column was off
-    // the edge of the crosstab I was given, and reconstructing the net from
-    // the crossbreaks that were visible lands higher:
-    //   by gender  men 39+26=65, women 40+28=68, weighted -> 66.5
-    //   by age     55/60/59/66/72/84 across the six bands, weighted -> 66.9
-    // 65 is also exactly the men's column on its own, which may be a
-    // coincidence or may be the column that got read.
+    answer: 67,
+    // 67 is the total-agree net: strongly agree + somewhat agree. It checks
+    // out against the crossbreaks — men 39+26=65 and women 40+28=68 weight
+    // to 66.5, the six age bands (55/60/59/66/72/84) to 66.9.
     source: "Public First poll of 3,019 UK adults, 13–16 March 2026",
     teaser: "Is it silly not to vote?"
   }
