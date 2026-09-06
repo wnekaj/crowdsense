@@ -417,7 +417,7 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-09-07",  // Day 50
-    question: "What percentage of Brits say they describe their evening meal as supper?",
+    question: "What percentage of Brits use the word 'supper' to describe their evening meal?",
     answer: 25,
     // read off the total column. Falls steeply with age: 36 among 25-34s
     // down to 16 among 55-64s.
