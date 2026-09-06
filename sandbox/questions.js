@@ -423,6 +423,15 @@ var CS_QUESTIONS = [
     // down to 16 among 55-64s.
     source: "Public First poll of 3,025 UK adults, 13–16 March 2026",
     teaser: "How many Brits call it supper?"
+  },
+  {
+    date: "2026-09-08",  // Day 51
+    question: "What percentage of Brits say they currently invest in stocks, shares or other financial assets outside a pension?",
+    answer: 36,
+    // same "which of the following are true for you?" battery as the supper
+    // question, so taken as the same poll
+    source: "Public First poll of 3,025 UK adults, 13–16 March 2026",
+    teaser: "How many Brits invest outside a pension?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
