@@ -412,8 +412,17 @@ var CS_QUESTIONS = [
     // 67 is the total-agree net: strongly agree + somewhat agree. It checks
     // out against the crossbreaks — men 39+26=65 and women 40+28=68 weight
     // to 66.5, the six age bands (55/60/59/66/72/84) to 66.9.
-    source: "Public First poll of 3,019 UK adults, 13–16 March 2026",
+    source: "Public First poll of 3,025 UK adults, 13–16 March 2026",
     teaser: "Is it silly not to vote?"
+  },
+  {
+    date: "2026-09-07",  // Day 50
+    question: "What percentage of Brits say they describe their evening meal as supper?",
+    answer: 25,
+    // read off the total column. Falls steeply with age: 36 among 25-34s
+    // down to 16 among 55-64s.
+    source: "Public First poll of 3,025 UK adults, 13–16 March 2026",
+    teaser: "How many Brits call it supper?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
