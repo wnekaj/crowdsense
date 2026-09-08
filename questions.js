@@ -432,6 +432,17 @@ var CS_QUESTIONS = [
     // question, so taken as the same poll
     source: "Public First poll of 3,025 UK adults, 13–16 March 2026",
     teaser: "How many Brits invest outside a pension?"
+  },
+  {
+    date: "2026-09-09",  // Day 52
+    question: "What percentage of Brits say they go to a local pub or bar at least once a week?",
+    answer: 26,
+    // net of the four weekly-or-more bands in the total column:
+    //   multiple times a day 1 + once a day 2 + multiple times a week 9
+    //   + once a week 14 = 26
+    // men 33 against women 18 — the widest gender gap in the run so far
+    source: "Public First poll of 3,025 UK adults, 13–16 March 2026",
+    teaser: "How many Brits go to the pub weekly?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
