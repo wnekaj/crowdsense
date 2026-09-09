@@ -443,6 +443,17 @@ var CS_QUESTIONS = [
     // men 33 against women 18 — the widest gender gap in the run so far
     source: "Public First poll of 3,025 UK adults, 13–16 March 2026",
     teaser: "How many Brits go to the pub weekly?"
+  },
+  {
+    date: "2026-09-10",  // Day 53
+    question: "What percentage of Brits say they spend time in nature at least once a week?",
+    answer: 63,
+    // net of the four weekly-or-more bands in the total column:
+    //   multiple times a day 10 + once a day 13 + multiple times a week 27
+    //   + once a week 13 = 63
+    // barely splits by gender: men 64, women 60
+    source: "Public First poll of 3,025 UK adults, 13–16 March 2026",
+    teaser: "How many Brits get out in nature weekly?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
