@@ -454,6 +454,19 @@ var CS_QUESTIONS = [
     // barely splits by gender: men 64, women 60
     source: "Public First poll of 3,025 UK adults, 13–16 March 2026",
     teaser: "How many Brits get out in nature weekly?"
+  },
+  {
+    date: "2026-09-11",  // Day 54
+    question: "What percentage of Brits say they have a favourable view of Kemi Badenoch?",
+    answer: 36,
+    // Total favourable across all three bands, the usual reading of the
+    // scale: very 10 + somewhat 13 + slightly 13 = 36. Against it, neutral
+    // 21, total unfavourable 33 (10 + 8 + 15) and don't know 9.
+    // If the house convention drops "slightly favourable" it would be 23 —
+    // and the Polanski question on 30 August is set at exactly 23, so the
+    // two need to be derived the same way before this runs.
+    source: "Public First poll of 2,008 UK adults, 13–17 August 2026",
+    teaser: "How popular is Kemi Badenoch?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
