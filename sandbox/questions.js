@@ -494,6 +494,16 @@ var CS_QUESTIONS = [
     // only clean "don't trust" figure. Any trust at all comes to 63.
     source: "Public First poll of 8,021 UK adults, 3–16 October 2025",
     teaser: "How many Brits distrust journalists?"
+  },
+  {
+    date: "2026-09-15",  // Day 58
+    question: "What percentage of Brits agree that the US is a reliable ally?",
+    answer: 34,
+    // agree net: strongly 9 + agree 25 = 34. More disagree than agree —
+    // 23 + 16 = 39 — with 22 neither and 4 don't know.
+    // Same poll as the Trump question on 31 August.
+    source: "Public First poll of 2,042 UK adults, 6–9 February 2026",
+    teaser: "Is the US a reliable ally?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
