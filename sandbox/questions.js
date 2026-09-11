@@ -479,11 +479,15 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-09-13",  // Day 56
-    question: "What percentage of Brits agree that they enjoy trying difficult puzzles, even if they might not solve them?",
+    question: "What percentage of Brits say they enjoy puzzles?",
     answer: 64,
-    // total agree: strongly 24 + somewhat 40 = 64
+    // total agree: strongly 24 + somewhat 40 = 64.
+    // The statement put to respondents was narrower than the question as
+    // worded here: "I enjoy trying difficult puzzles, even if I might not
+    // solve them".
+
     source: "Public First poll of 8,021 UK adults, 3–16 October 2025",
-    teaser: "How many Brits enjoy a hard puzzle?"
+    teaser: "How many Brits enjoy puzzles?"
   },
   {
     date: "2026-09-14",  // Day 57
