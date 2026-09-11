@@ -467,6 +467,33 @@ var CS_QUESTIONS = [
     // two need to be derived the same way before this runs.
     source: "Public First poll of 2,008 UK adults, 13–17 August 2026",
     teaser: "How popular is Kemi Badenoch?"
+  },
+  {
+    date: "2026-09-12",  // Day 55
+    question: "What percentage of Brits say maths was their favourite subject at school?",
+    answer: 16,
+    // read off the total column. The rest: generally liked it 34, neutral 21,
+    // generally disliked it 15, least favourite 13, don't know 2.
+    source: "Public First poll of 8,021 UK adults, 3–16 October 2025",
+    teaser: "How many Brits loved maths at school?"
+  },
+  {
+    date: "2026-09-13",  // Day 56
+    question: "What percentage of Brits agree that they enjoy trying difficult puzzles, even if they might not solve them?",
+    answer: 64,
+    // total agree: strongly 24 + somewhat 40 = 64
+    source: "Public First poll of 8,021 UK adults, 3–16 October 2025",
+    teaser: "How many Brits enjoy a hard puzzle?"
+  },
+  {
+    date: "2026-09-14",  // Day 57
+    question: "What percentage of Brits say they do not trust journalists at all?",
+    answer: 33,
+    // The scale runs trust completely 5, somewhat trust 23, trust a little 35,
+    // do not trust at all 33 — there is no middle distrust band, so 33 is the
+    // only clean "don't trust" figure. Any trust at all comes to 63.
+    source: "Public First poll of 8,021 UK adults, 3–16 October 2025",
+    teaser: "How many Brits distrust journalists?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
