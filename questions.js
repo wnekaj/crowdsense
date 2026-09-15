@@ -508,6 +508,26 @@ var CS_QUESTIONS = [
     // Same poll as the Trump question on 31 August.
     source: "Public First poll of 2,042 UK adults, 6–9 February 2026",
     teaser: "Is the US a reliable ally?"
+  },
+  {
+    date: "2026-09-16",  // Day 59
+    question: "What percentage of Brits say the cost of living is one of the top three issues facing the country?",
+    answer: 60,
+    // far the biggest on the list. Others visible: illegal immigration 37,
+    // crime 17, housing 13, taxation 11, leaving the EU 10, pensions 3.
+    source: "Public First poll of 4,072 GB adults, 14–19 June 2026",
+    teaser: "How big an issue is the cost of living?"
+  },
+  {
+    date: "2026-09-17",  // Day 60
+    question: "What percentage of Brits say they would support wind farms being built in the UK?",
+    answer: 74,
+    // the grid's printed total positive: slightly 16 + somewhat 20 +
+    // strongly support 38. Against 12 total negative, for a net of 62.
+    // Solar is level on 74; nuclear 49, North Sea drilling 48, coal 32 and
+    // fracking 27 sit behind it.
+    source: "Public First poll of 4,072 GB adults, 14–19 June 2026",
+    teaser: "How many Brits back wind farms?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
