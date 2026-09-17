@@ -528,6 +528,17 @@ var CS_QUESTIONS = [
     // fracking 27 sit behind it.
     source: "Public First poll of 4,072 GB adults, 14–19 June 2026",
     teaser: "How many Brits back wind farms?"
+  },
+  {
+    date: "2026-09-18",  // Day 61
+    question: "What percentage of Brits say they use cash as a payment method every day?",
+    answer: 17,
+    // several times a day 10 + once a day 7 = 17.
+    // Asked of everyone who uses any payment method rather than of all
+    // respondents, which is all but the whole sample — nobody answered
+    // "never" to cash. A few times a week is the modal answer, on 29.
+    source: "Public First poll of 2,145 UK adults, 30 October – 2 November 2025",
+    teaser: "How many Brits use cash daily?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
