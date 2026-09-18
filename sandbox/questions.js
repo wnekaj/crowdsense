@@ -542,7 +542,7 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-09-19",  // Day 62
-    question: "What percentage of Brits say a car is their primary method of transport on a daily basis?",
+    question: "What percentage of Brits say a car is their main method of transport on a daily basis?",
     answer: 55,
     // read off the total column. Walking is second on 22, public transport
     // 19, bikes and e-scooters 3. Climbs steeply with age: 31 among 18-24s
