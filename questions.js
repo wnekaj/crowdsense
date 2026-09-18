@@ -539,6 +539,27 @@ var CS_QUESTIONS = [
     // "never" to cash. A few times a week is the modal answer, on 29.
     source: "Public First poll of 2,145 UK adults, 30 October – 2 November 2025",
     teaser: "How many Brits use cash daily?"
+  },
+  {
+    date: "2026-09-19",  // Day 62
+    question: "What percentage of Brits say a car is their primary method of transport on a daily basis?",
+    answer: 55,
+    // read off the total column. Walking is second on 22, public transport
+    // 19, bikes and e-scooters 3. Climbs steeply with age: 31 among 18-24s
+    // to 64 among the over-65s.
+    source: "Public First poll of 2,003 UK adults, 20–26 June 2025",
+    teaser: "How many Brits get around by car?"
+  },
+  {
+    date: "2026-09-20",  // Day 63
+    question: "What percentage of Brits say they go on holiday more than once a year?",
+    answer: 49,
+    // everything more often than "once a year": daily 1 + several times a
+    // week 2 + once a week 2 + several times a month 2 + once a month 3
+    // + a few times a year 39 = 49.
+    // Against it, once a year 34 and never 14.
+    source: "Public First poll of 2,003 UK adults, 20–26 June 2025",
+    teaser: "How often do Brits go on holiday?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
