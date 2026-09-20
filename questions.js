@@ -560,6 +560,16 @@ var CS_QUESTIONS = [
     // Against it, once a year 34 and never 14.
     source: "Public First poll of 2,003 UK adults, 20–26 June 2025",
     teaser: "How often do Brits go on holiday?"
+  },
+  {
+    date: "2026-09-21",  // Day 64
+    question: "What percentage of Brits say they would support extending the smoking ban to outdoor areas of cafes, bars and restaurants?",
+    answer: 65,
+    // the grid's printed total support: strongly 41 + somewhat 24 = 65,
+    // against 20 total oppose. Highest among the over-65s (71) and ABs (73),
+    // lowest among C2s (59).
+    source: "Public First poll of 2,010 UK adults, 21 February – 5 March 2025",
+    teaser: "Should outdoor smoking be banned?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
