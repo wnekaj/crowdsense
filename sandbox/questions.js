@@ -570,6 +570,16 @@ var CS_QUESTIONS = [
     // lowest among C2s (59).
     source: "Public First poll of 2,010 UK adults, 21 February – 5 March 2025",
     teaser: "Should outdoor smoking be banned?"
+  },
+  {
+    date: "2026-09-22",  // Day 65
+    question: "What percentage of Brits say they would support higher taxes on alcoholic drinks?",
+    answer: 46,
+    // the grid's printed total support: strongly 24 + support 22 = 46,
+    // against 32 opposed, for a net of 14. Same poll and same scale as the
+    // smoking-ban question the day before, where support ran to 65.
+    source: "Public First poll of 2,010 UK adults, 21 February – 5 March 2025",
+    teaser: "Do Brits back higher alcohol taxes?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
