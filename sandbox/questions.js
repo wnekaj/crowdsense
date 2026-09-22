@@ -580,6 +580,18 @@ var CS_QUESTIONS = [
     // smoking-ban question the day before, where support ran to 65.
     source: "Public First poll of 2,010 UK adults, 21 February – 5 March 2025",
     teaser: "Do Brits back higher alcohol taxes?"
+  },
+  {
+    date: "2026-09-23",  // Day 66
+    question: "What percentage of Brits agree that the gap between the poorest and richest families in the UK is too large?",
+    answer: 74,
+    // Total agree in the total column: strongly 41 + agree 33 = 74, against
+    // 8 disagreeing. The 72 on the crosstab's Total Agree row belongs to the
+    // Female column, not the total — men are 75, and 75/72 weight to 73.5.
+    // Rebuilding the total from the crossbreaks agrees: 73.8 from the six
+    // age bands (whose bases sum to the full 2,008) and 73.5 by social grade.
+    source: "Public First poll of 2,008 UK adults, 11–14 March 2025",
+    teaser: "Is the rich-poor gap too large?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
