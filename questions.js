@@ -592,6 +592,16 @@ var CS_QUESTIONS = [
     // age bands (whose bases sum to the full 2,008) and 73.5 by social grade.
     source: "Public First poll of 2,008 UK adults, 11–14 March 2025",
     teaser: "Is the rich-poor gap too large?"
+  },
+  {
+    date: "2026-09-24",  // Day 67
+    question: "What percentage of Brits say they have ever voted Conservative in a UK general election?",
+    answer: 46,
+    // read off the total column; no 49, can't remember 5. Barely splits by
+    // gender (men 47, women 45) but climbs hard with age: 26 among 18-24s,
+    // low 40s through the middle bands, 52 among 55-64s.
+    source: "Public First poll of 2,011 UK adults, 12–17 September 2025",
+    teaser: "How many Brits have ever voted Tory?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
