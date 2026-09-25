@@ -37,7 +37,6 @@
   }
   function readJSON(k){ try{ return JSON.parse(localStorage.getItem(k) || "null"); }catch(_){ return null; } }
   function writeJSON(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(_){} }
-  function signup(){ return readJSON(T.SIGNUP_KEY); }
   function lbHref(){
     var m = /[?&]day=(\d{4}-\d{2}-\d{2})/.exec(location.search);
     return "leaderboard.html" + (m ? "?day=" + m[1] : "");
@@ -64,13 +63,40 @@
     var card = el("div", "tg-fb");
     card.id = "tgFeedback";
     var h = heat(Math.abs(g - Q.answer));
-    card.innerHTML = '<p class="tg-fb-dir ' + (up ? "up" : "down") + '"><span aria-hidden="true">' +
-      (up ? "↑" : "↓") + '</span> ' + (up ? "Higher" : "Lower") + '</p>' +
-      '<p class="tg-fb-band ' + h.cls + '"><i></i>' + h.label + ' <span>· ' + BAND_RANGE[h.cls] + '</span></p>';
+    // each line is centred on its words; the arrow and the dot hang in the
+    // margin to their left, so the two lines sit symmetrically on one axis
+    card.innerHTML =
+      '<p class="tg-fb-dir ' + (up ? "up" : "down") + '"><span class="tg-fb-t">' +
+        '<i class="tg-fb-arrow" aria-hidden="true">' + (up ? "↑" : "↓") + '</i>' + (up ? "Higher" : "Lower") + '</span></p>' +
+      '<p class="tg-fb-band ' + h.cls + '"><span class="tg-fb-t"><i class="tg-fb-dot" aria-hidden="true"></i>' +
+        h.label + ' <span class="tg-fb-r">· ' + BAND_RANGE[h.cls] + '</span></span></p>';
     els.ledger.innerHTML = "";
     els.ledger.appendChild(card);
     els.ledger.classList.add("tg-open");
+    markTrackGuess(g, up);
   };
+
+  // The first guess, numbered inside the grey bar at the point it reached.
+  // The figure sits in the ruled-out part, beside the line, and flips to
+  // the other side when it's too close to that end to fit.
+  function clearTrackGuess(){
+    var old = document.getElementById("tgTrackGuess");
+    if (old) old.remove();
+  }
+  function markTrackGuess(g, up){
+    clearTrackGuess();
+    var m = el("div", "tg-trackguess");
+    m.id = "tgTrackGuess";
+    m.style.left = g + "%";
+    // Higher rules out everything up to the guess, Lower everything after it
+    var side = up ? "left" : "right";
+    if (side === "left" && g < 9) side = "right";
+    if (side === "right" && g > 91) side = "left";
+    m.classList.add("to-" + side);
+    m.innerHTML = '<span>' + g + '</span>';
+    m.title = "Your first guess: " + g + "%";
+    els.track.appendChild(m);
+  }
 
   // ---------- 2. the reveal: points, then the signup prompt ----------
   var _finishGame = window.finishGame;
@@ -92,7 +118,7 @@
     els.verdict.classList.add("hidden");
     paintPoints(p);
     markFirstGuess(p, alreadyDone);
-    paintCta(p);
+    paintCta();
   };
 
   function paintPoints(p){
@@ -139,26 +165,16 @@
     })();
   }
 
-  function paintCta(p){
+  // Just a way to the leaderboard; signing up is offered there.
+  function paintCta(){
     var old = document.getElementById("tgCta");
     if (old) old.remove();
     var box = el("div", "tg-cta");
     box.id = "tgCta";
-    if (MODE !== "daily"){
-      box.classList.add("quiet");
-      box.innerHTML = '<p>Archive games are unranked — only today\'s question, played today (UK time), counts towards the leaderboard.</p>' +
-        '<a href="' + lbHref() + '">See the leaderboard →</a>';
-    } else if (signup()){
-      box.classList.add("done");
-      box.innerHTML = '<p><b>✓ Today\'s ' + p.score + ' is on the leaderboard.</b></p>' +
-        '<a href="' + lbHref() + '">See your rank →</a>';
-    } else {
-      box.innerHTML = '<p class="tg-cta-title">Sign up to put today\'s score on the leaderboard</p>' +
-        '<p class="tg-cta-sub">Three quick questions, so you can see how you rank overall and in your group.</p>' +
-        '<button type="button" class="tg-btn" id="tgSignupBtn">Sign up</button>' +
-        '<a class="tg-cta-link" href="' + lbHref() + '">Just look at the leaderboard →</a>';
-      box.querySelector("#tgSignupBtn").addEventListener("click", openSignup);
-    }
+    box.innerHTML = '<a class="tg-lbbtn" href="' + lbHref() + '">' +
+      '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" ' +
+      'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/>' +
+      '<path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>View leaderboard</a>';
     var pts = document.getElementById("tgPoints");
     (pts || els.sourceNote).insertAdjacentElement("afterend", box);
   }
@@ -206,128 +222,11 @@
     ["tgPoints", "tgCta"].forEach(function(id){ var x = document.getElementById(id); if (x) x.remove(); });
     els.ledger.classList.remove("tg-open");
     clearFirstGuess();
+    clearTrackGuess();
     _setupGame(dayKey, mode);
     // the squeeze track belongs to two-guess days; a multi-part day keeps its own flow
     els.track.parentElement.classList.toggle("hidden", !twoGuessDay() || state.done);
   };
-
-  // ---------- signup mock ----------
-  var COUNTRIES = ["Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda",
-    "Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh",
-    "Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina",
-    "Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cabo Verde","Cambodia",
-    "Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros",
-    "Congo","Costa Rica","Côte d'Ivoire","Croatia","Cuba","Cyprus","Czechia",
-    "Democratic Republic of the Congo","Denmark","Djibouti","Dominica","Dominican Republic",
-    "Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia",
-    "Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada",
-    "Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India",
-    "Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan",
-    "Kenya","Kiribati","Kosovo","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho",
-    "Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi","Malaysia",
-    "Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia",
-    "Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia","Nauru",
-    "Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea",
-    "North Macedonia","Norway","Oman","Pakistan","Palau","Palestine","Panama","Papua New Guinea",
-    "Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda",
-    "Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino",
-    "São Tomé and Príncipe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone",
-    "Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea",
-    "South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria","Taiwan",
-    "Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad and Tobago",
-    "Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates",
-    "United States","Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam",
-    "Yemen","Zambia","Zimbabwe"];
-
-  function chips(name, options){
-    return '<div class="tg-chips" role="radiogroup">' + options.map(function(o){
-      return '<label class="tg-chip"><input type="radio" name="' + name + '" value="' + esc(o) + '"><span>' + esc(o) + '</span></label>';
-    }).join("") + '</div>';
-  }
-  function buildSignup(){
-    if (document.getElementById("tgSignup")) return;
-    var root = el("div", "modal-root hidden tg-signup");
-    root.id = "tgSignup";
-    root.setAttribute("role", "dialog");
-    root.setAttribute("aria-modal", "true");
-    root.setAttribute("aria-labelledby", "tgSignupTitle");
-    root.innerHTML =
-      '<div class="modal-backdrop" data-tg-close></div>' +
-      '<div class="modal-card">' +
-        '<button class="modal-close" type="button" data-tg-close aria-label="Close">✕</button>' +
-        '<h2 id="tgSignupTitle">Put today\'s score on the leaderboard</h2>' +
-        '<p class="tg-sub">So we can show where you rank in your group. Every question has "Prefer not to say".</p>' +
-        '<form id="tgSignupForm" novalidate>' +
-          '<fieldset><legend>Age</legend>' + chips("age", T.AGES.concat([T.PNTS])) + '</fieldset>' +
-          '<fieldset><legend>Gender</legend>' + chips("gender", T.GENDERS.concat([T.PNTS])) + '</fieldset>' +
-          '<fieldset><legend><label for="tgRegion">Where do you live?</label></legend>' +
-            '<select id="tgRegion" name="region"><option value="">Choose…</option>' +
-            T.REGIONS.concat([T.PNTS]).map(function(r){ return '<option>' + esc(r) + '</option>'; }).join("") +
-            '</select>' +
-            '<div class="tg-country hidden" id="tgCountryWrap"><label for="tgCountry">Which country?</label>' +
-            '<select id="tgCountry" name="country"><option value="">Choose a country…</option>' +
-            COUNTRIES.map(function(c){ return '<option>' + esc(c) + '</option>'; }).join("") +
-            '</select></div>' +
-          '</fieldset>' +
-          '<p class="tg-err hidden" id="tgSignupErr" role="alert"></p>' +
-          '<button type="submit" class="tg-btn">Sign up</button>' +
-          '<p class="tg-fine">Sandbox mock: stored only in this browser, nothing is sent anywhere.</p>' +
-        '</form>' +
-      '</div>';
-    document.body.appendChild(root);
-    root.addEventListener("click", function(e){
-      if (e.target.hasAttribute && e.target.hasAttribute("data-tg-close")) closeSignup();
-    });
-    document.addEventListener("keydown", function(e){
-      if (e.key === "Escape" && !root.classList.contains("hidden")) closeSignup();
-    });
-    var region = root.querySelector("#tgRegion");
-    region.addEventListener("change", function(){
-      root.querySelector("#tgCountryWrap").classList.toggle("hidden", region.value !== "Outside the UK");
-    });
-    root.querySelector("#tgSignupForm").addEventListener("submit", submitSignup);
-  }
-  function openSignup(){
-    buildSignup();
-    var root = document.getElementById("tgSignup");
-    root.querySelector("#tgSignupErr").classList.add("hidden");
-    root.classList.remove("hidden");
-    var first = root.querySelector('input[name="age"]');
-    if (first) try{ first.focus(); }catch(_){}
-  }
-  function closeSignup(){
-    var root = document.getElementById("tgSignup");
-    if (root) root.classList.add("hidden");
-  }
-  function submitSignup(e){
-    e.preventDefault();
-    var f = e.target;
-    var age = (f.querySelector('input[name="age"]:checked') || {}).value;
-    var gender = (f.querySelector('input[name="gender"]:checked') || {}).value;
-    var region = f.querySelector("#tgRegion").value;
-    var country = f.querySelector("#tgCountry").value;
-    var missing = [];
-    if (!age) missing.push("your age");
-    if (!gender) missing.push("your gender");
-    if (!region) missing.push("where you live");
-    else if (region === "Outside the UK" && !country) missing.push("your country");
-    var err = f.querySelector("#tgSignupErr");
-    if (missing.length){
-      err.textContent = "Please choose " + missing.join(", ").replace(/, ([^,]*)$/, " and $1") +
-        " — or pick \"Prefer not to say\".";
-      err.classList.remove("hidden");
-      return;
-    }
-    writeJSON(T.SIGNUP_KEY, {
-      age: age, gender: gender, region: region,
-      country: region === "Outside the UK" ? country : "",
-      at: new Date().toISOString()
-    });
-    closeSignup();
-    var p = pointsNow();
-    if (p) paintCta(p);
-    toast("You're on the leaderboard");
-  }
 
   // ---------- one Menu button, on the left ----------
   // The three header buttons stay in the page, hidden, so the menu can hand
@@ -368,5 +267,5 @@
   // now the trial's versions are in place (it rebuilds from saved state)
   if (CUR) setupGame(CUR.dayKey, MODE);
 
-  window.CS_TRIAL_UI = { openSignup: openSignup, pointsNow: pointsNow, menu: menu };
+  window.CS_TRIAL_UI = { pointsNow: pointsNow, menu: menu };
 })();

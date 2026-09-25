@@ -61,9 +61,14 @@
     return out;
   }
 
-  var signup = readJSON(T.SIGNUP_KEY);
-  var board = T.buildBoard({ todayKey: todayKey, signup: signup, realDays: realDays() });
-  var you = board.players.filter(function(p){ return p.you; })[0];
+  // built again in place when the player signs up from this page
+  var signup, board, you;
+  function build(){
+    signup = readJSON(T.SIGNUP_KEY);
+    board = T.buildBoard({ todayKey: todayKey, signup: signup, realDays: realDays() });
+    you = board.players.filter(function(p){ return p.you; })[0];
+  }
+  build();
 
   var monthName = new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric", timeZone: "UTC" })
     .format(new Date(Date.UTC(board.year, board.monthNum - 1, 1)));
@@ -144,9 +149,28 @@
         '<div class="l2">Top ' + T.topPercent(mineOverall.rank, overall.length) + '% overall · ' + mePlayed + '</div>';
     }
     if (!you.signedUp){
-      html += '<div class="hint"><a href="index.html' + q + '">Play today\'s question and sign up</a> to put your scores on the board.</div>';
+      html += '<div class="join"><button type="button" class="joinbtn" id="joinBtn">Sign up to get on the leaderboard</button>' +
+        '<p>Three quick questions. Your scores from today\'s question, played today, count.</p></div>';
     }
     card.innerHTML = html;
+    var jb = $("joinBtn");
+    if (jb) jb.addEventListener("click", function(){ if (window.CS_SIGNUP) CS_SIGNUP.open(joined); });
+  }
+
+  // after signing up: rebuild with the player's real scores, and show the
+  // group tabs from their own groups
+  function joined(){
+    build();
+    if (dim !== "overall"){
+      value = defaultValue(dim);
+      pick.innerHTML = DIMS[dim].values.map(function(v){
+        return '<option' + (v === value ? " selected" : "") + '>' + esc(v) + '</option>';
+      }).join("");
+    }
+    render();
+    var card = $("youCard");
+    card.classList.add("flash");
+    setTimeout(function(){ card.classList.remove("flash"); }, 1600);
   }
 
   function row(p){
@@ -213,6 +237,7 @@
 
   render();
   // for the sandbox's own tests
-  window.__LB = { board: board, you: you, render: render,
+  window.__LB = { render: render,
+    get board(){ return board; }, get you(){ return you; },
     group: function(d, v){ return T.groupOf(board, d, v); } };
 })();
