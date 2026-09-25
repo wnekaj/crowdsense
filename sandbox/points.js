@@ -48,32 +48,6 @@
   function monthKeyOf(key){ return key.slice(0, 7); }
   function daysInMonth(y, m){ return new Date(Date.UTC(y, m, 0)).getUTCDate(); }
 
-  // London's offset from UTC at a given instant, in ms (0 in winter, 1h in BST)
-  function londonOffset(date){
-    var p = londonParts(date);
-    return Date.UTC(p.y, p.m - 1, p.d, p.h, p.mi, p.s) - Math.floor(date.getTime() / 1000) * 1000;
-  }
-  // the instant the board resets: midnight London time on the 1st of next month
-  function nextResetMs(key){
-    var y = +key.slice(0, 4), m = +key.slice(5, 7);
-    var ny = m === 12 ? y + 1 : y, nm = m === 12 ? 1 : m + 1;
-    var guess = Date.UTC(ny, nm - 1, 1, 0, 0, 0);
-    // two passes settle the offset either side of a clock change
-    var t = guess - londonOffset(new Date(guess));
-    return guess - londonOffset(new Date(t));
-  }
-  // "now", shifted onto the sandbox's ?day= when one is set, keeping the
-  // current London time of day — so the countdown reads as it would that day
-  function nowMs(){
-    var real = new Date();
-    var p = londonParts(real);
-    var realKey = keyOf(p.y, p.m, p.d), key = todayKey();
-    if (key === realKey) return real.getTime();
-    var shift = Date.UTC(+key.slice(0,4), +key.slice(5,7) - 1, +key.slice(8,10)) -
-                Date.UTC(p.y, p.m - 1, p.d);
-    return real.getTime() + shift;
-  }
-
   // ---------- seeded randomness, so the dummy board is stable ----------
   function hashStr(s){
     var h = 2166136261;
@@ -267,7 +241,7 @@
   window.CS_TRIAL = {
     guessPoints: guessPoints, dayScore: dayScore,
     todayKey: todayKey, monthKeyOf: monthKeyOf, keyOf: keyOf, londonParts: londonParts,
-    nextResetMs: nextResetMs, nowMs: nowMs, daysInMonth: daysInMonth,
+    daysInMonth: daysInMonth,
     buildBoard: buildBoard, groupOf: groupOf, monthTotal: monthTotal, topPercent: topPercent,
     rng: rng, hashStr: hashStr, gauss: gauss,
     PNTS: PNTS, AGES: AGES, GENDERS: GENDERS, REGIONS: REGIONS, DROP: DROP,

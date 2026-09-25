@@ -38,6 +38,7 @@
   // the same Menu as the game; the game's panels open there via a #hash
   if (window.CS_MENU){
     CS_MENU.mount({ into: $("lbTop"), items: [
+      { key: "home", label: "Home", href: "index.html" + q },
       { key: "leaderboard", label: "Leaderboard", current: true },
       { key: "archive", label: "Archive", href: "index.html" + q + "#archive" },
       { key: "stats", label: "Your stats", href: "index.html" + q + "#stats" },
@@ -80,26 +81,6 @@
     (early ? " It's day " + board.dayCount + ", so every day so far is still being dropped: scores start counting on day " +
       (T.DROP + 1) + "." : "");
 
-  // ---------- countdown to the monthly reset ----------
-  var resetAt = T.nextResetMs(todayKey);
-  var nm = board.monthNum === 12 ? 1 : board.monthNum + 1;
-  var ny = board.monthNum === 12 ? board.year + 1 : board.year;
-  $("resetWhen").textContent = "Resets at midnight UK time on 1 " +
-    new Intl.DateTimeFormat("en-GB", { month: "long", timeZone: "UTC" }).format(new Date(Date.UTC(ny, nm - 1, 1))) +
-    (dayParam ? " (clock shifted to the sandbox's ?day=)" : "");
-  function tick(){
-    var ms = resetAt - T.nowMs();
-    if (ms <= 0){ $("clock").textContent = "Resetting now…"; return; }
-    var s = Math.floor(ms / 1000);
-    var d = Math.floor(s / 86400); s -= d * 86400;
-    var h = Math.floor(s / 3600);  s -= h * 3600;
-    var m = Math.floor(s / 60);    s -= m * 60;
-    function p2(n){ return String(n).padStart(2, "0"); }
-    $("clock").textContent = d + "d " + p2(h) + "h " + p2(m) + "m " + p2(s) + "s";
-  }
-  tick();
-  setInterval(tick, 1000);
-
   // ---------- past winners: placeholders for each finished month ----------
   (function(){
     var list = $("past"), y = board.year, m = board.monthNum, items = [];
@@ -128,31 +109,12 @@
     return DIMS[d].values[0];
   }
 
-  function youCard(group){
-    var overall = T.groupOf(board, "overall");
-    var mineOverall = overall.filter(function(p){ return p.you; })[0];
-    var inGroup = group.filter(function(p){ return p.you; })[0];
-    var card = $("youCard"), html;
-    var mePlayed = you.played + (you.played === 1 ? " day" : " days") + " played";
-    if (inGroup){
-      var scope = dim === "overall" ? "of " + group.length + " players" :
-        "of " + group.length + " in " + esc(value);
-      html = '<div class="rk">' + ordinal(inGroup.rank).replace(/(\d+)(\D+)/, '$1<sup>$2</sup>') + '</div>' +
-        '<div class="l1">You · ' + scope + '</div>' +
-        '<div class="pts"><b>' + num(inGroup.total) + '</b><span>month score</span></div>' +
-        '<div class="l2">Top ' + T.topPercent(inGroup.rank, group.length) + '% · ' + mePlayed + '</div>';
-    } else {
-      // outside this group, or not signed up: still show where they stand
-      html = '<div class="rk">' + ordinal(mineOverall.rank).replace(/(\d+)(\D+)/, '$1<sup>$2</sup>') + '</div>' +
-        '<div class="l1">You · overall, of ' + overall.length + '</div>' +
-        '<div class="pts"><b>' + num(mineOverall.total) + '</b><span>month score</span></div>' +
-        '<div class="l2">Top ' + T.topPercent(mineOverall.rank, overall.length) + '% overall · ' + mePlayed + '</div>';
-    }
-    if (!you.signedUp){
-      html += '<div class="join"><button type="button" class="joinbtn" id="joinBtn">Sign up to get on the leaderboard</button>' +
-        '<p>Three quick questions. Your scores from today\'s question, played today, count.</p></div>';
-    }
-    card.innerHTML = html;
+  // Above the board: just the sign-up button, until the player has signed up.
+  // Their rank and percentile ride on their own row in the table.
+  function youCard(){
+    var card = $("youCard");
+    card.innerHTML = you.signedUp ? "" :
+      '<button type="button" class="joinbtn" id="joinBtn">Sign up to get on the leaderboard</button>';
     var jb = $("joinBtn");
     if (jb) jb.addEventListener("click", function(){ if (window.CS_SIGNUP) CS_SIGNUP.open(joined); });
   }
@@ -173,11 +135,11 @@
     setTimeout(function(){ card.classList.remove("flash"); }, 1600);
   }
 
-  function row(p){
+  function row(p, n){
     var cls = [];
     if (p.you) cls.push("me");
     if (p.rank <= 3) cls.push("top" + p.rank);
-    var tag = "";
+    var tag = p.you ? '<span class="tag">top ' + T.topPercent(p.rank, n) + '%</span>' : "";
     return '<tr class="' + cls.join(" ") + '"' + (p.you ? ' id="youRow"' : "") + '>' +
       '<td class="rank">' + p.rank + '</td>' +
       '<td>' + esc(p.name) + tag + '</td>' +
@@ -194,22 +156,22 @@
       var msg = "";
       if (!you.signedUp) msg = "Sign up to be placed in a " + DIMS[dim].label.toLowerCase() + " group.";
       else if (mine === T.PNTS) msg = "You chose not to say your " + DIMS[dim].label.toLowerCase() + ", so you appear on the Overall board only.";
-      else if (mine !== value) msg = "You're not in this group — your own rank is shown above.";
+      else if (mine !== value) msg = "You're not in this group.";
       if (msg){ note.textContent = msg; note.classList.remove("hidden"); }
     }
 
     var top = group.slice(0, SHOW);
     var me = group.filter(function(p){ return p.you; })[0];
-    var html = top.map(row).join("");
+    var html = top.map(function(p){ return row(p, group.length); }).join("");
     if (me && me.rank > SHOW){
-      html += '<tr class="gap"><td colspan="4">⋯</td></tr>' + row(me);
+      html += '<tr class="gap"><td colspan="4">⋯</td></tr>' + row(me, group.length);
     }
     if (!group.length) html = '<tr class="gap"><td colspan="4">No players in this group yet</td></tr>';
     $("rows").innerHTML = html;
     $("caption").textContent = (dim === "overall" ? "Everyone" : DIMS[dim].label + ": " + value) +
       " — " + group.length + (group.length === 1 ? " player" : " players") +
       (group.length > SHOW ? ", top " + SHOW + " shown" : "");
-    youCard(group);
+    youCard();
   }
 
   var pick = $("pick");

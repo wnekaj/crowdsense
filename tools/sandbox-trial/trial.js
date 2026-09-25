@@ -228,6 +228,33 @@
     els.track.parentElement.classList.toggle("hidden", !twoGuessDay() || state.done);
   };
 
+  function goHome(){
+    document.querySelectorAll(".modal-root:not(.hidden)").forEach(function(m){ m.classList.add("hidden"); });
+    if (MODE !== "daily" || !CUR || CUR.dayKey !== DAY_KEY) setupGame(DAY_KEY, "daily");
+    try{ window.scrollTo({ top: 0, behavior: "smooth" }); }catch(_){ window.scrollTo(0, 0); }
+  }
+
+  // ---------- How to play, for the trial's rules ----------
+  (function(){
+    var body = document.querySelector("#helpModal .modal-body");
+    if (!body) return;
+    var legend = body.querySelector(".legend");
+    body.innerHTML =
+      '<p>Each day we take one real question the British public have been polled on, and you guess what they said.</p>' +
+      '<p><b>You get two guesses.</b> Lock in your first, and we\'ll tell you whether the answer is <b>higher or lower</b>, and how close you were:</p>' +
+      '<div class="tg-help-legend"></div>' +
+      '<p style="margin-top:12px">Then take your second guess, and the answer is revealed.</p>' +
+      '<p><b>Scoring.</b> Each guess is worth up to 100 points: 100 if it\'s spot on, 2 points fewer for every point you\'re off. ' +
+      'Your score for the day is your first guess\'s points, plus half of anything your second guess adds — so a second guess can never lower it.</p>' +
+      '<p class="tg-help-eg">e.g. first guess 6 off (88 points), second 1 off (98 points): 88 + half of 10 = <b>93</b>. ' +
+      'Get it exactly right first time and you score 100 straight away.</p>' +
+      '<p><b>The leaderboard.</b> Your daily scores add up over the month, with your 3 lowest days dropped. ' +
+      'Only today\'s question, played today (UK time), counts — games from the archive are unranked. ' +
+      'How you compare with other players is always measured on first guesses.</p>' +
+      '<p style="margin-top:14px">New question daily at midnight, UK time. All figures come from real polling of the British public; each day\'s source is shown with the answer.</p>';
+    if (legend) body.querySelector(".tg-help-legend").appendChild(legend);
+  })();
+
   // ---------- one Menu button, on the left ----------
   // The three header buttons stay in the page, hidden, so the menu can hand
   // off to exactly what they already do.
@@ -239,6 +266,8 @@
     bar.classList.add("tg-hasmenu");
     function tap(b){ return function(){ if (b) b.click(); }; }
     menu = CS_MENU.mount({ into: bar, items: [
+      // back to today's question from anywhere: the archive, a panel, lower down the page
+      { key: "home", label: "Home", onClick: goHome },
       { key: "leaderboard", label: "Leaderboard", href: lbHref() },
       { key: "archive", label: "Archive", onClick: tap(els.archiveBtn) },
       { key: "stats", label: "Your stats", onClick: tap(els.statsBtn) },
