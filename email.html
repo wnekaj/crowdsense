@@ -121,7 +121,11 @@
     function pickForKey(key){
       var dated = CS_QUESTIONS.filter(function(q){ return (q.date||"")===key; });
       if (dated.length) return dated[0];
-      var pool = CS_QUESTIONS.filter(function(q){ return !(q.date||"").length; });
+      // same rule as the game: the taster before launch, the backup after
+      var taster = CS_QUESTIONS.filter(function(q){ return q.taster; });
+      if (daysSince(ANCHOR, key) < 0 && taster.length) return taster[0];
+      var pool = CS_QUESTIONS.filter(function(q){ return !(q.date||"").length && !q.taster; });
+      if (!pool.length) pool = CS_QUESTIONS.filter(function(q){ return !q.taster; });
       if (!pool.length) pool = CS_QUESTIONS;
       var sorted = pool.slice().sort(function(a,b){
         var x=String(a.question).toLowerCase(), y=String(b.question).toLowerCase();

@@ -4,9 +4,13 @@
    own source.
 
    Scheduling: each question carries a "date" (YYYY-MM-DD, London time) and
-   runs on exactly that day. The undated Burnham-improvement taster runs on
-   any day without a dated question — it is the fallback if the bank runs
-   dry. Top up before 24 August.
+   runs on exactly that day. Two undated entries cover the rest:
+     taster   — marked taster: true, runs on the days before launch only.
+     backup   — the fallback for any day after launch that has no dated
+                question, so the game never goes blank if the bank runs dry.
+   Past days are re-scored from their saved guesses, so a question that has
+   already been played must never change: pin it to its date before
+   swapping the backup.
 
    Email-only fields, both optional and ignored by the game:
      teaser — the short hook used in the daily email's subject line. If a
@@ -20,13 +24,23 @@
 
 var CS_QUESTIONS = [
 
-  /* ---------- TASTER / FALLBACK (runs on any day without a dated question) */
+  /* ---------- TASTER (the days before launch, and only those) ---------- */
   {
     date: "",
+    taster: true,
     question: "What percentage of Brits agreed Andy Burnham would be an improvement on Keir Starmer as Prime Minister?",
     answer: 49,
     source: "Public First poll of 2,013 UK adults, 26–29 June 2026",
     teaser: "Is Burnham an upgrade on Starmer?"
+  },
+
+  /* ---------- BACKUP (any day after launch with no dated question) ------- */
+  {
+    date: "",
+    question: "What percentage of Brits say they have a Boots Advantage Card?",
+    answer: 62,
+    source: "Public First poll of 2,015 UK adults, 16–30 January 2026",
+    teaser: "How many Brits carry a Boots card?"
   },
 
   {
@@ -602,16 +616,19 @@ var CS_QUESTIONS = [
     // low 40s through the middle bands, 52 among 55-64s.
     source: "Public First poll of 2,011 UK adults, 12–17 September 2025",
     teaser: "How many Brits have ever voted Tory?"
+  },
+  {
+    date: "2026-09-25",  // Day 68
+    // Nothing was scheduled for today, so the fallback ran — then the
+    // Burnham taster. Pinned here so the backup can change without
+    // altering a day that has already been played.
+    question: "What percentage of Brits agreed Andy Burnham would be an improvement on Keir Starmer as Prime Minister?",
+    answer: 49,
+    source: "Public First poll of 2,013 UK adults, 26–29 June 2026",
+    teaser: "Is Burnham an upgrade on Starmer?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
-  ,{
-    date: "",
-    question: "What percentage of Brits say they have a Boots Advantage Card?",
-    answer: 62,
-    source: "Public First poll of 2,015 UK adults, 16–30 January 2026",
-    teaser: "How many Brits carry a Boots card?"
-  }
   ,{
     date: "",
     question: "What percentage of Brits say they'd feel responsible for protecting their family if a war broke out?",
