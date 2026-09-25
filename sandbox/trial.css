@@ -1,68 +1,48 @@
 /* trial.css — SANDBOX TRIAL styles. Copied into sandbox/ by build-sandbox.js;
    the live game never loads this file. Uses the game's own tokens. */
 
-/* ---------- after the first guess ---------- */
-.ledger.tg-open{ max-width:none; width:min(420px, 100%); margin:14px auto 4px }
-.tg-fb{
-  border:1px solid var(--line); border-radius:8px;
-  padding:14px 16px 12px; text-align:center;
-  animation:tgIn .28s ease both;
-}
+/* ---------- after the first guess: just Higher or Lower ---------- */
+.ledger.tg-open{ max-width:none; width:100%; margin:18px auto 4px }
+.tg-fb{ text-align:center; animation:tgIn .28s ease both }
 @keyframes tgIn{ from{ opacity:0; transform:translateY(4px) } to{ opacity:1; transform:none } }
 @media (prefers-reduced-motion: reduce){ .tg-fb{ animation:none } }
 .tg-fb p{ margin:0 }
-.tg-fb-lock{ font-size:13px; color:var(--muted); letter-spacing:.02em }
-.tg-fb-lock b{ color:var(--ink); font-weight:700 }
 .tg-fb-dir{
-  font-family:var(--display); font-size:26px; font-weight:700; line-height:1.15;
-  margin-top:6px !important; letter-spacing:.01em;
+  font-family:var(--display); font-size:34px; font-weight:700; line-height:1.1; letter-spacing:.01em;
 }
 .tg-fb-dir span{ color:var(--accent) }
-.tg-fb-band{
-  display:inline-flex; align-items:center; gap:7px;
-  margin-top:6px !important; font-size:15px; font-weight:500;
-}
-.tg-fb-band i{ width:10px; height:10px; border-radius:50%; background:var(--muted) }
-.tg-fb-band span{ color:var(--muted); font-weight:400 }
-.tg-fb-band.target i{ background:var(--win) }
-.tg-fb-band.hot i{ background:var(--hot) }
-.tg-fb-band.warm i{ background:var(--warm) }
-.tg-fb-band.cool i{ background:var(--cool) }
-.tg-fb-band.cold i{ background:var(--cold) }
-.tg-fb-next{ margin-top:10px !important; font-size:13px; color:var(--muted) }
 
-/* ---------- points at the reveal ---------- */
-.tg-pts{
-  width:min(360px, 100%); margin:14px auto 4px;
-  border-top:1px solid var(--hairline); border-bottom:1px solid var(--hairline);
-  padding:8px 0 10px; font-variant-numeric:tabular-nums;
+/* ---------- the reveal: the score out of 100 ---------- */
+.tg-pts{ margin:16px auto 4px; text-align:center; font-variant-numeric:tabular-nums }
+.tg-pts-k{
+  display:block; font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
 }
-.tg-pts-head, .tg-pts-row{
-  display:grid; grid-template-columns:1fr 56px 64px 52px; align-items:center; gap:6px;
-  padding:5px 2px;
+.tg-pts-score{
+  display:block; margin-top:2px; font-family:var(--display); font-size:44px; font-weight:700;
+  line-height:1.05; color:var(--accent);
 }
-.tg-pts-head{ font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted) }
-.tg-pts-head span:last-child, .tg-pts-p{ text-align:right }
-.tg-pts-k, .tg-pts-head span:first-child{ text-align:left }
-.tg-pts-k{ font-size:14px; color:var(--muted) }
-.tg-pts-g{ font-size:15px; font-weight:500 }
-.tg-pts-e{
-  justify-self:start; font-size:12px; font-weight:700; color:#fff;
-  border-radius:3px; padding:2px 6px; background:var(--muted);
+.tg-pts-score span{ font-size:22px; font-weight:500; color:var(--muted); margin-left:2px }
+
+/* both guesses on the reveal bar: labels in two rows so they never collide */
+.revealbar-wrap.tg-two{ padding-top:40px }
+.revealbar-wrap.tg-two .youlabel{ top:20px }
+/* the bar is 14px tall and starts 40px down; the tick rises 6px above it,
+   with a white edge so it shows on the dark fill as well as the pale track */
+.tg-firstmark{
+  position:absolute; top:34px; height:20px; width:2px; transform:translateX(-1px);
+  background:#5f6366; box-shadow:0 0 0 1px #fff; border-radius:1px;
+  opacity:0; transition:opacity .25s ease; pointer-events:none;
 }
-.tg-pts-e.target{ background:var(--win) }
-.tg-pts-e.hot{ background:var(--hot) }
-.tg-pts-e.warm{ background:var(--warm) }
-.tg-pts-e.cool{ background:var(--cool) }
-.tg-pts-e.cold{ background:var(--cold) }
-.tg-pts-p{ font-size:16px; font-weight:700 }
-.tg-pts-total{
-  display:flex; justify-content:space-between; align-items:baseline;
-  border-top:1px solid var(--hairline); margin-top:4px; padding:10px 2px 0;
+.tg-firstlabel{
+  position:absolute; top:0; transform:translateX(-50%); white-space:nowrap;
+  font-size:12px; font-weight:500; color:#5f6366; font-variant-numeric:tabular-nums;
+  opacity:0; transition:opacity .25s ease; pointer-events:none;
 }
-.tg-pts-total span{ font-family:var(--display); font-size:17px; font-weight:500 }
-.tg-pts-total b{ font-family:var(--display); font-size:34px; font-weight:700; line-height:1; color:var(--accent) }
-.tg-pts-note{ margin:8px 2px 0; font-size:12.5px; color:var(--muted); line-height:1.45; text-align:left }
+.tg-firstmark.on, .tg-firstlabel.on{ opacity:1 }
+.revealbar-wrap.tg-two .youlabel{ white-space:nowrap }
+
+/* ---------- header: one Menu button on the left ---------- */
+.sitebar.tg-hasmenu{ justify-content:flex-start; gap:14px; align-items:center }
 
 /* ---------- signup prompt ---------- */
 .tg-cta{

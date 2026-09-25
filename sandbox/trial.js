@@ -7,10 +7,11 @@
    can never leak into the live game and is thrown away with the sandbox.
 
    Two guesses (single-question days only — multi-part days are untouched):
-     1. the first guess is locked; the player is told Higher or Lower and
-        which band they are in, but not the points, which would give the
-        answer away (88 points = 6 off, and the direction says which side)
-     2. the second guess brings the reveal, the points and the crowd
+     1. the first guess is locked and the player is told only Higher or
+        Lower — never the points, which would give the answer away
+        (88 points = 6 off, and the direction says which side)
+     2. the second guess brings the reveal: the day's score out of 100,
+        both guesses as lines on the bar, and the crowd
    Per guess: max(0, 100 - 2 x error). Day: S1 + half of any gain from S2.
    The crowd distribution pools FIRST guesses only.
 
@@ -22,10 +23,6 @@
   "use strict";
   var T = window.CS_TRIAL;
   if (!T || typeof setupGame !== "function") return;
-
-  // what each band means, said the way the bands are described elsewhere
-  var BAND_RANGE = { target: "within 2", hot: "within 5", warm: "within 10",
-                     cool: "within 20", cold: "more than 20 off" };
 
   function el(tag, cls, html){
     var e = document.createElement(tag);
@@ -56,20 +53,15 @@
     return { g1: g[0], g2: g.length > 1 ? g[1] : null, s1: s1, s2: s2, score: T.dayScore(s1, s2) };
   }
 
-  // ---------- 1. after the first guess: direction and band, no points ----------
+  // ---------- 1. after the first guess: just Higher or Lower ----------
   window.renderLedgerRow = function(n, g){
     if (!twoGuessDay() || n !== 1) return;   // the second guess goes to the reveal
-    var err = Math.abs(g - Q.answer);
-    var h = heat(err);
-    var dir = err === 0 ? "" : (Q.answer > g ? "up" : "down");
+    // an exact first guess ends the day (BULLSEYE 0), so there is always a side
+    var up = Q.answer > g;
     var card = el("div", "tg-fb");
     card.id = "tgFeedback";
-    card.innerHTML =
-      '<p class="tg-fb-lock">First guess <b>' + g + '%</b> <span>· locked</span></p>' +
-      (dir ? '<p class="tg-fb-dir ' + dir + '"><span aria-hidden="true">' + (dir === "up" ? "↑" : "↓") + '</span> ' +
-             (dir === "up" ? "Higher" : "Lower") + '</p>' : "") +
-      '<p class="tg-fb-band ' + h.cls + '"><i></i>' + h.label + ' <span>· ' + BAND_RANGE[h.cls] + '</span></p>' +
-      '<p class="tg-fb-next">Now your second guess. It can only add to your score.</p>';
+    card.innerHTML = '<p class="tg-fb-dir ' + (up ? "up" : "down") + '"><span aria-hidden="true">' +
+      (up ? "↑" : "↓") + '</span> ' + (up ? "Higher" : "Lower") + '</p>';
     els.ledger.innerHTML = "";
     els.ledger.appendChild(card);
     els.ledger.classList.add("tg-open");
@@ -92,33 +84,54 @@
       });
     }
     paintPoints(p);
+    markFirstGuess(p, alreadyDone);
     paintCta(p);
   };
 
-  function pointsRow(label, guess, pts){
-    var err = Math.abs(guess - Q.answer);
-    return '<div class="tg-pts-row"><span class="tg-pts-k">' + label + '</span>' +
-      '<span class="tg-pts-g">' + guess + '%</span>' +
-      '<span class="tg-pts-e ' + heat(err).cls + '">' + (err === 0 ? "exact" : err + " off") + '</span>' +
-      '<b class="tg-pts-p">' + pts + '</b></div>';
-  }
   function paintPoints(p){
     var old = document.getElementById("tgPoints");
     if (old) old.remove();
     var box = el("div", "tg-pts");
     box.id = "tgPoints";
-    var gain = p.s2 === null ? 0 : Math.max(0, p.s2 - p.s1);
-    var note;
-    if (p.s2 === null) note = "Spot on first time — no second guess needed.";
-    else if (gain > 0) note = "Your first guess, plus half the " + gain + " points your second guess gained.";
-    else note = "Your second guess didn't beat your first, so your first guess stands — it can never lower your score.";
-    box.innerHTML =
-      '<div class="tg-pts-head"><span>Guess</span><span></span><span></span><span>Points</span></div>' +
-      pointsRow("First", p.g1, p.s1) +
-      (p.s2 === null ? "" : pointsRow("Second", p.g2, p.s2)) +
-      '<div class="tg-pts-total"><span>Today\'s score</span><b>' + p.score + '</b></div>' +
-      '<p class="tg-pts-note">' + note + '</p>';
+    box.innerHTML = '<span class="tg-pts-k">Today\'s score</span>' +
+      '<b class="tg-pts-score">' + p.score + '<span>/100</span></b>';
     els.sourceNote.insertAdjacentElement("afterend", box);
+  }
+
+  // Both guesses as lines on the reveal bar: the first in grey, labelled
+  // "1st", above the engine's own mark for the second, labelled "2nd". Each
+  // shows as the fill reaches it, the way the engine reveals its own mark.
+  function clearFirstGuess(){
+    var wrap = els.revealBarWrap;
+    if (!wrap) return;
+    wrap.classList.remove("tg-two");
+    Array.prototype.forEach.call(wrap.querySelectorAll(".tg-firstmark, .tg-firstlabel"), function(x){ x.remove(); });
+  }
+  function markFirstGuess(p, alreadyDone){
+    clearFirstGuess();
+    if (p.g2 === null || !els.revealBarWrap) return;   // one guess: the engine's mark is the only one
+    var wrap = els.revealBarWrap;
+    // on the wrap rather than inside the bar, so it can stand a little proud
+    // of it and stay visible over both the dark fill and the pale track
+    var mark = el("div", "tg-firstmark");
+    mark.style.left = p.g1 + "%";
+    mark.title = "Your first guess";
+    wrap.appendChild(mark);
+    var lab = el("span", "tg-firstlabel", "1st " + p.g1);
+    lab.style.left = p.g1 + "%";
+    wrap.appendChild(lab);
+    wrap.classList.add("tg-two");
+    els.youLabel.textContent = "2nd " + p.g2;
+    if (alreadyDone || !els.reveal.classList.contains("staging")){
+      mark.classList.add("on"); lab.classList.add("on");
+      return;
+    }
+    (function watch(){
+      var reached = parseFloat(els.revealFill.style.width) >= p.g1;
+      var landed = !els.reveal.classList.contains("staging");
+      if (reached || landed){ mark.classList.add("on"); lab.classList.add("on"); }
+      if (!landed && !(reached)) requestAnimationFrame(watch);
+    })();
   }
 
   function paintCta(p){
@@ -175,7 +188,7 @@
     var p = pointsNow();
     var lines = ["Crowdsense #" + CUR.puzzleNo];
     var b1 = heat(Math.abs(p.g1 - Q.answer)).emoji;
-    lines.push((p.s2 === null ? b1 : b1 + " → " + heat(Math.abs(p.g2 - Q.answer)).emoji) + "  " + p.score + " pts");
+    lines.push((p.s2 === null ? b1 : b1 + " → " + heat(Math.abs(p.g2 - Q.answer)).emoji) + "  " + p.score + "/100");
     if (MODE === "daily" && state.crowdPct !== null && state.crowdPct !== undefined){
       lines.push("First guess closer than " + state.crowdPct + "% of players");
     }
@@ -188,6 +201,7 @@
   window.setupGame = function(dayKey, mode){
     ["tgPoints", "tgCta"].forEach(function(id){ var x = document.getElementById(id); if (x) x.remove(); });
     els.ledger.classList.remove("tg-open");
+    clearFirstGuess();
     _setupGame(dayKey, mode);
     // the squeeze track belongs to two-guess days; a multi-part day keeps its own flow
     els.track.parentElement.classList.toggle("hidden", !twoGuessDay() || state.done);
@@ -311,13 +325,44 @@
     toast("You're on the leaderboard");
   }
 
-  // the sandbox bar's leaderboard link keeps any ?day= the page was opened with
-  var lb = document.querySelector(".sbx-lb");
-  if (lb) lb.setAttribute("href", lbHref());
+  // ---------- one Menu button, on the left ----------
+  // The three header buttons stay in the page, hidden, so the menu can hand
+  // off to exactly what they already do.
+  var menu = null;
+  var bar = document.querySelector(".sitebar");
+  if (bar && window.CS_MENU){
+    var icons = bar.querySelector(".iconbtns");
+    if (icons) icons.classList.add("hidden");
+    bar.classList.add("tg-hasmenu");
+    function tap(b){ return function(){ if (b) b.click(); }; }
+    menu = CS_MENU.mount({ into: bar, items: [
+      { key: "leaderboard", label: "Leaderboard", href: lbHref() },
+      { key: "archive", label: "Archive", onClick: tap(els.archiveBtn) },
+      { key: "stats", label: "Your stats", onClick: tap(els.statsBtn) },
+      { key: "help", label: "How to play", onClick: tap(els.helpBtn) }
+    ]});
+    // the one-off tour pointed at the three buttons; now there is one to show
+    window.startTour = function(){
+      if (!els.tour || tourSeen()) return;
+      TOUR_PENDING = false;
+      TOUR_STEPS = [{ el: menu.button,
+        text: "<b>Menu.</b> The leaderboard, past questions, your stats and how to play are all in here." }];
+      TOUR_STEP = 0;
+      els.tour.classList.remove("hidden");
+      paintTourStep();
+      window.addEventListener("resize", paintTourStep);
+    };
+    // the leaderboard's menu links here with #archive, #stats or #help
+    var deep = { "#archive": els.archiveBtn, "#stats": els.statsBtn, "#help": els.helpBtn }[location.hash];
+    if (deep){
+      try{ history.replaceState(null, "", location.pathname + location.search); }catch(_){}
+      setTimeout(function(){ deep.click(); }, 0);
+    }
+  }
 
   // app.js set the page up before this file loaded, so run the setup again
   // now the trial's versions are in place (it rebuilds from saved state)
   if (CUR) setupGame(CUR.dayKey, MODE);
 
-  window.CS_TRIAL_UI = { openSignup: openSignup, pointsNow: pointsNow };
+  window.CS_TRIAL_UI = { openSignup: openSignup, pointsNow: pointsNow, menu: menu };
 })();
