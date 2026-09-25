@@ -626,6 +626,16 @@ var CS_QUESTIONS = [
     answer: 49,
     source: "Public First poll of 2,013 UK adults, 26–29 June 2026",
     teaser: "Is Burnham an upgrade on Starmer?"
+  },
+  {
+    date: "2026-09-26",  // Day 69
+    question: "What percentage of Brits say they play one or more musical instruments?",
+    answer: 23,
+    // read off the total column. Pick-all list: 64 play nothing and sing
+    // nothing, 18 sing. Falls steeply with age, 36 among 18-24s to 14 among
+    // 55-64s.
+    source: "Public First poll of 4,012 UK adults, 26–31 January 2024",
+    teaser: "How many Brits play an instrument?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
