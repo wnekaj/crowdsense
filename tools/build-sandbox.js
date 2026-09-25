@@ -32,6 +32,14 @@ var ROOT = path.join(__dirname, "..");
 var OUT = path.join(ROOT, "sandbox");
 var PREFIX = "sbx:";
 
+// SANDBOX TRIAL: two guesses with points, a monthly leaderboard on dummy
+// data, and a signup mock. Its files live in tools/sandbox-trial/ and are
+// layered on top of the live engine — app.js is still copied untouched, and
+// trial.js swaps in the few functions the trial changes. Set to false to
+// build a plain copy of live again.
+var TRIAL = true;
+var TRIAL_DIR = path.join(__dirname, "sandbox-trial");
+
 function read(f){ return fs.readFileSync(path.join(ROOT, f), "utf8"); }
 function write(f, s){ fs.writeFileSync(path.join(OUT, f), s); }
 
@@ -138,9 +146,14 @@ var cfg = [
   '      TODAY: (function(){',
   '        var m = /[?&]day=(\\d{4}-\\d{2}-\\d{2})/.exec(location.search);',
   '        return m ? m[1] : "";',
-  '      })()',
+  '      })()' + (TRIAL ? ',' : ''),
+].concat(TRIAL ? [
+  '      // SANDBOX TRIAL: two guesses; only an exact first guess skips the second',
+  '      MAX_GUESSES: 2,',
+  '      BULLSEYE: 0'
+] : []).concat([
   '    }, window.CS_CONFIG || {});'
-].join("\n      ");
+]).join("\n      ");
 var liveCfg = html.match(/window\.CS_CONFIG = Object\.assign\(\{[\s\S]*?\}, window\.CS_CONFIG \|\| \{\}\);/);
 if (!liveCfg) throw new Error("build-sandbox: could not find the CS_CONFIG block in index.html.");
 html = replaceOnce(html, liveCfg[0], cfg, "the CS_CONFIG block");
@@ -152,7 +165,7 @@ var loader = [
   '<script>',
   '    // Never load the game unless the storage shim is provably in place.',
   '    if (window.__SBX_ISOLATED){',
-  '      ["questions.js", "app.js"].forEach(function(src){',
+  '      ' + JSON.stringify(["questions.js", "app.js"].concat(TRIAL ? ["points.js", "trial.js"] : [])) + '.forEach(function(src){',
   '        var s = document.createElement("script");',
   '        s.src = src + "?sbx=" + Date.now();',
   '        s.async = false;',
@@ -183,6 +196,7 @@ var banner = [
   '<div class="sbx-bar">',
   '    SANDBOX — test copy, not the live game.',
   '    <button type="button" class="sbx-reset" onclick="sbxReset()">Reset this sandbox</button>',
+  TRIAL ? '    <a class="sbx-reset sbx-lb" href="leaderboard.html">Leaderboard</a>' : '',
   '  </div>',
   '  <div id="sbxBlocked" class="sbx-blocked" hidden>',
   '    <b>Sandbox stopped before loading.</b> This browser would not let the sandbox',
@@ -196,7 +210,9 @@ var banner = [
   '      background:#121212; color:#fff; text-align:center;',
   '      font-size:12px; letter-spacing:.08em; text-transform:uppercase;',
   '      padding:8px 12px; display:flex; gap:12px; align-items:center; justify-content:center;',
+  '      flex-wrap:wrap;',
   '    }',
+  '    .sbx-lb{ text-decoration:none }',
   '    .sbx-reset{',
   '      font-family:inherit; font-size:11px; letter-spacing:.06em; text-transform:uppercase;',
   '      background:transparent; color:#fff; border:1px solid rgba(255,255,255,.5);',
@@ -211,11 +227,30 @@ var banner = [
 ].join("\n  ");
 html = replaceOnce(html, "<body>", "<body>\n  " + banner, "the opening body tag");
 
+// 9. SANDBOX TRIAL: its stylesheet, its scripts, and the leaderboard page,
+//    which gets the same storage shim as the game so it only ever reads the
+//    sandbox's own saved data
+var trialFiles = ["points.js", "trial.js", "trial.css", "leaderboard.js"];
+if (TRIAL){
+  html = replaceOnce(html, "</head>", '  <link rel="stylesheet" href="trial.css?sbx=1" />\n</head>', "the closing head tag");
+  trialFiles.forEach(function(f){
+    fs.writeFileSync(path.join(OUT, f), fs.readFileSync(path.join(TRIAL_DIR, f), "utf8"));
+  });
+  var lb = fs.readFileSync(path.join(TRIAL_DIR, "leaderboard.html"), "utf8");
+  lb = replaceOnce(lb, "<!--SBX-HEAD-->", head, "the leaderboard's head placeholder");
+  write("leaderboard.html", lb);
+} else {
+  trialFiles.concat(["leaderboard.html"]).forEach(function(f){
+    try{ fs.unlinkSync(path.join(OUT, f)); }catch(_){}
+  });
+}
+
 write("index.html", html);
 
 console.log("sandbox/ rebuilt from live:");
-["index.html", "app.js", "questions.js"].forEach(function(f){
+["index.html", "app.js", "questions.js"].concat(TRIAL ? trialFiles.concat(["leaderboard.html"]) : []).forEach(function(f){
   console.log("  " + f + "  " + fs.statSync(path.join(OUT, f)).size + " bytes");
 });
 console.log("open  https://crowdsense.uk/sandbox/            (today)");
 console.log("      https://crowdsense.uk/sandbox/?day=2026-08-16   (a chosen day)");
+if (TRIAL) console.log("      https://crowdsense.uk/sandbox/leaderboard.html   (the trial's leaderboard)");
