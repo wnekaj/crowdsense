@@ -228,7 +228,7 @@ html = replaceOnce(html, "<body>", "<body>\n  " + banner, "the opening body tag"
 // 9. SANDBOX TRIAL: its stylesheet, its scripts, and the leaderboard page,
 //    which gets the same storage shim as the game so it only ever reads the
 //    sandbox's own saved data
-var trialFiles = ["points.js", "menu.js", "trial.js", "trial.css", "leaderboard.js"];
+var trialFiles = ["points.js", "menu.js", "signup.js", "trial.js", "trial.css", "leaderboard.js"];
 if (TRIAL){
   // the stylesheet's address carries a hash of its content: the scripts load
   // fresh every time, and a cached old stylesheet under new scripts leaves
