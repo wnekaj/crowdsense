@@ -16,12 +16,11 @@
   position:absolute; right:100%; top:50%; transform:translateY(-52%);
   margin-right:8px; font-style:normal; font-weight:500; color:var(--accent);
 }
-.tg-fb-band{ margin-top:8px !important; font-size:16px; font-weight:500 }
+.tg-fb-band{ margin-top:8px !important; font-size:17px; font-weight:500 }
 .tg-fb-dot{
   position:absolute; right:100%; top:50%; transform:translateY(-50%); margin-right:8px;
   width:10px; height:10px; border-radius:50%; background:var(--muted);
 }
-.tg-fb-r{ color:var(--muted); font-weight:400 }
 .tg-fb-band.target .tg-fb-dot{ background:var(--win) }
 .tg-fb-band.hot .tg-fb-dot{ background:var(--hot) }
 .tg-fb-band.warm .tg-fb-dot{ background:var(--warm) }

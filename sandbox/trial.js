@@ -54,8 +54,8 @@
 
   // ---------- 1. after the first guess: Higher or Lower, and the band ----------
   // what each band means, said the way the bands are described elsewhere
-  var BAND_RANGE = { target: "within 2", hot: "within 5", warm: "within 10",
-                     cool: "within 20", cold: "more than 20 off" };
+  var BAND_RANGE = { target: "Within 2", hot: "Within 5", warm: "Within 10",
+                     cool: "Within 20", cold: "More than 20 off" };
   window.renderLedgerRow = function(n, g){
     if (!twoGuessDay() || n !== 1) return;   // the second guess goes to the reveal
     // an exact first guess ends the day (BULLSEYE 0), so there is always a side
@@ -68,8 +68,9 @@
     card.innerHTML =
       '<p class="tg-fb-dir ' + (up ? "up" : "down") + '"><span class="tg-fb-t">' +
         '<i class="tg-fb-arrow" aria-hidden="true">' + (up ? "↑" : "↓") + '</i>' + (up ? "Higher" : "Lower") + '</span></p>' +
+      // just how close, with the band's coloured dot — no band name
       '<p class="tg-fb-band ' + h.cls + '"><span class="tg-fb-t"><i class="tg-fb-dot" aria-hidden="true"></i>' +
-        h.label + ' <span class="tg-fb-r">· ' + BAND_RANGE[h.cls] + '</span></span></p>';
+        BAND_RANGE[h.cls] + '</span></p>';
     els.ledger.innerHTML = "";
     els.ledger.appendChild(card);
     els.ledger.classList.add("tg-open");
