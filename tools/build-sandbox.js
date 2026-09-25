@@ -165,7 +165,7 @@ var loader = [
   '<script>',
   '    // Never load the game unless the storage shim is provably in place.',
   '    if (window.__SBX_ISOLATED){',
-  '      ' + JSON.stringify(["questions.js", "app.js"].concat(TRIAL ? ["points.js", "trial.js"] : [])) + '.forEach(function(src){',
+  '      ' + JSON.stringify(["questions.js", "app.js"].concat(TRIAL ? ["points.js", "menu.js", "trial.js"] : [])) + '.forEach(function(src){',
   '        var s = document.createElement("script");',
   '        s.src = src + "?sbx=" + Date.now();',
   '        s.async = false;',
@@ -196,7 +196,6 @@ var banner = [
   '<div class="sbx-bar">',
   '    SANDBOX — test copy, not the live game.',
   '    <button type="button" class="sbx-reset" onclick="sbxReset()">Reset this sandbox</button>',
-  TRIAL ? '    <a class="sbx-reset sbx-lb" href="leaderboard.html">Leaderboard</a>' : '',
   '  </div>',
   '  <div id="sbxBlocked" class="sbx-blocked" hidden>',
   '    <b>Sandbox stopped before loading.</b> This browser would not let the sandbox',
@@ -212,7 +211,6 @@ var banner = [
   '      padding:8px 12px; display:flex; gap:12px; align-items:center; justify-content:center;',
   '      flex-wrap:wrap;',
   '    }',
-  '    .sbx-lb{ text-decoration:none }',
   '    .sbx-reset{',
   '      font-family:inherit; font-size:11px; letter-spacing:.06em; text-transform:uppercase;',
   '      background:transparent; color:#fff; border:1px solid rgba(255,255,255,.5);',
@@ -230,7 +228,7 @@ html = replaceOnce(html, "<body>", "<body>\n  " + banner, "the opening body tag"
 // 9. SANDBOX TRIAL: its stylesheet, its scripts, and the leaderboard page,
 //    which gets the same storage shim as the game so it only ever reads the
 //    sandbox's own saved data
-var trialFiles = ["points.js", "trial.js", "trial.css", "leaderboard.js"];
+var trialFiles = ["points.js", "menu.js", "trial.js", "trial.css", "leaderboard.js"];
 if (TRIAL){
   html = replaceOnce(html, "</head>", '  <link rel="stylesheet" href="trial.css?sbx=1" />\n</head>', "the closing head tag");
   trialFiles.forEach(function(f){

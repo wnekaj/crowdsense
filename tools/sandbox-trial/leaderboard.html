@@ -34,6 +34,7 @@
       border:1px solid #d5541a; border-radius:6px; font-size:14px; line-height:1.6;
     }
     main{ width:min(600px, 94vw); margin:0 auto }
+    .lb-top{ display:flex; align-items:center; padding-top:14px }
     .dummy{
       margin:14px 0 0; padding:9px 12px; border-radius:6px;
       background:repeating-linear-gradient(-45deg, #fff5d6, #fff5d6 10px, #fdeec0 10px, #fdeec0 20px);
@@ -123,6 +124,7 @@
   </div>
 
   <main id="app">
+    <div class="lb-top" id="lbTop"></div>
     <p class="dummy"><b>DUMMY DATA</b> — every player and score here is made up, to test the design.
       Only the "You" row can hold your real sandbox scores, and only after you sign up.</p>
 
@@ -188,7 +190,7 @@
       document.getElementById("sbxBlocked").hidden = false;
       document.getElementById("app").hidden = true;
     } else {
-      ["points.js", "leaderboard.js"].forEach(function(src){
+      ["points.js", "menu.js", "leaderboard.js"].forEach(function(src){
         var s = document.createElement("script");
         s.src = src + "?sbx=" + Date.now();
         s.async = false;

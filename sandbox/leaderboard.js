@@ -35,6 +35,16 @@
   var q = dayParam ? "?day=" + dayParam[1] : "";
   ["backTop", "backBottom"].forEach(function(id){ $(id).setAttribute("href", "index.html" + q); });
 
+  // the same Menu as the game; the game's panels open there via a #hash
+  if (window.CS_MENU){
+    CS_MENU.mount({ into: $("lbTop"), items: [
+      { key: "leaderboard", label: "Leaderboard", current: true },
+      { key: "archive", label: "Archive", href: "index.html" + q + "#archive" },
+      { key: "stats", label: "Your stats", href: "index.html" + q + "#stats" },
+      { key: "help", label: "How to play", href: "index.html" + q + "#help" }
+    ]});
+  }
+
   // the player's real, ranked sandbox plays this month
   function realDays(){
     var out = {}, mk = T.monthKeyOf(todayKey), dayNow = +todayKey.slice(8, 10);
