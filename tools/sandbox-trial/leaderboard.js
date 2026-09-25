@@ -144,8 +144,7 @@
         '<div class="l2">Top ' + T.topPercent(mineOverall.rank, overall.length) + '% overall · ' + mePlayed + '</div>';
     }
     if (!you.signedUp){
-      html += '<div class="hint">You\'re not signed up, so this "You" is a stand-in on dummy days. ' +
-        '<a href="index.html' + q + '">Play today\'s question and sign up</a> to put your real scores on the board.</div>';
+      html += '<div class="hint"><a href="index.html' + q + '">Play today\'s question and sign up</a> to put your scores on the board.</div>';
     }
     card.innerHTML = html;
   }
@@ -154,7 +153,7 @@
     var cls = [];
     if (p.you) cls.push("me");
     if (p.rank <= 3) cls.push("top" + p.rank);
-    var tag = p.you ? (p.signedUp ? "" : '<span class="tag">stand-in</span>') : "";
+    var tag = "";
     return '<tr class="' + cls.join(" ") + '"' + (p.you ? ' id="youRow"' : "") + '>' +
       '<td class="rank">' + p.rank + '</td>' +
       '<td>' + esc(p.name) + tag + '</td>' +

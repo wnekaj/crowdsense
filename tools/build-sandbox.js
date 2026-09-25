@@ -230,7 +230,12 @@ html = replaceOnce(html, "<body>", "<body>\n  " + banner, "the opening body tag"
 //    sandbox's own saved data
 var trialFiles = ["points.js", "menu.js", "trial.js", "trial.css", "leaderboard.js"];
 if (TRIAL){
-  html = replaceOnce(html, "</head>", '  <link rel="stylesheet" href="trial.css?sbx=1" />\n</head>', "the closing head tag");
+  // the stylesheet's address carries a hash of its content: the scripts load
+  // fresh every time, and a cached old stylesheet under new scripts leaves
+  // their new elements unstyled
+  var cssHash = require("crypto").createHash("sha1")
+    .update(fs.readFileSync(path.join(TRIAL_DIR, "trial.css"))).digest("hex").slice(0, 10);
+  html = replaceOnce(html, "</head>", '  <link rel="stylesheet" href="trial.css?v=' + cssHash + '" />\n</head>', "the closing head tag");
   trialFiles.forEach(function(f){
     fs.writeFileSync(path.join(OUT, f), fs.readFileSync(path.join(TRIAL_DIR, f), "utf8"));
   });
