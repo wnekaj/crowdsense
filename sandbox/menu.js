@@ -21,9 +21,8 @@
   }
 
   var CSS = [
-    '.tg-menubtn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px 0 11px;',
-    ' border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);cursor:pointer;',
-    ' font:inherit;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;flex:none}',
+    '.tg-menubtn{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;padding:0;',
+    ' border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);cursor:pointer;flex:none}',
     '.tg-menubtn svg{display:block;color:var(--accent)}',
     '.tg-menubtn:hover{border-color:var(--accent);background:var(--accent-soft)}',
     '.tg-menubtn:focus-visible{outline:3px solid rgba(242,101,34,.35);outline-offset:2px}',
@@ -66,7 +65,10 @@
     btn.setAttribute("aria-haspopup", "dialog");
     btn.setAttribute("aria-expanded", "false");
     btn.setAttribute("aria-controls", "tgDrawer");
-    btn.innerHTML = svg('<path d="M4 7h16M4 12h16M4 17h16"/>', 18) + '<span>Menu</span>';
+    // icon only; the label is for screen readers
+    btn.setAttribute("aria-label", "Menu");
+    btn.title = "Menu";
+    btn.innerHTML = svg('<path d="M4 7h16M4 12h16M4 17h16"/>', 28);
     opts.into.insertBefore(btn, opts.into.firstChild);
 
     var drawer = document.createElement("div");
