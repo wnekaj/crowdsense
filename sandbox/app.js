@@ -1391,7 +1391,13 @@ function renderCalendar(){
 function pickQuestionForKey(key){
   var dated = BANK.filter(function(q){ return (q.date||"") === key; });
   if (dated.length) return dated[0];
-  var pool = BANK.filter(function(q){ return !(q.date||"").length; });
+  // The days before launch always get the taster. Saved games are re-scored
+  // against this lookup, so the taster must keep answering for those days
+  // however the backup below changes.
+  var taster = BANK.filter(function(q){ return q.taster; });
+  if (isPreLaunch(key) && taster.length) return taster[0];
+  var pool = BANK.filter(function(q){ return !(q.date||"").length && !q.taster; });
+  if (!pool.length) pool = BANK.filter(function(q){ return !q.taster; });
   if (!pool.length) pool = BANK;
   // deterministic rotation, stable order
   var sorted = pool.slice().sort(function(a,b){
