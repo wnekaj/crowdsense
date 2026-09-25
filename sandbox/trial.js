@@ -88,6 +88,8 @@
         answer: Q.answer, puzzle: CUR.puzzleNo
       });
     }
+    // the score says how the day went, so the "10 off — in the mix" line goes
+    els.verdict.classList.add("hidden");
     paintPoints(p);
     markFirstGuess(p, alreadyDone);
     paintCta(p);
@@ -109,20 +111,30 @@
   // the way the engine reveals its own mark.
   function clearFirstGuess(){
     if (!els.revealBarWrap) return;
-    Array.prototype.forEach.call(els.revealBarWrap.querySelectorAll(".tg-firstmark"), function(x){ x.remove(); });
+    els.revealBarWrap.classList.remove("tg-two");
+    Array.prototype.forEach.call(els.revealBarWrap.querySelectorAll(".tg-firstmark, .tg-firstlabel"), function(x){ x.remove(); });
   }
   function markFirstGuess(p, alreadyDone){
     clearFirstGuess();
     if (p.g2 === null || !els.revealBarWrap) return;   // one guess: the engine's mark is the only one
+    var wrap = els.revealBarWrap;
     var mark = el("div", "tg-firstmark");
     mark.style.left = p.g1 + "%";
     mark.title = "Your first guess: " + p.g1 + "%";
-    els.revealBarWrap.querySelector(".revealbar").appendChild(mark);
-    if (alreadyDone || !els.reveal.classList.contains("staging")){ mark.classList.add("on"); return; }
+    wrap.querySelector(".revealbar").appendChild(mark);
+    // its figure above the bar, the way the engine labels the second guess
+    var lab = el("span", "tg-firstlabel", String(p.g1));
+    lab.style.left = p.g1 + "%";
+    wrap.appendChild(lab);
+    // two figures close together would collide: then the first steps up a row
+    var a = lab.getBoundingClientRect(), b = els.youLabel.getBoundingClientRect();
+    if (a.width && b.width && a.right + 4 > b.left && b.right + 4 > a.left) wrap.classList.add("tg-two");
+    function show(){ mark.classList.add("on"); lab.classList.add("on"); }
+    if (alreadyDone || !els.reveal.classList.contains("staging")){ show(); return; }
     (function watch(){
       var reached = parseFloat(els.revealFill.style.width) >= p.g1;
       var landed = !els.reveal.classList.contains("staging");
-      if (reached || landed) mark.classList.add("on");
+      if (reached || landed) show();
       else requestAnimationFrame(watch);
     })();
   }
@@ -161,7 +173,6 @@
     var first = state.guesses[0];
     if (CONFIG.CROWD_API_URL) return _crowdFlow(first, isFresh);
     renderCrowd(demoDist(), first);
-    els.crowdHead.innerHTML += ' <span class="tg-demo">first guesses · demo crowd</span>';
   };
   function demoDist(){
     var r = T.rng(T.hashStr("demo-crowd-" + CUR.puzzleNo));
