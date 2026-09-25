@@ -53,15 +53,20 @@
     return { g1: g[0], g2: g.length > 1 ? g[1] : null, s1: s1, s2: s2, score: T.dayScore(s1, s2) };
   }
 
-  // ---------- 1. after the first guess: just Higher or Lower ----------
+  // ---------- 1. after the first guess: Higher or Lower, and the band ----------
+  // what each band means, said the way the bands are described elsewhere
+  var BAND_RANGE = { target: "within 2", hot: "within 5", warm: "within 10",
+                     cool: "within 20", cold: "more than 20 off" };
   window.renderLedgerRow = function(n, g){
     if (!twoGuessDay() || n !== 1) return;   // the second guess goes to the reveal
     // an exact first guess ends the day (BULLSEYE 0), so there is always a side
     var up = Q.answer > g;
     var card = el("div", "tg-fb");
     card.id = "tgFeedback";
+    var h = heat(Math.abs(g - Q.answer));
     card.innerHTML = '<p class="tg-fb-dir ' + (up ? "up" : "down") + '"><span aria-hidden="true">' +
-      (up ? "↑" : "↓") + '</span> ' + (up ? "Higher" : "Lower") + '</p>';
+      (up ? "↑" : "↓") + '</span> ' + (up ? "Higher" : "Lower") + '</p>' +
+      '<p class="tg-fb-band ' + h.cls + '"><i></i>' + h.label + ' <span>· ' + BAND_RANGE[h.cls] + '</span></p>';
     els.ledger.innerHTML = "";
     els.ledger.appendChild(card);
     els.ledger.classList.add("tg-open");
@@ -98,39 +103,27 @@
     els.sourceNote.insertAdjacentElement("afterend", box);
   }
 
-  // Both guesses as lines on the reveal bar: the first in grey, labelled
-  // "1st", above the engine's own mark for the second, labelled "2nd". Each
-  // shows as the fill reaches it, the way the engine reveals its own mark.
+  // The first guess as a plain line on the reveal bar itself, beside the
+  // engine's own mark for the second. No label: the second guess keeps the
+  // engine's usual figure above the bar. It shows as the fill reaches it,
+  // the way the engine reveals its own mark.
   function clearFirstGuess(){
-    var wrap = els.revealBarWrap;
-    if (!wrap) return;
-    wrap.classList.remove("tg-two");
-    Array.prototype.forEach.call(wrap.querySelectorAll(".tg-firstmark, .tg-firstlabel"), function(x){ x.remove(); });
+    if (!els.revealBarWrap) return;
+    Array.prototype.forEach.call(els.revealBarWrap.querySelectorAll(".tg-firstmark"), function(x){ x.remove(); });
   }
   function markFirstGuess(p, alreadyDone){
     clearFirstGuess();
     if (p.g2 === null || !els.revealBarWrap) return;   // one guess: the engine's mark is the only one
-    var wrap = els.revealBarWrap;
-    // on the wrap rather than inside the bar, so it can stand a little proud
-    // of it and stay visible over both the dark fill and the pale track
     var mark = el("div", "tg-firstmark");
     mark.style.left = p.g1 + "%";
-    mark.title = "Your first guess";
-    wrap.appendChild(mark);
-    var lab = el("span", "tg-firstlabel", "1st " + p.g1);
-    lab.style.left = p.g1 + "%";
-    wrap.appendChild(lab);
-    wrap.classList.add("tg-two");
-    els.youLabel.textContent = "2nd " + p.g2;
-    if (alreadyDone || !els.reveal.classList.contains("staging")){
-      mark.classList.add("on"); lab.classList.add("on");
-      return;
-    }
+    mark.title = "Your first guess: " + p.g1 + "%";
+    els.revealBarWrap.querySelector(".revealbar").appendChild(mark);
+    if (alreadyDone || !els.reveal.classList.contains("staging")){ mark.classList.add("on"); return; }
     (function watch(){
       var reached = parseFloat(els.revealFill.style.width) >= p.g1;
       var landed = !els.reveal.classList.contains("staging");
-      if (reached || landed){ mark.classList.add("on"); lab.classList.add("on"); }
-      if (!landed && !(reached)) requestAnimationFrame(watch);
+      if (reached || landed) mark.classList.add("on");
+      else requestAnimationFrame(watch);
     })();
   }
 

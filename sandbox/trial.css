@@ -11,6 +11,17 @@
   font-family:var(--display); font-size:34px; font-weight:700; line-height:1.1; letter-spacing:.01em;
 }
 .tg-fb-dir span{ color:var(--accent) }
+.tg-fb-band{
+  display:inline-flex; align-items:center; gap:7px;
+  margin-top:8px !important; font-size:16px; font-weight:500;
+}
+.tg-fb-band i{ width:10px; height:10px; border-radius:50%; background:var(--muted) }
+.tg-fb-band span{ color:var(--muted); font-weight:400 }
+.tg-fb-band.target i{ background:var(--win) }
+.tg-fb-band.hot i{ background:var(--hot) }
+.tg-fb-band.warm i{ background:var(--warm) }
+.tg-fb-band.cool i{ background:var(--cool) }
+.tg-fb-band.cold i{ background:var(--cold) }
 
 /* ---------- the reveal: the score out of 100 ---------- */
 .tg-pts{ margin:16px auto 4px; text-align:center; font-variant-numeric:tabular-nums }
@@ -23,23 +34,14 @@
 }
 .tg-pts-score span{ font-size:22px; font-weight:500; color:var(--muted); margin-left:2px }
 
-/* both guesses on the reveal bar: labels in two rows so they never collide */
-.revealbar-wrap.tg-two{ padding-top:40px }
-.revealbar-wrap.tg-two .youlabel{ top:20px }
-/* the bar is 14px tall and starts 40px down; the tick rises 6px above it,
-   with a white edge so it shows on the dark fill as well as the pale track */
+/* the first guess: a plain line on the reveal bar, with a white edge so it
+   shows over the dark fill as well as the pale track */
 .tg-firstmark{
-  position:absolute; top:34px; height:20px; width:2px; transform:translateX(-1px);
-  background:#5f6366; box-shadow:0 0 0 1px #fff; border-radius:1px;
+  position:absolute; top:0; bottom:0; width:2px; transform:translateX(-1px);
+  background:#5f6366; box-shadow:0 0 0 1px #fff;
   opacity:0; transition:opacity .25s ease; pointer-events:none;
 }
-.tg-firstlabel{
-  position:absolute; top:0; transform:translateX(-50%); white-space:nowrap;
-  font-size:12px; font-weight:500; color:#5f6366; font-variant-numeric:tabular-nums;
-  opacity:0; transition:opacity .25s ease; pointer-events:none;
-}
-.tg-firstmark.on, .tg-firstlabel.on{ opacity:1 }
-.revealbar-wrap.tg-two .youlabel{ white-space:nowrap }
+.tg-firstmark.on{ opacity:1 }
 
 /* ---------- header: one Menu button on the left ---------- */
 .sitebar.tg-hasmenu{ justify-content:flex-start; gap:14px; align-items:center }
