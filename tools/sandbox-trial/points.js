@@ -4,25 +4,41 @@
    Copied into sandbox/ by tools/build-sandbox.js. Nothing here reaches the
    live game: the live index.html never loads this file.
 
-     scoring        per-guess points and the daily score
+     scoring        the day's score, in points off (lower is better)
      UK dates       "today" in London time, honouring the sandbox's ?day=
      dummy board    ~60 made-up players, plus a "You" row near rank 23
-     monthly total  each player's 3 lowest days dropped, a missed day = 0
+     monthly total  points off added up, a missed day = 50 off, the 3
+                    worst days dropped; lowest total wins
    ========================================================================= */
 (function(){
   "use strict";
 
   // ---------- scoring ----------
-  // One guess is worth max(0, 100 - 2 x error): 100 when exact, 0 at 50 off.
-  function guessPoints(err){ return Math.max(0, 100 - 2 * Math.abs(err)); }
-
-  // The day scores the first guess, plus half of any improvement the second
-  // makes on it. A worse second guess adds nothing, so it can never lower the
-  // score. Errors are whole numbers, so every term here is even and the
-  // result is always a whole number.
-  function dayScore(s1, s2){
-    if (s2 === null || s2 === undefined) return s1;
-    return s1 + 0.5 * Math.max(0, s2 - s1);
+  // The original game's scoring, for two guesses. A guess scores how many
+  // points it is off. The day scores the first guess's error, minus half of
+  // however much closer the second guess gets: 6 off then 1 off is
+  // 6 - 5/2 = 3.5 off. A second guess that's no closer takes nothing off,
+  // so it can never make the day worse. Lower is better; 0 is perfect.
+  // Errors are whole numbers, so the day lands on a whole or a half.
+  function dayOff(e1, e2){
+    e1 = Math.abs(e1);
+    if (e2 === null || e2 === undefined) return e1;
+    return e1 - 0.5 * Math.max(0, e1 - Math.abs(e2));
+  }
+  // "3.5", "6", "0" — a half shows as .5, a whole number as itself
+  function fmtOff(x){
+    return (Math.round(x * 10) / 10).toLocaleString("en-GB", { maximumFractionDigits: 1 });
+  }
+  // A day saved by the earlier, points-out-of-100 version of the trial:
+  // points = 100 - 2 x off, so the conversion back is exact.
+  function asOffDay(e){
+    if (!e) return null;
+    if (typeof e.off === "number") return e;
+    if (typeof e.score === "number"){
+      return { e1: (100 - e.s1) / 2, e2: e.s2 === null || e.s2 === undefined ? null : (100 - e.s2) / 2,
+               off: (100 - e.score) / 2 };
+    }
+    return null;
   }
 
   // ---------- UK dates ----------
@@ -104,35 +120,34 @@
   var INITIALS = "ABCDEFGHJKLMNOPRSTW";
 
   // ---------- the board ----------
-  // One player-day: the two guesses' points and the day's score.
+  // One player-day: the two guesses' errors and the day's score.
   function fakeDay(r, sigma, skip2){
     var e1 = Math.min(60, Math.round(Math.abs(gauss(r)) * sigma));
     var e2;
     if (skip2 || e1 === 0) e2 = null;             // exact first guess: no second
     else if (r() < 0.15) e2 = e1 + Math.round(r() * 4);   // talked themselves out of it
     else e2 = Math.round(e1 * (0.1 + r() * 0.8)); // Higher/Lower usually helps
-    var s1 = guessPoints(e1), s2 = e2 === null ? null : guessPoints(e2);
-    return { s1: s1, s2: s2, score: dayScore(s1, s2) };
+    return { e1: e1, e2: e2, off: dayOff(e1, e2) };
   }
 
-  // Monthly total: every day of the month so far, a missed day scoring 0,
-  // then the 3 lowest dropped. The tiebreak is first-guess points over the
-  // days that counted.
-  var DROP = 3;
+  // Monthly total: every day of the month so far, a missed day counting as
+  // 50 off, then the 3 worst days dropped. Lowest total wins; the tiebreak
+  // is first-guess error over the days that counted, lowest first.
+  var DROP = 3, MISSED = 50;
   function monthTotal(days, dayCount){
     var list = [];
     for (var d = 1; d <= dayCount; d++){
       var e = days[d];
-      list.push(e ? { d: d, score: e.score, s1: e.s1 } : { d: d, score: 0, s1: 0 });
+      list.push(e ? { d: d, off: e.off, e1: e.e1 } : { d: d, off: MISSED, e1: MISSED });
     }
-    // lowest first; on equal scores drop the day with fewer first-guess points
-    list.sort(function(a, b){ return a.score - b.score || a.s1 - b.s1 || a.d - b.d; });
+    // worst first; on equal scores drop the day with the worse first guess
+    list.sort(function(a, b){ return b.off - a.off || b.e1 - a.e1 || a.d - b.d; });
     var kept = list.slice(DROP);
     var total = 0, first = 0;
-    kept.forEach(function(x){ total += x.score; first += x.s1; });
+    kept.forEach(function(x){ total += x.off; first += x.e1; });
     var played = 0;
     for (var k in days) if (days[k]) played++;
-    return { total: total, firstPts: first, played: played,
+    return { total: total, firstOff: first, played: played,
              dropped: list.slice(0, DROP).map(function(x){ return x.d; }) };
   }
 
@@ -169,15 +184,16 @@
   function rankPlayers(players, dayCount){
     players.forEach(function(p){
       var t = monthTotal(p.days, dayCount);
-      p.total = t.total; p.firstPts = t.firstPts; p.played = t.played; p.dropped = t.dropped;
+      p.total = t.total; p.firstOff = t.firstOff; p.played = t.played; p.dropped = t.dropped;
     });
+    // fewest points off first
     players.sort(function(a, b){
-      return b.total - a.total || b.firstPts - a.firstPts || (a.you ? -1 : b.you ? 1 : a.name.localeCompare(b.name));
+      return a.total - b.total || a.firstOff - b.firstOff || (a.you ? -1 : b.you ? 1 : a.name.localeCompare(b.name));
     });
     // shared rank only when both the total and the tiebreak are level
     players.forEach(function(p, i){
       var prev = players[i - 1];
-      p.rank = (prev && prev.total === p.total && prev.firstPts === p.firstPts) ? prev.rank : i + 1;
+      p.rank = (prev && prev.total === p.total && prev.firstOff === p.firstOff) ? prev.rank : i + 1;
     });
     return players;
   }
@@ -196,10 +212,10 @@
     var youDays = {};
     for (var d in template.days){
       var t = template.days[d];
-      // a small wobble, kept on the even-point grid the formula produces
-      var s1 = Math.max(0, Math.min(100, t.s1 + 2 * (Math.round(r() * 2) - 1)));
-      var s2 = t.s2 === null ? null : Math.max(0, Math.min(100, t.s2 + 2 * (Math.round(r() * 2) - 1)));
-      youDays[d] = { s1: s1, s2: s2, score: dayScore(s1, s2), dummy: true };
+      // a small wobble on each guess
+      var e1 = Math.max(0, t.e1 + Math.round(r() * 2) - 1);
+      var e2 = t.e2 === null ? null : Math.max(0, t.e2 + Math.round(r() * 2) - 1);
+      youDays[d] = { e1: e1, e2: e2, off: dayOff(e1, e2), dummy: true };
     }
     // the current day is left to the player: only a real play fills it
     delete youDays[dayCount];
@@ -208,8 +224,8 @@
     var real = opts.realDays || {};
     if (su){
       for (var rd in real){
-        var e = real[rd];
-        youDays[rd] = { s1: e.s1, s2: e.s2, score: e.score, dummy: false };
+        var e = asOffDay(real[rd]);
+        if (e) youDays[rd] = { e1: e.e1, e2: e.e2, off: e.off, dummy: false };
       }
     }
     var you = {
@@ -239,7 +255,7 @@
   function topPercent(rank, n){ return Math.max(1, Math.ceil(100 * rank / n)); }
 
   window.CS_TRIAL = {
-    guessPoints: guessPoints, dayScore: dayScore,
+    dayOff: dayOff, fmtOff: fmtOff, asOffDay: asOffDay, MISSED: MISSED,
     todayKey: todayKey, monthKeyOf: monthKeyOf, keyOf: keyOf, londonParts: londonParts,
     daysInMonth: daysInMonth,
     buildBoard: buildBoard, groupOf: groupOf, monthTotal: monthTotal, topPercent: topPercent,

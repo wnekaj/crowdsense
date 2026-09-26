@@ -28,7 +28,8 @@
     var s = ["th","st","nd","rd"], v = n % 100;
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
   }
-  function num(n){ return Math.round(n).toLocaleString("en-GB"); }
+  // points off, to a half where it lands on one
+  function num(n){ return T.fmtOff(n); }
 
   var todayKey = T.todayKey();
   var dayParam = /[?&]day=(\d{4}-\d{2}-\d{2})/.exec(location.search);
@@ -56,8 +57,9 @@
       if (day.slice(0, 7) !== mk) continue;
       var d = +day.slice(8, 10);
       if (d > dayNow) continue;     // a future day previewed with ?day= hasn't happened yet
-      var e = readJSON(k);
-      if (e && typeof e.score === "number") out[d] = e;
+      // a day saved in points off, or by the earlier points version
+      var e = T.asOffDay(readJSON(k));
+      if (e) out[d] = e;
     }
     return out;
   }
@@ -76,8 +78,9 @@
   $("monthLabel").textContent = monthName + " · day " + board.dayCount + " of " + board.daysInMonth;
 
   var early = board.dayCount <= T.DROP;
-  $("rulesMonth").textContent = "Your daily scores add up across the month. Everyone's " + T.DROP +
-    " lowest days are dropped, and a day you miss counts as 0 — so a few missed or bad days won't sink you." +
+  $("rulesMonth").textContent = "Your daily scores — points off — add up across the month, and the lowest total wins. " +
+    "A day you miss counts as " + T.MISSED + " off, and everyone's " + T.DROP +
+    " worst days are dropped, so a few missed or bad days won't sink you." +
     (early ? " It's day " + board.dayCount + ", so every day so far is still being dropped: scores start counting on day " +
       (T.DROP + 1) + "." : "");
 
