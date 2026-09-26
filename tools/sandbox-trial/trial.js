@@ -9,10 +9,11 @@
    Two guesses (single-question days only — multi-part days are untouched):
      1. the first guess is locked and the player is told only Higher or
         Lower — never the points, which would give the answer away
-        (88 points = 6 off, and the direction says which side)
-     2. the second guess brings the reveal: the day's score out of 100,
+        (the bands say how close, but never exactly)
+     2. the second guess brings the reveal: the day's score in points off,
         both guesses as lines on the bar, and the crowd
-   Per guess: max(0, 100 - 2 x error). Day: S1 + half of any gain from S2.
+   Scoring, in points off as the original game: the first guess's error,
+   minus half of however much closer the second gets. Lower is better.
    The crowd distribution pools FIRST guesses only.
 
    The sandbox config sets MAX_GUESSES: 2, which wakes the engine's own
@@ -47,15 +48,23 @@
   function pointsNow(){
     var g = state.guesses;
     if (!g.length) return null;
-    var s1 = T.guessPoints(g[0] - Q.answer);
-    var s2 = g.length > 1 ? T.guessPoints(g[1] - Q.answer) : null;
-    return { g1: g[0], g2: g.length > 1 ? g[1] : null, s1: s1, s2: s2, score: T.dayScore(s1, s2) };
+    var e1 = Math.abs(g[0] - Q.answer);
+    var e2 = g.length > 1 ? Math.abs(g[1] - Q.answer) : null;
+    return { g1: g[0], g2: g.length > 1 ? g[1] : null, e1: e1, e2: e2, off: T.dayOff(e1, e2) };
   }
+
+  // The engine's own score, so Your stats — the Crowdsense average, the best
+  // day — is kept in the same points off the reveal shows.
+  var _computeScore = window.computeScore;
+  window.computeScore = function(guesses, answer){
+    if (!guesses || !guesses.length || CONFIG.MAX_GUESSES < 2) return _computeScore(guesses, answer);
+    return T.dayOff(guesses[0] - answer, guesses.length > 1 ? guesses[1] - answer : null);
+  };
 
   // ---------- 1. after the first guess: Higher or Lower, and the band ----------
   // what each band means, said the way the bands are described elsewhere
-  var BAND_RANGE = { target: "Within 2", hot: "Within 5", warm: "Within 10",
-                     cool: "Within 20", cold: "More than 20 off" };
+  var BAND_RANGE = { target: "You're within 2", hot: "You're within 5", warm: "You're within 10",
+                     cool: "You're within 20", cold: "You're more than 20 away" };
   window.renderLedgerRow = function(n, g){
     if (!twoGuessDay() || n !== 1) return;   // the second guess goes to the reveal
     // an exact first guess ends the day (BULLSEYE 0), so there is always a side
@@ -70,7 +79,8 @@
         '<i class="tg-fb-arrow" aria-hidden="true">' + (up ? "↑" : "↓") + '</i>' + (up ? "Higher" : "Lower") + '</span></p>' +
       // just how close, with the band's coloured dot — no band name
       '<p class="tg-fb-band ' + h.cls + '"><span class="tg-fb-t"><i class="tg-fb-dot" aria-hidden="true"></i>' +
-        BAND_RANGE[h.cls] + '</span></p>';
+        BAND_RANGE[h.cls] + '</span></p>' +
+      '<p class="tg-fb-next">You have another guess</p>';
     els.ledger.innerHTML = "";
     els.ledger.appendChild(card);
     els.ledger.classList.add("tg-open");
@@ -111,7 +121,7 @@
     // only a play of the day's own question, made that day, is ranked
     if (!alreadyDone && MODE === "daily"){
       writeJSON(T.POINTS_PREFIX + CUR.dayKey, {
-        s1: p.s1, s2: p.s2, score: p.score, g1: p.g1, g2: p.g2,
+        e1: p.e1, e2: p.e2, off: p.off, g1: p.g1, g2: p.g2,
         answer: Q.answer, puzzle: CUR.puzzleNo
       });
     }
@@ -128,7 +138,7 @@
     var box = el("div", "tg-pts");
     box.id = "tgPoints";
     box.innerHTML = '<span class="tg-pts-k">Today\'s score</span>' +
-      '<b class="tg-pts-score">' + p.score + '<span>/100</span></b>';
+      '<b class="tg-pts-score">' + T.fmtOff(p.off) + '<span>off</span></b>';
     els.sourceNote.insertAdjacentElement("afterend", box);
   }
 
@@ -209,7 +219,7 @@
     var p = pointsNow();
     var lines = ["Crowdsense #" + CUR.puzzleNo];
     var b1 = heat(Math.abs(p.g1 - Q.answer)).emoji;
-    lines.push((p.s2 === null ? b1 : b1 + " → " + heat(Math.abs(p.g2 - Q.answer)).emoji) + "  " + p.score + "/100");
+    lines.push((p.e2 === null ? b1 : b1 + " → " + heat(p.e2).emoji) + "  " + T.fmtOff(p.off) + " off");
     if (MODE === "daily" && state.crowdPct !== null && state.crowdPct !== undefined){
       lines.push("First guess closer than " + state.crowdPct + "% of players");
     }
@@ -245,11 +255,11 @@
       '<p><b>You get two guesses.</b> Lock in your first, and we\'ll tell you whether the answer is <b>higher or lower</b>, and how close you were:</p>' +
       '<div class="tg-help-legend"></div>' +
       '<p style="margin-top:12px">Then take your second guess, and the answer is revealed.</p>' +
-      '<p><b>Scoring.</b> Each guess is worth up to 100 points: 100 if it\'s spot on, 2 points fewer for every point you\'re off. ' +
-      'Your score for the day is your first guess\'s points, plus half of anything your second guess adds — so a second guess can never lower it.</p>' +
-      '<p class="tg-help-eg">e.g. first guess 6 off (88 points), second 1 off (98 points): 88 + half of 10 = <b>93</b>. ' +
-      'Get it exactly right first time and you score 100 straight away.</p>' +
-      '<p><b>The leaderboard.</b> Your daily scores add up over the month, with your 3 lowest days dropped. ' +
+      '<p><b>Scoring.</b> Your score is how many points you\'re off — lower is better, and 0 is perfect. ' +
+      'With two guesses, it\'s your first guess\'s distance, minus half of however much closer your second guess gets — so a second guess can never make it worse.</p>' +
+      '<p class="tg-help-eg">e.g. first guess 6 off, second 1 off: 6 − half of 5 = <b>3.5 off</b>. ' +
+      'Get it exactly right first time and you score 0 straight away.</p>' +
+      '<p><b>The leaderboard.</b> Your daily scores add up over the month and the lowest total wins. A missed day counts as 50 off, and your 3 worst days are dropped. ' +
       'Only today\'s question, played today (UK time), counts — games from the archive are unranked. ' +
       'How you compare with other players is always measured on first guesses.</p>' +
       '<p style="margin-top:14px">New question daily at midnight, UK time. All figures come from real polling of the British public; each day\'s source is shown with the answer.</p>';
