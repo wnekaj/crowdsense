@@ -10,7 +10,8 @@
      1. the first guess is locked and the player is told only Higher or
         Lower — never the points, which would give the answer away
         (the bands say how close, but never exactly)
-     2. the second guess brings the reveal: the day's score in points off,
+     2. the second guess brings the reveal: the day's score and band ("3.5 —
+        on the scent"),
         both guesses as lines on the bar, and the crowd
    Scoring, in points off as the original game: the first guess's error,
    minus half of however much closer the second gets. Lower is better.
@@ -59,6 +60,13 @@
   window.computeScore = function(guesses, answer){
     if (!guesses || !guesses.length || CONFIG.MAX_GUESSES < 2) return _computeScore(guesses, answer);
     return T.dayOff(guesses[0] - answer, guesses.length > 1 ? guesses[1] - answer : null);
+  };
+  // ...and the day goes into Your record under the band the reveal names
+  // ("7.5 — in the mix"), not the band of the last guess alone
+  var _recordResult = window.recordResult;
+  window.recordResult = function(win, firstErr, finalErr, score){
+    if (twoGuessDay()) finalErr = score;
+    return _recordResult(win, firstErr, finalErr, score);
   };
 
   // ---------- 1. after the first guess: Higher or Lower, and the band ----------
@@ -125,21 +133,18 @@
         answer: Q.answer, puzzle: CUR.puzzleNo
       });
     }
-    // the score says how the day went, so the "10 off — in the mix" line goes
-    els.verdict.classList.add("hidden");
-    paintPoints(p);
+    // the old verdict line, carrying the day's score without the word "off"
+    paintVerdict(p);
     markFirstGuess(p, alreadyDone);
     paintCta();
   };
 
-  function paintPoints(p){
-    var old = document.getElementById("tgPoints");
-    if (old) old.remove();
-    var box = el("div", "tg-pts");
-    box.id = "tgPoints";
-    box.innerHTML = '<span class="tg-pts-k">Today\'s score</span>' +
-      '<b class="tg-pts-score">' + T.fmtOff(p.off) + '<span>off</span></b>';
-    els.sourceNote.insertAdjacentElement("afterend", box);
+  // "3.5 — on the scent": the day's score and its band, in the engine's own
+  // verdict line; the stats then open after the reveal as they always do
+  function paintVerdict(p){
+    var band = verdictForErr(p.off).text.split(" — ")[1];
+    els.verdict.textContent = T.fmtOff(p.off) + " — " + band;
+    els.verdict.classList.remove("hidden");
   }
 
   // The first guess as a plain line on the reveal bar itself, beside the
@@ -186,8 +191,7 @@
       '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" ' +
       'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/>' +
       '<path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>View leaderboard</a>';
-    var pts = document.getElementById("tgPoints");
-    (pts || els.sourceNote).insertAdjacentElement("afterend", box);
+    els.sourceNote.insertAdjacentElement("afterend", box);
   }
 
   // ---------- 3. the crowd: first guesses only ----------
