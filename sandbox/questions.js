@@ -636,6 +636,16 @@ var CS_QUESTIONS = [
     // 55-64s.
     source: "Public First poll of 4,012 UK adults, 26–31 January 2024",
     teaser: "How many Brits play an instrument?"
+  },
+  {
+    date: "2026-09-27",  // Day 70
+    question: "What percentage of Brits say they have ever attended a live opera performance?",
+    answer: 30,
+    // read off the total column: 30 yes, 67 no, 3 not sure. Men and women
+    // both 30; by age 25 among 18-24s up to 35 among the over-65s. Same
+    // poll as the instruments question.
+    source: "Public First poll of 4,012 UK adults, 26–31 January 2024",
+    teaser: "How many Brits have been to the opera?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
