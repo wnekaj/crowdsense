@@ -656,7 +656,7 @@ var CS_QUESTIONS = [
     // not true, 6 don't know, read off the first (total) column; the next two
     // columns, 23 and 20, sit either side of it.
     source: "Public First poll of 4,052 UK adults, 31 January – 5 February 2025",
-    teaser: "How many Brits are in a local WhatsApp group?"
+    teaser: "How many Brits are in a local 'neighbourhood' WhatsApp group?"
   },
   {
     date: "2026-09-29",  // Day 72
