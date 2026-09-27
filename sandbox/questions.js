@@ -646,6 +646,18 @@ var CS_QUESTIONS = [
     // poll as the instruments question.
     source: "Public First poll of 4,012 UK adults, 26–31 January 2024",
     teaser: "How many Brits have been to the opera?"
+  },
+  {
+    date: "2026-09-28",  // Day 71
+    question: "What percentage of Brits say they are part of a local WhatsApp group?",
+    answer: 22,
+    // "Which of the following are true for you and your local neighbourhood?:
+    // I am part of a local WhatsApp group", base all respondents. 22 true, 72
+    // not true, 6 don't know, read off the first (total) column; the next two
+    // columns, 23 and 20, sit either side of it.
+    // TODO sample size and fieldwork dates not yet supplied
+    source: "Public First poll of UK adults",
+    teaser: "How many Brits are in a local WhatsApp group?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
