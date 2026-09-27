@@ -655,9 +655,17 @@ var CS_QUESTIONS = [
     // I am part of a local WhatsApp group", base all respondents. 22 true, 72
     // not true, 6 don't know, read off the first (total) column; the next two
     // columns, 23 and 20, sit either side of it.
-    // TODO sample size and fieldwork dates not yet supplied
-    source: "Public First poll of UK adults",
+    source: "Public First poll of 4,052 UK adults, 31 January – 5 February 2025",
     teaser: "How many Brits are in a local WhatsApp group?"
+  },
+  {
+    date: "2026-09-29",  // Day 72
+    question: "What percentage of Brits agree they are proud of their local neighbourhood?",
+    answer: 45,
+    // total agree, 8 strongly agree + 37 agree = 45; 35 neither, 18 disagree,
+    // 2 don't know. Same poll as the WhatsApp question.
+    source: "Public First poll of 4,052 UK adults, 31 January – 5 February 2025",
+    teaser: "How many Brits are proud of where they live?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
