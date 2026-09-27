@@ -664,8 +664,7 @@ var CS_QUESTIONS = [
     answer: 18,
     // "positive" 14 + "very positive" 4 = 18 (men 19, women 18). 47 negative,
     // 31 neither. Positive falls from 33 among 18-24s to 6 among the over-65s.
-    // TODO fieldwork dates not yet supplied
-    source: "Public First poll of 2,020 UK adults",
+    source: "Public First poll of 2,020 UK adults, 23–27 April 2025",
     teaser: "How many Brits view Meghan Markle positively?"
   },
   {
