@@ -649,7 +649,7 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-09-28",  // Day 71
-    question: "What percentage of Brits say they are part of a local WhatsApp group?",
+    question: "What percentage of Brits say they are part of a local 'neighbourhood' WhatsApp group?",
     answer: 22,
     // "Which of the following are true for you and your local neighbourhood?:
     // I am part of a local WhatsApp group", base all respondents. 22 true, 72
@@ -660,15 +660,6 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-09-29",  // Day 72
-    question: "What percentage of Brits agree they are proud of their local neighbourhood?",
-    answer: 45,
-    // total agree, 8 strongly agree + 37 agree = 45; 35 neither, 18 disagree,
-    // 2 don't know. Same poll as the WhatsApp question.
-    source: "Public First poll of 4,052 UK adults, 31 January – 5 February 2025",
-    teaser: "How many Brits are proud of where they live?"
-  },
-  {
-    date: "2026-09-30",  // Day 73
     question: "What percentage of Brits say they have a positive view of Meghan Markle?",
     answer: 18,
     // "positive" 14 + "very positive" 4 = 18 (men 19, women 18). 47 negative,
@@ -676,6 +667,15 @@ var CS_QUESTIONS = [
     // TODO fieldwork dates not yet supplied
     source: "Public First poll of 2,020 UK adults",
     teaser: "How many Brits view Meghan Markle positively?"
+  },
+  {
+    date: "2026-09-30",  // Day 73
+    question: "What percentage of Brits agree they are proud of their local neighbourhood?",
+    answer: 45,
+    // total agree, 8 strongly agree + 37 agree = 45; 35 neither, 18 disagree,
+    // 2 don't know. Same poll as the WhatsApp question (28 Sept).
+    source: "Public First poll of 4,052 UK adults, 31 January – 5 February 2025",
+    teaser: "How many Brits are proud of where they live?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
