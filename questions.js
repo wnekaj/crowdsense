@@ -666,6 +666,16 @@ var CS_QUESTIONS = [
     // 2 don't know. Same poll as the WhatsApp question.
     source: "Public First poll of 4,052 UK adults, 31 January – 5 February 2025",
     teaser: "How many Brits are proud of where they live?"
+  },
+  {
+    date: "2026-09-30",  // Day 73
+    question: "What percentage of Brits say they have a positive view of Meghan Markle?",
+    answer: 18,
+    // "positive" 14 + "very positive" 4 = 18 (men 19, women 18). 47 negative,
+    // 31 neither. Positive falls from 33 among 18-24s to 6 among the over-65s.
+    // TODO fieldwork dates not yet supplied
+    source: "Public First poll of 2,020 UK adults",
+    teaser: "How many Brits view Meghan Markle positively?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
