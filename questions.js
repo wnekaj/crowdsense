@@ -669,6 +669,15 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-09-30",  // Day 73
+    question: "What percentage of Brits agree they are proud of their local neighbourhood?",
+    answer: 45,
+    // total agree, 8 strongly agree + 37 agree = 45; 35 neither, 18 disagree,
+    // 2 don't know. Same poll as the WhatsApp question (28 Sept).
+    source: "Public First poll of 4,052 UK adults, 31 January – 5 February 2025",
+    teaser: "How many Brits are proud of where they live?"
+  },
+  {
+    date: "2026-10-01",  // Day 74
     question: "What percentage of Brits say they order a takeaway at least once a week?",
     answer: 22,
     // daily 1 + several times a week 7 + once a week 14 = 22 (men 28, women
@@ -677,15 +686,6 @@ var CS_QUESTIONS = [
     // holiday question.
     source: "Public First poll of 2,003 UK adults, 20–26 June 2025",
     teaser: "How many Brits order a takeaway every week?"
-  },
-  {
-    date: "2026-10-01",  // Day 74
-    question: "What percentage of Brits agree they are proud of their local neighbourhood?",
-    answer: 45,
-    // total agree, 8 strongly agree + 37 agree = 45; 35 neither, 18 disagree,
-    // 2 don't know. Same poll as the WhatsApp question (28 Sept).
-    source: "Public First poll of 4,052 UK adults, 31 January – 5 February 2025",
-    teaser: "How many Brits are proud of where they live?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
