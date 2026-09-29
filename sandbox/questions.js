@@ -669,6 +669,17 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-09-30",  // Day 73
+    question: "What percentage of Brits say they order a takeaway at least once a week?",
+    answer: 22,
+    // daily 1 + several times a week 7 + once a week 14 = 22 (men 28, women
+    // 18). 38 among 18-24s and 45 among 25-34s, down to 5 among the over-65s,
+    // 43 of whom never order one. Same 2,003 sample and frequency scale as the
+    // holiday question.
+    source: "Public First poll of 2,003 UK adults, 20–26 June 2025",
+    teaser: "How many Brits order a takeaway every week?"
+  },
+  {
+    date: "2026-10-01",  // Day 74
     question: "What percentage of Brits agree they are proud of their local neighbourhood?",
     answer: 45,
     // total agree, 8 strongly agree + 37 agree = 45; 35 neither, 18 disagree,
