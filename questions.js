@@ -686,6 +686,14 @@ var CS_QUESTIONS = [
     // holiday question.
     source: "Public First poll of 2,003 UK adults, 20–26 June 2025",
     teaser: "How many Brits order a takeaway every week?"
+  },
+  {
+    date: "2026-10-02",  // Day 75
+    question: "What percentage of Brits say they want the government to build a closer relationship with the European Union?",
+    answer: 70,
+    // figure and fieldwork as supplied; no crosstab seen
+    source: "Public First poll of 2,028 UK adults, 13–15 September 2026",
+    teaser: "How many Brits want closer ties with the EU?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
