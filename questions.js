@@ -694,6 +694,16 @@ var CS_QUESTIONS = [
     // figure and fieldwork as supplied; no crosstab seen
     source: "Public First poll of 2,028 UK adults, 13–15 September 2026",
     teaser: "How many Brits want closer ties with the EU?"
+  },
+  {
+    date: "2026-10-04",  // Day 77
+    question: "What percentage of Brits think the UK should use its armed forces to defend the Falkland Islands if they were invaded again?",
+    answer: 69,
+    // definitely should 41 + probably should 28 = 69 (men 75, women 62);
+    // 17 should not, 14 don't know. Rises from 51 among 18-24s to 75 among
+    // the over-65s. Same poll as the EU question.
+    source: "Public First poll of 2,028 UK adults, 13–15 September 2026",
+    teaser: "Would Brits defend the Falklands again?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
