@@ -704,6 +704,16 @@ var CS_QUESTIONS = [
     // the over-65s. Same poll as the EU question.
     source: "Public First poll of 2,028 UK adults, 13–15 September 2026",
     teaser: "Would Brits defend the Falklands again?"
+  },
+  {
+    date: "2026-10-05",  // Day 78
+    question: "What percentage of Brits think the First Past the Post voting system is fair?",
+    answer: 57,
+    // completely fair 18 + mostly fair 39 = 57; 26 unfair (18 mostly, 8
+    // completely), 18 don't know. Respondents were first told how FPTP works.
+    // Only the total column seen. Same poll as the Falklands question.
+    source: "Public First poll of 2,028 UK adults, 13–15 September 2026",
+    teaser: "Do Brits think First Past the Post is fair?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
