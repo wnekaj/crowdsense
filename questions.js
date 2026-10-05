@@ -714,6 +714,17 @@ var CS_QUESTIONS = [
     // Only the total column seen. Same poll as the Falklands question.
     source: "Public First poll of 2,028 UK adults, 13–15 September 2026",
     teaser: "Do Brits think First Past the Post is fair?"
+  },
+  {
+    date: "2026-10-06",  // Day 79
+    question: "What percentage of Brits think Andy Burnham needs to win a general election to give his government legitimacy?",
+    answer: 50,
+    // read off the total column: 50 say he needs an election, 36 say his
+    // government is already legitimate. Respondents were told he became PM
+    // on 20 July 2026 after an uncontested Labour leadership contest. Same
+    // poll (2,028 unweighted, 2,032 weighted) as the Falklands question.
+    source: "Public First poll of 2,028 UK adults, 13–15 September 2026",
+    teaser: "Does Burnham need an election to be legitimate?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
