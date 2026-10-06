@@ -39,6 +39,11 @@
   }
   function readJSON(k){ try{ return JSON.parse(localStorage.getItem(k) || "null"); }catch(_){ return null; } }
   function writeJSON(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(_){} }
+  // The leaderboard is switched off for now, so the sandbox shows what the
+  // real game would look like with two guesses and no leaderboard: no
+  // "View leaderboard" button, no menu entry, nothing about it in How to
+  // play. Set true to bring it all back; leaderboard.html is still built.
+  var SHOW_LEADERBOARD = false;
   function lbHref(){
     var m = /[?&]day=(\d{4}-\d{2}-\d{2})/.exec(location.search);
     return "leaderboard.html" + (m ? "?day=" + m[1] : "");
@@ -136,7 +141,7 @@
     // the old verdict line, carrying the day's score without the word "off"
     paintVerdict(p);
     markFirstGuess(p, alreadyDone);
-    paintCta();
+    if (SHOW_LEADERBOARD) paintCta();
   };
 
   // "3.5 — on the scent": the day's score and its band, in the engine's own
@@ -263,9 +268,11 @@
       'With two guesses, it\'s your first guess\'s distance, minus half of however much closer your second guess gets — so a second guess can never make it worse.</p>' +
       '<p class="tg-help-eg">e.g. first guess 6 off, second 1 off: 6 − half of 5 = <b>3.5 off</b>. ' +
       'Get it exactly right first time and you score 0 straight away.</p>' +
+      (SHOW_LEADERBOARD ?
       '<p><b>The leaderboard.</b> Your daily scores add up over the month and the lowest total wins. A missed day counts as 50 off, and your 3 worst days are dropped. ' +
       'Only today\'s question, played today (UK time), counts — games from the archive are unranked. ' +
-      'How you compare with other players is always measured on first guesses.</p>' +
+      'How you compare with other players is always measured on first guesses.</p>' :
+      '<p>How you compare with other players is measured on first guesses.</p>') +
       '<p style="margin-top:14px">New question daily at midnight, UK time. All figures come from real polling of the British public; each day\'s source is shown with the answer.</p>';
     if (legend) body.querySelector(".tg-help-legend").appendChild(legend);
   })();
@@ -283,17 +290,18 @@
     menu = CS_MENU.mount({ into: bar, items: [
       // back to today's question from anywhere: the archive, a panel, lower down the page
       { key: "home", label: "Home", onClick: goHome },
-      { key: "leaderboard", label: "Leaderboard", href: lbHref() },
+      SHOW_LEADERBOARD ? { key: "leaderboard", label: "Leaderboard", href: lbHref() } : null,
       { key: "archive", label: "Archive", onClick: tap(els.archiveBtn) },
       { key: "stats", label: "Your stats", onClick: tap(els.statsBtn) },
       { key: "help", label: "How to play", onClick: tap(els.helpBtn) }
-    ]});
+    ].filter(Boolean)});
     // the one-off tour pointed at the three buttons; now there is one to show
     window.startTour = function(){
       if (!els.tour || tourSeen()) return;
       TOUR_PENDING = false;
       TOUR_STEPS = [{ el: menu.button,
-        text: "<b>Menu.</b> The leaderboard, past questions, your stats and how to play are all in here." }];
+        text: "<b>Menu.</b> " + (SHOW_LEADERBOARD ? "The leaderboard, past" : "Past") +
+          " questions, your stats and how to play are all in here." }];
       TOUR_STEP = 0;
       els.tour.classList.remove("hidden");
       paintTourStep();
