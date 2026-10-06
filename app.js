@@ -1164,7 +1164,13 @@ function submitGuess(){
 
   setKickerForTurn();
   els.input.value = "";
-  try{ els.input.focus(); }catch(_){}
+  // Ready for the next guess. On a phone, focusing the box would pop the
+  // keyboard up over the Higher/Lower clue the player needs to read, so the
+  // keyboard is put away there and the player taps the box when ready; with
+  // a mouse and keyboard, the box stays ready to type straight into.
+  var touch = false;
+  try{ touch = window.matchMedia("(pointer: coarse)").matches; }catch(_){}
+  try{ if (touch) els.input.blur(); else els.input.focus(); }catch(_){}
 }
 
 // ===== share =====
