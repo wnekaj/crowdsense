@@ -10,15 +10,7 @@
 (function(){
   "use strict";
   var EXTRA = [
-    {
-      date: "2026-10-07",
-      question: "What percentage of Brits say they've heard of the term 'rizz'?",
-      answer: 19,
-      // figure as supplied; no crosstab seen. Source deliberately doesn't
-      // name Public First.
-      source: "Poll of 1,060 UK adults, 7–10 May 2026",
-      teaser: "How many Brits have heard of 'rizz'?"
-    }
+    // none at the moment: 'rizz' (7 Oct) has gone live
   ];
   if (typeof CS_QUESTIONS === "undefined") return;
   EXTRA.forEach(function(q){

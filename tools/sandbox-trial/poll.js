@@ -1,5 +1,5 @@
 /* =========================================================================
-   poll.js — SANDBOX TRIAL. A one-off pop-up after the reveal, before the
+   poll.js — A one-off pop-up after the reveal, before the
    stats: "Would you rather play with one guess or two?"
 
    Each device is asked once. Answers are stored with the existing crowd
@@ -17,7 +17,8 @@
   "use strict";
 
   var API = "https://crowdsense-crowd.crowdsense-game.workers.dev";
-  var BUCKET = 90002;                 // sandbox; the live game uses 90001
+  // the sandbox's storage shim sets __SBX_ISOLATED; the live game has none
+  var BUCKET = window.__SBX_ISOLATED ? 90002 : 90001;
   var KEY = "cs-poll-guesses";        // this device's answer: "one", "two" or "skip"
   var VALUE = { one: 1, two: 2 };
 

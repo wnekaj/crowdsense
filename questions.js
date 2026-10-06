@@ -725,6 +725,15 @@ var CS_QUESTIONS = [
     // poll (2,028 unweighted, 2,032 weighted) as the Falklands question.
     source: "Public First poll of 2,028 UK adults, 13–15 September 2026",
     teaser: "Does Burnham need an election to be legitimate?"
+  },
+  {
+    date: "2026-10-07",  // Day 80
+    question: "What percentage of Brits say they've heard of the term 'rizz'?",
+    answer: 19,
+    // figure as supplied; no crosstab seen. Source deliberately doesn't
+    // name Public First. The first day of the two-guess game.
+    source: "Poll of 1,060 UK adults, 7–10 May 2026",
+    teaser: "How many Brits have heard of 'rizz'?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
