@@ -158,6 +158,13 @@ var cfg = [
 ] : []).concat([
   '    }, window.CS_CONFIG || {});'
 ]).join("\n      ");
+// the live page's two-guess switch goes first (the sandbox loads that layer
+// itself), before the CS_CONFIG rewrite below looks for its block
+["TWO-GUESS", "TWO-GUESS-SCRIPTS"].forEach(function(tag){
+  var block = html.match(new RegExp("\\s*<!--" + tag + "-->[\\s\\S]*?<!--/" + tag + "-->"));
+  if (block) html = replaceOnce(html, block[0], "", "the live " + tag + " block");
+});
+
 var liveCfg = html.match(/window\.CS_CONFIG = Object\.assign\(\{[\s\S]*?\}, window\.CS_CONFIG \|\| \{\}\);/);
 if (!liveCfg) throw new Error("build-sandbox: could not find the CS_CONFIG block in index.html.");
 html = replaceOnce(html, liveCfg[0], cfg, "the CS_CONFIG block");

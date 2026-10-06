@@ -941,6 +941,34 @@
     }catch(_){}
   </script>
 
+  <!--TWO-GUESS-->
+  <script>
+    // Two guesses, from Wed 7 Oct 2026 (London time). Before then the page
+    // is exactly the one-guess game; from then it adds the two-guess layer
+    // (points.js, menu.js, trial.js, poll.js, trial.css), first tried out in
+    // the sandbox. A page left open over midnight reloads itself, so it
+    // switches over then too. tools/build-sandbox.js strips both of these
+    // blocks, since the sandbox loads the layer its own way.
+    (function(){
+      var START = "2026-10-07", today = "";
+      try{
+        var o = {};
+        new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit" })
+          .formatToParts(new Date()).forEach(function(x){ o[x.type] = x.value; });
+        today = o.year + "-" + o.month + "-" + o.day;
+      }catch(_){ today = new Date().toISOString().slice(0, 10); }
+      window.CS_TWO_GUESS = today >= START;
+      if (window.CS_TWO_GUESS){
+        var c = window.CS_CONFIG || {};
+        c.MAX_GUESSES = 2;
+        c.BULLSEYE = 0;
+        window.CS_CONFIG = c;
+        document.write('<link rel="stylesheet" href="trial.css?v=149" />');
+      }
+    })();
+  </script>
+  <!--/TWO-GUESS-->
+
   <script>
     // Site configuration — overrides the defaults in app.js, so you never
     // need to edit that file. See worker/README.md for the crowd layer.
@@ -950,8 +978,16 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=148"></script>
-  <script src="app.js?v=148"></script>
+  <script src="questions.js?v=149"></script>
+  <script src="app.js?v=149"></script>
+  <!--TWO-GUESS-SCRIPTS-->
+  <script>
+    if (window.CS_TWO_GUESS){
+      document.write('<script src="points.js?v=149"><\/script><script src="menu.js?v=149"><\/script>' +
+        '<script src="trial.js?v=149"><\/script><script src="poll.js?v=149"><\/script>');
+    }
+  </script>
+  <!--/TWO-GUESS-SCRIPTS-->
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){
