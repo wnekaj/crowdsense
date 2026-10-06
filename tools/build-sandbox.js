@@ -7,7 +7,8 @@
    The sandbox is a full copy of the game at crowdsense.uk/sandbox/ where a
    change can be tried out before it goes near the real thing. app.js and
    questions.js are copied verbatim, so the sandbox runs the same engine that
-   players run; only index.html is rewritten, to isolate it:
+   players run; tools/sandbox-questions.js adds any questions being tried
+   out in the sandbox only. index.html is rewritten, to isolate it:
 
      - localStorage is shimmed to prefix every key, so sandbox play cannot
        read or write a real player's stats, streak or saved games. The game
@@ -58,6 +59,9 @@ if (!fs.existsSync(OUT)) fs.mkdirSync(OUT);
 
 /* ---------- the engine and the bank, copied as-is ---------- */
 write("app.js", read("app.js"));
+// questions that run in the sandbox only, layered over the live bank
+fs.writeFileSync(path.join(OUT, "sandbox-questions.js"),
+  fs.readFileSync(path.join(__dirname, "sandbox-questions.js"), "utf8"));
 write("questions.js", read("questions.js"));
 
 /* ---------- index.html, rewritten ---------- */
@@ -165,7 +169,7 @@ var loader = [
   '<script>',
   '    // Never load the game unless the storage shim is provably in place.',
   '    if (window.__SBX_ISOLATED){',
-  '      ' + JSON.stringify(["questions.js", "app.js"].concat(TRIAL ? ["points.js", "menu.js", "trial.js"] : [])) + '.forEach(function(src){',
+  '      ' + JSON.stringify(["questions.js", "sandbox-questions.js", "app.js"].concat(TRIAL ? ["points.js", "menu.js", "trial.js"] : [])) + '.forEach(function(src){',
   '        var s = document.createElement("script");',
   '        s.src = src + "?sbx=" + Date.now();',
   '        s.async = false;',
@@ -251,7 +255,7 @@ if (TRIAL){
 write("index.html", html);
 
 console.log("sandbox/ rebuilt from live:");
-["index.html", "app.js", "questions.js"].concat(TRIAL ? trialFiles.concat(["leaderboard.html"]) : []).forEach(function(f){
+["index.html", "app.js", "questions.js", "sandbox-questions.js"].concat(TRIAL ? trialFiles.concat(["leaderboard.html"]) : []).forEach(function(f){
   console.log("  " + f + "  " + fs.statSync(path.join(OUT, f)).size + " bytes");
 });
 console.log("open  https://crowdsense.uk/sandbox/            (today)");

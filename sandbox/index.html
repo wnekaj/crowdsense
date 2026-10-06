@@ -1043,7 +1043,7 @@
   <script>
       // Never load the game unless the storage shim is provably in place.
       if (window.__SBX_ISOLATED){
-        ["questions.js","app.js","points.js","menu.js","trial.js"].forEach(function(src){
+        ["questions.js","sandbox-questions.js","app.js","points.js","menu.js","trial.js"].forEach(function(src){
           var s = document.createElement("script");
           s.src = src + "?sbx=" + Date.now();
           s.async = false;
