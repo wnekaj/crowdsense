@@ -52,3 +52,8 @@ Commit and push. The crowd layer appears on the reveal automatically; while
 - The data accumulating in D1 is the perception-gap dataset: per puzzle, the
   full distribution of what people *thought* the public said. Export any time:
   `npx wrangler d1 execute crowdsense --command "SELECT * FROM guesses" --remote --json > guesses.json`
+- Puzzle numbers 90000 and above are reserved for one-off polls, not puzzles.
+  The "one guess or two?" pop-up records its answers as guesses on 90001
+  (live) and 90002 (sandbox), with 1 = one guess and 2 = two guesses;
+  `poll-results.html` reads them back. Leave these out of any guess-data
+  export: `SELECT * FROM guesses WHERE puzzle < 90000`.

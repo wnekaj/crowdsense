@@ -169,7 +169,7 @@ var loader = [
   '<script>',
   '    // Never load the game unless the storage shim is provably in place.',
   '    if (window.__SBX_ISOLATED){',
-  '      ' + JSON.stringify(["questions.js", "sandbox-questions.js", "app.js"].concat(TRIAL ? ["points.js", "menu.js", "trial.js"] : [])) + '.forEach(function(src){',
+  '      ' + JSON.stringify(["questions.js", "sandbox-questions.js", "app.js"].concat(TRIAL ? ["points.js", "menu.js", "trial.js", "poll.js"] : [])) + '.forEach(function(src){',
   '        var s = document.createElement("script");',
   '        s.src = src + "?sbx=" + Date.now();',
   '        s.async = false;',
@@ -232,7 +232,7 @@ html = replaceOnce(html, "<body>", "<body>\n  " + banner, "the opening body tag"
 // 9. SANDBOX TRIAL: its stylesheet, its scripts, and the leaderboard page,
 //    which gets the same storage shim as the game so it only ever reads the
 //    sandbox's own saved data
-var trialFiles = ["points.js", "menu.js", "signup.js", "trial.js", "trial.css", "leaderboard.js"];
+var trialFiles = ["points.js", "menu.js", "signup.js", "trial.js", "poll.js", "trial.css", "leaderboard.js"];
 if (TRIAL){
   // the stylesheet's address carries a hash of its content: the scripts load
   // fresh every time, and a cached old stylesheet under new scripts leaves

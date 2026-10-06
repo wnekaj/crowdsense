@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Crowdsense — poll results</title>
+  <meta name="robots" content="noindex" />
+  <style>
+    :root{
+      --ink:#121212; --muted:#787c7e; --line:#d3d6da; --hairline:#e3e5e8;
+      --accent:#f26522; --accent-soft:#fdeee4;
+      --sans:"Libre Franklin", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    *{ box-sizing:border-box }
+    body{ margin:0; font-family:var(--sans); color:var(--ink); background:#fff; padding:0 16px 60px }
+    .wrap{ width:min(560px,100%); margin:0 auto }
+    .brand{ font-weight:500; font-size:17px; letter-spacing:.14em; text-transform:uppercase; margin:24px 0 2px }
+    .brand span{ color:var(--accent) }
+    h1{ font-size:24px; margin:4px 0 4px }
+    .sub{ color:var(--muted); font-size:14px; margin:0 0 20px; line-height:1.5 }
+    section{ border:1px solid var(--line); border-radius:8px; padding:16px; margin:0 0 16px }
+    h2{ font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:0 0 12px; font-weight:600 }
+    .row{ margin:0 0 12px }
+    .row .lab{ display:flex; justify-content:space-between; font-size:15px; margin-bottom:5px; font-variant-numeric:tabular-nums }
+    .bar{ height:14px; background:var(--hairline); border-radius:7px; overflow:hidden }
+    .bar i{ display:block; height:100%; background:var(--accent); border-radius:7px; width:0 }
+    .total{ font-size:13.5px; color:var(--muted); margin:4px 0 0 }
+    .err{ color:#b3261e; font-size:14px }
+    button{ font:inherit; font-size:14px; border:1px solid var(--line); background:#fff; border-radius:4px; padding:8px 14px; cursor:pointer }
+    .note{ color:var(--muted); font-size:12.5px; line-height:1.5; margin-top:18px }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">Crowdsense<span>.</span></div>
+    <h1>One guess or two?</h1>
+    <p class="sub">Answers to the pop-up shown after the reveal. Each device is asked once; "Skip" isn't counted.</p>
+
+    <section id="live"><h2>Live game</h2><div class="out">Loading…</div></section>
+    <section id="sandbox"><h2>Sandbox (test plays)</h2><div class="out">Loading…</div></section>
+
+    <button type="button" id="refresh">Refresh</button>
+    <p class="note">Stored with the crowd Worker as guesses on reserved puzzle numbers (90001 live, 90002 sandbox; 1 = one guess, 2 = two guesses), so exports of the crowd data should leave out puzzles of 90000 and above. Anyone could submit more than once by clearing their browser data, so treat small differences with care.</p>
+  </div>
+
+  <script>
+    var API = "https://crowdsense-crowd.crowdsense-game.workers.dev";
+    var BUCKETS = { live: 90001, sandbox: 90002 };
+
+    function render(id, data){
+      var out = document.querySelector("#" + id + " .out");
+      var one = (data.counts && data.counts[1]) || 0, two = (data.counts && data.counts[2]) || 0;
+      var n = one + two;
+      function row(label, k){
+        var pct = n ? Math.round(k / n * 100) : 0;
+        return '<div class="row"><div class="lab"><span>' + label + '</span><span><b>' + pct + '%</b> · ' + k.toLocaleString("en-GB") + '</span></div>' +
+          '<div class="bar"><i style="width:' + pct + '%"></i></div></div>';
+      }
+      out.innerHTML = row("One guess", one) + row("Two guesses", two) +
+        '<p class="total">' + n.toLocaleString("en-GB") + (n === 1 ? " answer" : " answers") + '</p>';
+    }
+
+    function load(){
+      Object.keys(BUCKETS).forEach(function(id){
+        var out = document.querySelector("#" + id + " .out");
+        out.textContent = "Loading…";
+        fetch(API + "/dist?puzzle=" + BUCKETS[id], { cache: "no-store" })
+          .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
+          .then(function(d){ render(id, d); })
+          .catch(function(){ out.innerHTML = '<p class="err">Couldn\'t reach the results server. Try Refresh.</p>'; });
+      });
+    }
+    document.getElementById("refresh").addEventListener("click", load);
+    load();
+  </script>
+</body>
+</html>
