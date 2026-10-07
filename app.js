@@ -1,5 +1,6 @@
 // app.js — Crowdsense game engine
-// Two guesses: instinct, then judgement. Score out of 100 rewards both.
+// Guess what share of the British public said something; your score is how
+// many points you were off.
 "use strict";
 
 // ===== config =====
@@ -10,8 +11,6 @@ var CONFIG = {
   MAX_GUESSES: 1,
   BULLSEYE: 2,                   // within this = bullseye
   WIN_MARGIN: 10,                // within this = win (keeps the streak)
-  FIRST_WEIGHT: 0.4,             // weighting only applies if MAX_GUESSES > 1
-  FINAL_WEIGHT: 0.6,
   REVEAL_MS: 3400,               // Pointless-style countdown duration on reveal
   // Cloudflare Worker URL for the crowd layer (see worker/README.md).
   // Empty = crowd layer off.
@@ -134,22 +133,54 @@ function loadState(){
 }
 
 // ===== heat scale =====
-function heat(err){
-  if (err <= 2)  return { cls:"target", label:"On the pulse",  emoji:"🎯" };
-  if (err <= 5)  return { cls:"hot",    label:"On the scent",  emoji:"🟩" };
-  if (err <= 10) return { cls:"warm",   label:"In the mix",    emoji:"🟨" };
-  if (err <= 20) return { cls:"cool",   label:"Warm-ish",  emoji:"🟧" };
+// The bands widened from Thu 8 Oct 2026. Every day keeps the bands it was
+// played under, so a past result, its colour and the stats already recorded
+// never shift. Pass the day being scored; it defaults to the day on screen.
+//
+//                  up to 7 Oct 2026     from 8 Oct 2026
+//   On the pulse   within 2             within 3
+//   On the scent   within 5             within 10
+//   In the mix     within 10            within 15
+//   Warm-ish       within 20            less than 25 away
+//   Out of touch   more than 20 away    25 or more away
+var WIDE_BANDS_FROM = "2026-10-08";
+function wideBands(dayKey){
+  var k = dayKey || (CUR && CUR.dayKey) || DAY_KEY;
+  return k >= WIDE_BANDS_FROM;
+}
+function heat(err, dayKey){
+  var w = wideBands(dayKey);
+  if (err <= (w ? 3 : 2))   return { cls:"target", label:"On the pulse",  emoji:"🎯" };
+  if (err <= (w ? 10 : 5))  return { cls:"hot",    label:"On the scent",  emoji:"🟩" };
+  if (err <= (w ? 15 : 10)) return { cls:"warm",   label:"In the mix",    emoji:"🟨" };
+  if (w ? err < 25 : err <= 20) return { cls:"cool", label:"Warm-ish",    emoji:"🟧" };
   return           { cls:"cold",   label:"Out of touch", emoji:"🟥" };
+}
+// the How to play legend, for the bands in force today
+function paintLegend(){
+  var w = wideBands(DAY_KEY);
+  var txt = w ? ["Within 3", "Within 10", "Within 15", "Less than 25 away", "25 or more away"]
+              : ["Within 2", "Within 5", "Within 10", "Within 20", "More than 20 away"];
+  var rows = document.querySelectorAll("#helpModal .legend .lg");
+  for (var i = 0; i < rows.length && i < txt.length; i++){
+    var chip = rows[i].querySelector(".chip");
+    if (!chip) continue;
+    while (chip.nextSibling) rows[i].removeChild(chip.nextSibling);
+    rows[i].appendChild(document.createTextNode(" " + txt[i]));
+  }
 }
 
 // ===== scoring =====
 // Golf scoring: your score is simply how many points you were off.
-// 0 is perfect; lower is better. (With multiple guesses the final guess
-// weighs heaviest, per the FIRST/FINAL weights.)
+// 0 is perfect; lower is better. A day played with two guesses (7 Oct 2026,
+// the one two-guess day) scores the first guess's error minus half of however
+// much closer the second got — the rule it was played under, so reloading or
+// rebuilding from history gives the same number the player saw.
 function computeScore(guesses, answer){
   var err1 = Math.abs(guesses[0] - answer);
+  if (guesses.length < 2) return err1;
   var errF = Math.abs(guesses[guesses.length-1] - answer);
-  return Math.round(CONFIG.FIRST_WEIGHT * err1 + CONFIG.FINAL_WEIGHT * errF);
+  return err1 - 0.5 * Math.max(0, err1 - errF);
 }
 
 // ===== multi-part days =====
@@ -159,7 +190,7 @@ function computeScore(guesses, answer){
 //
 // Scoring: the day's score is the MEAN of the round errors, not the sum. That
 // keeps a five-round day on the same 0-100 scale as an ordinary day, so it
-// drops into the existing tiers (2/5/10/20), the Crowdsense average, the best
+// drops into the existing tiers, the Crowdsense average, the best
 // score and the bullseye count without distorting any of them. A sum would
 // make every multi-round day look roughly five times worse than a normal one
 // and would wreck the average.
@@ -300,7 +331,9 @@ function statsFromHistory(){
     var score = isMulti(q) ? meanErr(gs, q) : computeScore(gs, q.answer);
     s.played += 1;
     if (errF <= CONFIG.WIN_MARGIN) s.wins += 1;
-    var t = heat(errF).cls;
+    // the record files a day under its own bands; a two-guess day under the
+    // band of its score, as it was filed when played
+    var t = heat((!isMulti(q) && gs.length > 1) ? score : errF, days[i].day).cls;
     s.tiers[t] = (s.tiers[t]||0) + 1;
     s.firstErrSum += isMulti(q) ? errF : Math.abs(gs[0] - q.answer);
     s.scoreSum += score;
@@ -396,7 +429,7 @@ function renderStats(){
   var avg = s.played ? Math.round((s.scoreSum / s.played) * 10) / 10 : null;
   $("stWin").textContent = (avg === null) ? "–" : String(avg);
   // the average quietly takes the colour of the tier it falls in
-  $("stWin").className = "v" + (avg === null ? "" : " " + heat(avg).cls);
+  $("stWin").className = "v" + (avg === null ? "" : " " + heat(avg, DAY_KEY).cls);
   $("stStreak").textContent = readStreak().count;
   // Best = your lowest daily score; 0 is a perfect day
   $("stMax").textContent = (s.best === null || s.best === undefined) ? "–" : String(s.best);
@@ -745,14 +778,14 @@ function setKickerForTurn(){
 }
 
 function verdictForErr(err){
-  var off = err + " off — ";
-  if (err <= 2)  return { text: off + "on the pulse" };
-  if (err <= 5)  return { text: off + "on the scent" };
-  if (err <= 10) return { text: off + "in the mix" };
-  if (err <= 20) return { text: off + "warm-ish" };
-  return { text: off + "out of touch" };
+  return { text: err + " off — " + heat(err).label.toLowerCase() };
 }
 function verdictFor(guesses, answer, win){
+  // a two-guess day reads as it did when played: its score and band, "6 — in the mix"
+  if (guesses.length > 1){
+    var sc = computeScore(guesses, answer);
+    return { text: (Math.round(sc * 10) / 10) + " — " + heat(sc).label.toLowerCase() };
+  }
   return verdictForErr(Math.abs(guesses[guesses.length-1] - answer));
 }
 
@@ -1608,6 +1641,7 @@ function loadQuestions(){
     healStreakFromHistory();
     resetStreakIfSkippedDay();
     reconcileBestFromHistory();
+    paintLegend();
     startDailyTicker();
     updateStreakBadge();
     setupGame(DAY_KEY, "daily");

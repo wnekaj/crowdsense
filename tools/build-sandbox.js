@@ -36,9 +36,13 @@ var PREFIX = "sbx:";
 // SANDBOX TRIAL: two guesses with points, a monthly leaderboard on dummy
 // data, and a signup mock. Its files live in tools/sandbox-trial/ and are
 // layered on top of the live engine — app.js is still copied untouched, and
-// trial.js swaps in the few functions the trial changes. Set to false to
-// build a plain copy of live again.
-var TRIAL = true;
+// trial.js swaps in the few functions the trial changes. It ran live for one
+// day (7 Oct 2026); players preferred one guess, so it is off. Set to true
+// to bring the trial back into the sandbox.
+var TRIAL = false;
+// Without the trial, the sandbox mirrors the live game from 8 Oct 2026: one
+// guess, with the Menu button (menu.js and nav.js, copied from the root).
+var NAV = !TRIAL;
 var TRIAL_DIR = path.join(__dirname, "sandbox-trial");
 
 function read(f){ return fs.readFileSync(path.join(ROOT, f), "utf8"); }
@@ -176,7 +180,7 @@ var loader = [
   '<script>',
   '    // Never load the game unless the storage shim is provably in place.',
   '    if (window.__SBX_ISOLATED){',
-  '      ' + JSON.stringify(["questions.js", "sandbox-questions.js", "app.js"].concat(TRIAL ? ["points.js", "menu.js", "trial.js", "poll.js"] : [])) + '.forEach(function(src){',
+  '      ' + JSON.stringify(["questions.js", "sandbox-questions.js", "app.js"].concat(TRIAL ? ["points.js", "menu.js", "trial.js", "poll.js"] : NAV ? ["menu.js", "nav.js"] : [])) + '.forEach(function(src){',
   '        var s = document.createElement("script");',
   '        s.src = src + "?sbx=" + Date.now();',
   '        s.async = false;',
@@ -258,11 +262,18 @@ if (TRIAL){
     try{ fs.unlinkSync(path.join(OUT, f)); }catch(_){}
   });
 }
+// the live Menu button, as the live game loads it from 8 Oct 2026
+var navFiles = ["menu.js", "nav.js"];
+if (NAV){
+  navFiles.forEach(function(f){ write(f, read(f)); });
+} else if (!TRIAL){
+  try{ fs.unlinkSync(path.join(OUT, "nav.js")); }catch(_){}
+}
 
 write("index.html", html);
 
 console.log("sandbox/ rebuilt from live:");
-["index.html", "app.js", "questions.js", "sandbox-questions.js"].concat(TRIAL ? trialFiles.concat(["leaderboard.html"]) : []).forEach(function(f){
+["index.html", "app.js", "questions.js", "sandbox-questions.js"].concat(TRIAL ? trialFiles.concat(["leaderboard.html"]) : NAV ? navFiles : []).forEach(function(f){
   console.log("  " + f + "  " + fs.statSync(path.join(OUT, f)).size + " bytes");
 });
 console.log("open  https://crowdsense.uk/sandbox/            (today)");

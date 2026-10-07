@@ -835,11 +835,11 @@
         <p>Each day we take one real question the British public have been polled on, and you guess what they said.</p>
         <p>Your score is simply how many percentage points you were off. You have <b>one guess</b>. How good is your crowdsense?</p>
         <div class="legend">
-          <div class="lg"><span class="chip target">🎯 On the pulse</span> Within 2</div>
-          <div class="lg"><span class="chip hot">On the scent</span> Within 5</div>
-          <div class="lg"><span class="chip warm">In the mix</span> Within 10</div>
-          <div class="lg"><span class="chip cool">Warm-ish</span> Within 20</div>
-          <div class="lg"><span class="chip cold">Out of touch</span> More than 20 away</div>
+          <div class="lg"><span class="chip target">🎯 On the pulse</span> Within 3</div>
+          <div class="lg"><span class="chip hot">On the scent</span> Within 10</div>
+          <div class="lg"><span class="chip warm">In the mix</span> Within 15</div>
+          <div class="lg"><span class="chip cool">Warm-ish</span> Less than 25 away</div>
+          <div class="lg"><span class="chip cold">Out of touch</span> 25 or more away</div>
         </div>
         <p style="margin-top:12px">New question daily at midnight, GMT.</p>
         <p style="margin-top:14px">All figures from real polling of the British public; each day's source is shown with the answer.</p>
@@ -943,27 +943,29 @@
 
   <!--TWO-GUESS-->
   <script>
-    // Two guesses, from Wed 7 Oct 2026 (London time). Before then the page
-    // is exactly the one-guess game; from then it adds the two-guess layer
-    // (points.js, menu.js, trial.js, poll.js, trial.css), first tried out in
-    // the sandbox. A page left open over midnight reloads itself, so it
-    // switches over then too. tools/build-sandbox.js strips both of these
-    // blocks, since the sandbox loads the layer its own way.
+    // Wed 7 Oct 2026 (London time) was the one two-guess day: the page adds
+    // the two-guess layer (points.js, menu.js, trial.js, poll.js, trial.css).
+    // From Thu 8 Oct it is the one-guess game again, keeping the Menu button
+    // from that trial (menu.js, nav.js). Before 7 Oct, neither. A page left
+    // open over midnight reloads itself, so it switches over then too.
+    // tools/build-sandbox.js strips both of these blocks; the sandbox loads
+    // its own layer.
     (function(){
-      var START = "2026-10-07", today = "";
+      var TWO_GUESS_DAY = "2026-10-07", MENU_FROM = "2026-10-08", today = "";
       try{
         var o = {};
         new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit" })
           .formatToParts(new Date()).forEach(function(x){ o[x.type] = x.value; });
         today = o.year + "-" + o.month + "-" + o.day;
       }catch(_){ today = new Date().toISOString().slice(0, 10); }
-      window.CS_TWO_GUESS = today >= START;
+      window.CS_TWO_GUESS = today === TWO_GUESS_DAY;
+      window.CS_NAV_MENU = today >= MENU_FROM;
       if (window.CS_TWO_GUESS){
         var c = window.CS_CONFIG || {};
         c.MAX_GUESSES = 2;
         c.BULLSEYE = 0;
         window.CS_CONFIG = c;
-        document.write('<link rel="stylesheet" href="trial.css?v=149" />');
+        document.write('<link rel="stylesheet" href="trial.css?v=151" />');
       }
     })();
   </script>
@@ -978,13 +980,15 @@
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
-  <script src="questions.js?v=150"></script>
-  <script src="app.js?v=150"></script>
+  <script src="questions.js?v=151"></script>
+  <script src="app.js?v=151"></script>
   <!--TWO-GUESS-SCRIPTS-->
   <script>
     if (window.CS_TWO_GUESS){
-      document.write('<script src="points.js?v=149"><\/script><script src="menu.js?v=149"><\/script>' +
-        '<script src="trial.js?v=149"><\/script><script src="poll.js?v=149"><\/script>');
+      document.write('<script src="points.js?v=151"><\/script><script src="menu.js?v=151"><\/script>' +
+        '<script src="trial.js?v=151"><\/script><script src="poll.js?v=151"><\/script>');
+    } else if (window.CS_NAV_MENU){
+      document.write('<script src="menu.js?v=151"><\/script><script src="nav.js?v=151"><\/script>');
     }
   </script>
   <!--/TWO-GUESS-SCRIPTS-->
