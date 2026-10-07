@@ -759,7 +759,6 @@
       .sliderwrap{ flex:1 1 100%; order:2; padding:6px 4px 0 }
     }
   </style>
-  <link rel="stylesheet" href="trial.css?v=881e90e4aa" />
 </head>
 <body>
   <div class="sbx-bar">
@@ -915,11 +914,11 @@
         <p>Each day we take one real question the British public have been polled on, and you guess what they said.</p>
         <p>Your score is simply how many percentage points you were off. You have <b>one guess</b>. How good is your crowdsense?</p>
         <div class="legend">
-          <div class="lg"><span class="chip target">🎯 On the pulse</span> Within 2</div>
-          <div class="lg"><span class="chip hot">On the scent</span> Within 5</div>
-          <div class="lg"><span class="chip warm">In the mix</span> Within 10</div>
-          <div class="lg"><span class="chip cool">Warm-ish</span> Within 20</div>
-          <div class="lg"><span class="chip cold">Out of touch</span> More than 20 away</div>
+          <div class="lg"><span class="chip target">🎯 On the pulse</span> Within 3</div>
+          <div class="lg"><span class="chip hot">On the scent</span> Within 10</div>
+          <div class="lg"><span class="chip warm">In the mix</span> Within 15</div>
+          <div class="lg"><span class="chip cool">Warm-ish</span> Less than 25 away</div>
+          <div class="lg"><span class="chip cold">Out of touch</span> 25 or more away</div>
         </div>
         <p style="margin-top:12px">New question daily at midnight, GMT.</p>
         <p style="margin-top:14px">All figures from real polling of the British public; each day's source is shown with the answer.</p>
@@ -1034,16 +1033,13 @@
             TODAY: (function(){
               var m = /[?&]day=(\d{4}-\d{2}-\d{2})/.exec(location.search);
               return m ? m[1] : "";
-            })(),
-            // SANDBOX TRIAL: two guesses; only an exact first guess skips the second
-            MAX_GUESSES: 2,
-            BULLSEYE: 0
+            })()
           }, window.CS_CONFIG || {});
   </script>
   <script>
       // Never load the game unless the storage shim is provably in place.
       if (window.__SBX_ISOLATED){
-        ["questions.js","sandbox-questions.js","app.js","points.js","menu.js","trial.js","poll.js"].forEach(function(src){
+        ["questions.js","sandbox-questions.js","app.js","menu.js","nav.js"].forEach(function(src){
           var s = document.createElement("script");
           s.src = src + "?sbx=" + Date.now();
           s.async = false;
