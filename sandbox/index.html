@@ -759,6 +759,9 @@
       .sliderwrap{ flex:1 1 100%; order:2; padding:6px 4px 0 }
     }
   </style>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,800;9..144,900&family=Inter+Tight:wght@400;500;600;700;800;900&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="looks.css?v=34c8198aaf" />
+  <script>(function(){ var m = /[?&]look=([abc])\b/.exec(location.search); if (m) document.documentElement.setAttribute("data-look", m[1]); })();</script>
 </head>
 <body>
   <div class="sbx-bar">
@@ -1039,7 +1042,7 @@
   <script>
       // Never load the game unless the storage shim is provably in place.
       if (window.__SBX_ISOLATED){
-        ["questions.js","sandbox-questions.js","app.js","menu.js","nav.js"].forEach(function(src){
+        ["questions.js","sandbox-questions.js","app.js","menu.js","nav.js","looks.js"].forEach(function(src){
           var s = document.createElement("script");
           s.src = src + "?sbx=" + Date.now();
           s.async = false;
