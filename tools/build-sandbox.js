@@ -43,6 +43,10 @@ var TRIAL = false;
 // Without the trial, the sandbox mirrors the live game from 8 Oct 2026: one
 // guess, with the Menu button (menu.js and nav.js, copied from the root).
 var NAV = !TRIAL;
+// SANDBOX ONLY: three redesign options to compare, switched with ?look=a|b|c
+// (no ?look= is the current design). Files in tools/sandbox-looks/.
+var LOOKS = true;
+var LOOKS_DIR = path.join(__dirname, "sandbox-looks");
 var TRIAL_DIR = path.join(__dirname, "sandbox-trial");
 
 function read(f){ return fs.readFileSync(path.join(ROOT, f), "utf8"); }
@@ -180,7 +184,7 @@ var loader = [
   '<script>',
   '    // Never load the game unless the storage shim is provably in place.',
   '    if (window.__SBX_ISOLATED){',
-  '      ' + JSON.stringify(["questions.js", "sandbox-questions.js", "app.js"].concat(TRIAL ? ["points.js", "menu.js", "trial.js", "poll.js"] : NAV ? ["menu.js", "nav.js"] : [])) + '.forEach(function(src){',
+  '      ' + JSON.stringify(["questions.js", "sandbox-questions.js", "app.js"].concat(TRIAL ? ["points.js", "menu.js", "trial.js", "poll.js"] : NAV ? ["menu.js", "nav.js"] : []).concat(LOOKS ? ["looks.js"] : [])) + '.forEach(function(src){',
   '        var s = document.createElement("script");',
   '        s.src = src + "?sbx=" + Date.now();',
   '        s.async = false;',
@@ -262,6 +266,23 @@ if (TRIAL){
     try{ fs.unlinkSync(path.join(OUT, f)); }catch(_){}
   });
 }
+// the redesign options: their fonts and stylesheet in the head, and the
+// chosen look set on <html> before anything paints
+var lookFiles = ["looks.js", "looks.css"];
+if (LOOKS){
+  var lookHash = require("crypto").createHash("sha1")
+    .update(fs.readFileSync(path.join(LOOKS_DIR, "looks.css"))).digest("hex").slice(0, 10);
+  html = replaceOnce(html, "</head>",
+    '  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,800;9..144,900' +
+      '&family=Inter+Tight:wght@400;500;600;700;800;900&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet" />\n' +
+    '  <link rel="stylesheet" href="looks.css?v=' + lookHash + '" />\n' +
+    '  <script>(function(){ var m = /[?&]look=([abc])\\b/.exec(location.search); if (m) document.documentElement.setAttribute("data-look", m[1]); })();</script>\n' +
+    '</head>', "the closing head tag (looks)");
+  lookFiles.forEach(function(f){ fs.writeFileSync(path.join(OUT, f), fs.readFileSync(path.join(LOOKS_DIR, f), "utf8")); });
+} else {
+  lookFiles.forEach(function(f){ try{ fs.unlinkSync(path.join(OUT, f)); }catch(_){} });
+}
+
 // the live Menu button, as the live game loads it from 8 Oct 2026
 var navFiles = ["menu.js", "nav.js"];
 if (NAV){
@@ -273,7 +294,7 @@ if (NAV){
 write("index.html", html);
 
 console.log("sandbox/ rebuilt from live:");
-["index.html", "app.js", "questions.js", "sandbox-questions.js"].concat(TRIAL ? trialFiles.concat(["leaderboard.html"]) : NAV ? navFiles : []).forEach(function(f){
+["index.html", "app.js", "questions.js", "sandbox-questions.js"].concat(TRIAL ? trialFiles.concat(["leaderboard.html"]) : NAV ? navFiles : []).concat(LOOKS ? lookFiles : []).forEach(function(f){
   console.log("  " + f + "  " + fs.statSync(path.join(OUT, f)).size + " bytes");
 });
 console.log("open  https://crowdsense.uk/sandbox/            (today)");
