@@ -734,6 +734,16 @@ var CS_QUESTIONS = [
     // name Public First. The first day of the two-guess game.
     source: "Poll of 1,060 UK adults, 7–10 May 2026",
     teaser: "How many Brits have heard of 'rizz'?"
+  },
+  {
+    date: "2026-10-08",  // Day 81
+    question: "What percentage of Brits say they know someone who has a criminal record?",
+    answer: 34,
+    // 34 yes, 65 no, 1 prefer not to say, read off the first column, taken
+    // as the total (the column headings weren't in the screenshot; the next
+    // column reads 37). The first day of the wider bands.
+    source: "Public First poll of 1,009 UK adults, 15–29 November 2024",
+    teaser: "How many Brits know someone with a criminal record?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
