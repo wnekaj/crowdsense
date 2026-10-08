@@ -260,5 +260,5 @@ html[data-look="c"] .lk-card.t-cold{ --lk-band:var(--cold) }
 html[data-look="c"] .lk-card .lk-card-top,
 html[data-look="c"] .lk-card .lk-card-foot{ background:color-mix(in srgb, var(--lk-band, #f6cdb2) 30%, #fff) }
 html[data-look="c"] .lk-rules i{ background:#fdf1e8 }
-/* the share button in A's warm peach, the colour of the front door */
-html[data-look="c"] .sharebtn{ background:#f6cdb2; color:var(--ink) }
+/* the share button in brand orange, like Play and Lock in */
+html[data-look="c"] .sharebtn{ background:var(--accent); color:#fff }
