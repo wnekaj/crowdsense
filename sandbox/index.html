@@ -759,9 +759,32 @@
       .sliderwrap{ flex:1 1 100%; order:2; padding:6px 4px 0 }
     }
   </style>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,800;9..144,900&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="looks.css?v=ba2e325dc0" />
-  <script>(function(){ var m = /[?&]look=([ac])\b/.exec(location.search); if (m) document.documentElement.setAttribute("data-look", m[1]); })();</script>
+  <!--LOOK-->
+  <script>
+    // From Fri 9 Oct 2026 (London time) the game wears the "Cards" design
+    // (look C from the sandbox): data-look="c" on <html>, its font and
+    // look.css here so nothing paints in the old design first, and look.js
+    // after the game scripts. Before 9 Oct, none of it. A page left open
+    // over midnight reloads itself, so it switches over then too.
+    // tools/build-sandbox.js swaps this block for one that honours ?day=.
+    (function(){
+      var LOOK_FROM = "2026-10-09", today = "";
+      try{
+        var o = {};
+        new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit" })
+          .formatToParts(new Date()).forEach(function(x){ o[x.type] = x.value; });
+        today = o.year + "-" + o.month + "-" + o.day;
+      }catch(_){ today = new Date().toISOString().slice(0, 10); }
+      var day = /[?&]day=(\d{4}-\d{2}-\d{2})/.exec(location.search);
+      if (day) today = day[1];
+      if (today >= LOOK_FROM){
+        document.documentElement.setAttribute("data-look", "c");
+        document.write('<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet" />' +
+          '<link rel="stylesheet" href="look.css?v=fd466394be" />');
+      }
+    })();
+  </script>
+  <!--/LOOK-->
 </head>
 <body>
   <div class="sbx-bar">
@@ -1042,7 +1065,7 @@
   <script>
       // Never load the game unless the storage shim is provably in place.
       if (window.__SBX_ISOLATED){
-        ["questions.js","sandbox-questions.js","app.js","menu.js","nav.js","looks.js"].forEach(function(src){
+        ["questions.js","sandbox-questions.js","app.js","menu.js","nav.js","look.js"].forEach(function(src){
           var s = document.createElement("script");
           s.src = src + "?sbx=" + Date.now();
           s.async = false;

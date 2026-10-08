@@ -1,17 +1,8 @@
 /* =========================================================================
-   looks.css — SANDBOX ONLY. Two redesign options; see looks.js.
-   Everything is scoped to html[data-look=…], so with no ?look= the page is
-   exactly the current design.
+   look.css — the "Cards" design, live from Fri 9 Oct 2026; see look.js.
+   Everything is scoped to html[data-look], which index.html sets from that
+   date, so before it the page is exactly the old design.
    ========================================================================= */
-
-/* ---------- the switcher in the sandbox bar (always) ---------- */
-.lk-switch{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; justify-content:center; width:100% }
-.lk-switch span{ opacity:.7; font-size:11px }
-.lk-switch a{
-  color:#fff; text-decoration:none; font-size:11px; letter-spacing:.04em;
-  border:1px solid rgba(255,255,255,.45); border-radius:999px; padding:3px 10px;
-}
-.lk-switch a.on{ background:#fff; color:#121212; border-color:#fff; font-weight:700 }
 
 /* =========================================================================
    SHARED SHAPE LANGUAGE — pills, big radii, bold numbers, big touch targets
@@ -196,24 +187,6 @@ html.lk-splashing body{ overflow:hidden }
 .lk-when{ margin:30px 0 0; font-size:16px; line-height:1.5 }
 .lk-when b{ display:block; font-weight:800 }
 .lk-when span{ opacity:.75 }
-
-/* =========================================================================
-   A · SOFT PLAY — NYT Games: a pastel front door, a bold soft serif,
-   black pills, the result on a peach card
-   ========================================================================= */
-html[data-look="a"]{
-  --lk-mark-edge:#f6cdb2;
-  --lk-head:"Fraunces", Georgia, serif;
-  --lk-head-w:700;
-  --lk-head-ls:-.005em;
-  --lk-splash:#f6cdb2;
-  --lk-card:#fbe3d4;
-  --lk-soft:#f6f2ee;
-}
-html[data-look="a"] .lk-tagline{ font-family:"Fraunces", Georgia, serif; font-weight:400 }
-html[data-look="a"] .lk-title{ font-weight:900; font-size:54px }
-html[data-look="a"] .lk-card-big{ font-weight:800 }
-html[data-look="a"] .modal-title{ font-weight:600 }
 
 /* =========================================================================
    C · CARDS — LinkedIn games: soft grey page, rounded white cards with a

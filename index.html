@@ -709,6 +709,30 @@
       .sliderwrap{ flex:1 1 100%; order:2; padding:6px 4px 0 }
     }
   </style>
+  <!--LOOK-->
+  <script>
+    // From Fri 9 Oct 2026 (London time) the game wears the "Cards" design
+    // (look C from the sandbox): data-look="c" on <html>, its font and
+    // look.css here so nothing paints in the old design first, and look.js
+    // after the game scripts. Before 9 Oct, none of it. A page left open
+    // over midnight reloads itself, so it switches over then too.
+    // tools/build-sandbox.js swaps this block for one that honours ?day=.
+    (function(){
+      var LOOK_FROM = "2026-10-09", today = "";
+      try{
+        var o = {};
+        new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit" })
+          .formatToParts(new Date()).forEach(function(x){ o[x.type] = x.value; });
+        today = o.year + "-" + o.month + "-" + o.day;
+      }catch(_){ today = new Date().toISOString().slice(0, 10); }
+      if (today >= LOOK_FROM){
+        document.documentElement.setAttribute("data-look", "c");
+        document.write('<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet" />' +
+          '<link rel="stylesheet" href="look.css?v=153" />');
+      }
+    })();
+  </script>
+  <!--/LOOK-->
 </head>
 <body>
 
@@ -992,6 +1016,9 @@
     }
   </script>
   <!--/TWO-GUESS-SCRIPTS-->
+  <!--LOOK-SCRIPT-->
+  <script src="look.js?v=153"></script>
+  <!--/LOOK-SCRIPT-->
   <script>
     if ("serviceWorker" in navigator){
       window.addEventListener("load", function(){
