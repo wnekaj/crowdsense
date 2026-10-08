@@ -744,6 +744,17 @@ var CS_QUESTIONS = [
     // column reads 37). The first day of the wider bands.
     source: "Public First poll of 1,009 UK adults, 15–29 November 2024",
     teaser: "How many Brits know someone with a criminal record?"
+  },
+  {
+    date: "2026-10-09",  // Day 82
+    question: "What percentage of Brits say they like listening to music to sleep?",
+    answer: 40,
+    // "Total Agree" read off the first column, taken as the total: 10
+    // strongly, 14 moderately and 17 a little agree (40 after rounding);
+    // 43 disagree, 16 neither, 1 don't know. The column headings weren't in
+    // the screenshot, and the table doesn't name the pollster.
+    source: "Online survey of 4,012 UK adults, 26–31 January 2024",
+    teaser: "How many Brits like music to fall asleep to?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
