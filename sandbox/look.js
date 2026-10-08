@@ -1,38 +1,24 @@
 /* =========================================================================
-   looks.js — SANDBOX ONLY. Two redesign options for side-by-side review,
-   in the style of the NYT Games and LinkedIn game apps:
+   look.js — the "Cards" design, live from Fri 9 Oct 2026 (it was look C in
+   the sandbox): soft grey page, everything on rounded white cards, friendly
+   rounded type, brand-orange pills, a warm peach front door.
 
-     ?look=a   Soft play  — NYT Games: a pastel front door, a bold serif,
-                            black pill buttons
-     ?look=c   Cards      — LinkedIn games: soft grey page, everything on
-                            rounded white cards, friendly rounded type
-
-   No ?look= is the current design. Loaded after app.js and nav.js; the
-   styles live in looks.css, scoped to html[data-look=…]. The engine is
-   untouched: this only adds a start screen and a result card, rewrites
-   How to play into icon rows, and restyles what is already there.
+   index.html sets data-look="c" on <html> from that date and loads
+   look.css; this file does nothing without it. Loaded after app.js and
+   nav.js. The engine is untouched: this only adds a front door and a result
+   card, rewrites How to play into icon rows, and the styles in look.css
+   restyle what is already there.
    ========================================================================= */
 (function(){
   "use strict";
-  var LOOKS = { a: "Soft play", c: "Cards" };
   var look = document.documentElement.getAttribute("data-look") || "";
-
-  // ---------- the switcher, in the sandbox bar ----------
-  function urlFor(l){
-    var u = new URL(location.href);
-    if (l) u.searchParams.set("look", l); else u.searchParams.delete("look");
-    return u.pathname + u.search;
+  if (look !== "c" || typeof setupGame !== "function") return;
+  // look.css sets --lk-on. Without it (offline, a failed request) keep the
+  // old design rather than add unstyled elements to it.
+  if (!getComputedStyle(document.documentElement).getPropertyValue("--lk-on")){
+    document.documentElement.removeAttribute("data-look");
+    return;
   }
-  var sbx = document.querySelector(".sbx-bar");
-  if (sbx){
-    var sw = document.createElement("div");
-    sw.className = "lk-switch";
-    sw.innerHTML = '<span>Design:</span>' + [["", "Current"], ["a", "A · Soft play"], ["c", "C · Cards"]].map(function(o){
-      return '<a href="' + urlFor(o[0]) + '"' + (o[0] === look ? ' class="on" aria-current="page"' : '') + '>' + o[1] + '</a>';
-    }).join("");
-    sbx.appendChild(sw);
-  }
-  if (!LOOKS[look]) return;
 
   function el(tag, cls, html){
     var e = document.createElement(tag);
@@ -70,6 +56,11 @@
       '</div>';
     document.body.appendChild(s);
     document.documentElement.classList.add("lk-splashing");
+    // a tour waiting underneath must not take the Enter or Space meant for
+    // Play (stopping propagation leaves the button's own activation alone)
+    document.addEventListener("keydown", function(e){
+      if (s.isConnected && !s.classList.contains("out")) e.stopPropagation();
+    }, true);
     s.querySelector(".lk-play").addEventListener("click", function(){
       s.classList.add("out");
       document.documentElement.classList.remove("lk-splashing");
