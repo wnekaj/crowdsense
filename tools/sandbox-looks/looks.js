@@ -137,9 +137,5 @@
     if (legend) body.querySelector(".lk-legend-slot").appendChild(legend);
   })();
 
-  // ---------- 4. small touches ----------
-  // the guess button says what it does
-  if (els.guessBtn) els.guessBtn.textContent = "Lock in my guess";
-
   window.CS_LOOK = { look: look, paintCard: paintCard };
 })();
