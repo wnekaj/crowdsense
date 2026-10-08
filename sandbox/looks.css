@@ -1,5 +1,5 @@
 /* =========================================================================
-   looks.css — SANDBOX ONLY. Three redesign options; see looks.js.
+   looks.css — SANDBOX ONLY. Two redesign options; see looks.js.
    Everything is scoped to html[data-look=…], so with no ?look= the page is
    exactly the current design.
    ========================================================================= */
@@ -96,20 +96,17 @@ html[data-look] .reveal.lk-has-card .bignum{ display:none }
   background:var(--lk-card); border-radius:var(--lk-r);
   margin:4px 0 14px; padding:18px 18px 0;
 }
-.lk-card-top{ display:flex; justify-content:space-between; align-items:center; gap:10px }
-.lk-card-date{ font-size:13px; font-weight:600; color:rgba(18,18,18,.6) }
+.lk-card-top{ display:flex; justify-content:center; align-items:center }
 .lk-chip{ display:inline-block; border-radius:999px; padding:6px 12px; font-size:13px; font-weight:800; color:#fff; background:var(--muted) }
 .lk-chip.t-target{ background:var(--win) } .lk-chip.t-hot{ background:var(--hot) } .lk-chip.t-warm{ background:var(--warm) }
 .lk-chip.t-cool{ background:var(--cool) } .lk-chip.t-cold{ background:var(--cold) }
-.lk-card-k{ margin-top:18px; font-size:13px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:rgba(18,18,18,.55) }
 .lk-card-big{
   font-family:var(--lk-head); font-weight:800; letter-spacing:-.03em; font-variant-numeric:lining-nums tabular-nums;
-  font-size:clamp(84px, 26vw, 112px); line-height:1; margin:4px 0 6px; font-variant-numeric:tabular-nums;
+  font-size:clamp(84px, 26vw, 112px); line-height:1; margin:20px 0 8px; font-variant-numeric:tabular-nums;
 }
 .lk-card-big i{ font-style:normal; font-size:.5em; margin-left:2px; vertical-align:.55em }
-.lk-card-you{ font-size:16px; color:#2c2f31; margin-bottom:20px }
+.lk-card-you{ font-size:18px; color:#2c2f31; margin-bottom:22px }
 .lk-card-you b{ font-weight:800 }
-.lk-card-you .sep{ margin:0 8px; opacity:.4 }
 .lk-card-foot{
   display:flex; justify-content:space-between; align-items:center;
   margin:0 -18px; padding:14px 20px; background:#121212; color:#fff; font-size:14px; font-weight:700;
@@ -217,39 +214,6 @@ html[data-look="a"] .lk-tagline{ font-family:"Fraunces", Georgia, serif; font-we
 html[data-look="a"] .lk-title{ font-weight:900; font-size:54px }
 html[data-look="a"] .lk-card-big{ font-weight:800 }
 html[data-look="a"] .modal-title{ font-weight:600 }
-
-/* =========================================================================
-   B · BOLD — Bloomberg: heavy tight grotesque, black and white with one
-   colour, the band name shouted on the card
-   ========================================================================= */
-html[data-look="b"]{
-  --lk-head:"Inter Tight", "Helvetica Neue", Arial, sans-serif;
-  --lk-head-w:800;
-  --lk-head-ls:-.035em;
-  --lk-splash:#f3f4f6;
-  --lk-card:#ffe1cf;
-  --lk-soft:#f3f4f6;
-  --sans:"Inter Tight", "Helvetica Neue", Arial, sans-serif;
-}
-html[data-look="b"] body{ font-family:var(--sans) }
-html[data-look="b"] .question{ font-weight:700; letter-spacing:-.02em }
-html[data-look="b"] .lk-title{ font-weight:900; letter-spacing:-.05em; font-size:56px }
-html[data-look="b"] .lk-tagline{ font-size:22px; color:#3a3d40 }
-html[data-look="b"] .lk-mark{ background:#121212; border-radius:28px; padding:14px }
-html[data-look="b"] .lk-mark .m-track{ fill:#3a3d40; stroke:none }
-html[data-look="b"] .lk-mark .m-fill{ fill:#fff }
-html[data-look="b"] .lk-mark .m-pin{ fill:var(--accent); stroke:#121212 }
-/* the card: the band in big capitals, Bloomberg-style */
-html[data-look="b"] .lk-card-top{ justify-content:flex-end }
-html[data-look="b"] .lk-card .lk-chip{
-  position:absolute; left:0; right:0; top:46px; background:none !important; color:var(--ink);
-  font-family:var(--lk-head); font-weight:900; letter-spacing:-.04em; text-transform:uppercase;
-  font-size:clamp(34px, 10vw, 44px); line-height:1; padding:0;
-}
-html[data-look="b"] .lk-card-k{ margin-top:72px }
-html[data-look="b"] .lk-card-big{ font-weight:900; letter-spacing:-.05em }
-html[data-look="b"] .lk-card-foot .lk-brand{ color:var(--accent) }
-html[data-look="b"] .lk-card-foot .lk-brand i{ color:#fff }
 
 /* =========================================================================
    C · CARDS — LinkedIn games: soft grey page, rounded white cards with a

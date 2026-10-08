@@ -43,7 +43,7 @@ var TRIAL = false;
 // Without the trial, the sandbox mirrors the live game from 8 Oct 2026: one
 // guess, with the Menu button (menu.js and nav.js, copied from the root).
 var NAV = !TRIAL;
-// SANDBOX ONLY: three redesign options to compare, switched with ?look=a|b|c
+// SANDBOX ONLY: two redesign options to compare, switched with ?look=a|c
 // (no ?look= is the current design). Files in tools/sandbox-looks/.
 var LOOKS = true;
 var LOOKS_DIR = path.join(__dirname, "sandbox-looks");
@@ -274,9 +274,9 @@ if (LOOKS){
     .update(fs.readFileSync(path.join(LOOKS_DIR, "looks.css"))).digest("hex").slice(0, 10);
   html = replaceOnce(html, "</head>",
     '  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,800;9..144,900' +
-      '&family=Inter+Tight:wght@400;500;600;700;800;900&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet" />\n' +
+      '&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet" />\n' +
     '  <link rel="stylesheet" href="looks.css?v=' + lookHash + '" />\n' +
-    '  <script>(function(){ var m = /[?&]look=([abc])\\b/.exec(location.search); if (m) document.documentElement.setAttribute("data-look", m[1]); })();</script>\n' +
+    '  <script>(function(){ var m = /[?&]look=([ac])\\b/.exec(location.search); if (m) document.documentElement.setAttribute("data-look", m[1]); })();</script>\n' +
     '</head>', "the closing head tag (looks)");
   lookFiles.forEach(function(f){ fs.writeFileSync(path.join(OUT, f), fs.readFileSync(path.join(LOOKS_DIR, f), "utf8")); });
 } else {

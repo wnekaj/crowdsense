@@ -1,11 +1,9 @@
 /* =========================================================================
-   looks.js — SANDBOX ONLY. Three redesign options for side-by-side review,
-   in the style of the NYT Games, Bloomberg and LinkedIn game apps:
+   looks.js — SANDBOX ONLY. Two redesign options for side-by-side review,
+   in the style of the NYT Games and LinkedIn game apps:
 
      ?look=a   Soft play  — NYT Games: a pastel front door, a bold serif,
                             black pill buttons
-     ?look=b   Bold       — Bloomberg: heavy tight grotesque, high contrast,
-                            a framed result card with a black brand band
      ?look=c   Cards      — LinkedIn games: soft grey page, everything on
                             rounded white cards, friendly rounded type
 
@@ -16,7 +14,7 @@
    ========================================================================= */
 (function(){
   "use strict";
-  var LOOKS = { a: "Soft play", b: "Bold", c: "Cards" };
+  var LOOKS = { a: "Soft play", c: "Cards" };
   var look = document.documentElement.getAttribute("data-look") || "";
 
   // ---------- the switcher, in the sandbox bar ----------
@@ -29,7 +27,7 @@
   if (sbx){
     var sw = document.createElement("div");
     sw.className = "lk-switch";
-    sw.innerHTML = '<span>Design:</span>' + [["", "Current"], ["a", "A · Soft play"], ["b", "B · Bold"], ["c", "C · Cards"]].map(function(o){
+    sw.innerHTML = '<span>Design:</span>' + [["", "Current"], ["a", "A · Soft play"], ["c", "C · Cards"]].map(function(o){
       return '<a href="' + urlFor(o[0]) + '"' + (o[0] === look ? ' class="on" aria-current="page"' : '') + '>' + o[1] + '</a>';
     }).join("");
     sbx.appendChild(sw);
@@ -45,11 +43,6 @@
   function longDate(key){
     var p = key.split("-").map(Number);
     return new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", weekday: "long", day: "numeric", month: "long", year: "numeric" })
-      .format(new Date(Date.UTC(p[0], p[1] - 1, p[2])));
-  }
-  function shortDate(key){
-    var p = key.split("-").map(Number);
-    return new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", weekday: "short", day: "numeric", month: "short" })
       .format(new Date(Date.UTC(p[0], p[1] - 1, p[2])));
   }
 
@@ -85,6 +78,7 @@
   })();
 
   // ---------- 2. the result as a card ----------
+  // the band centred in the top bar, the answer, and how far off you were
   function clearCard(){
     var old = document.getElementById("lkCard");
     if (old) old.remove();
@@ -93,7 +87,7 @@
   function paintCard(){
     clearCard();
     if (!state.done || !Q || isMulti()) return;
-    var g = state.guesses, score = computeScore(g, Q.answer);
+    var score = computeScore(state.guesses, Q.answer);
     var h = heat(score);
     var shown = Math.round(score * 10) / 10;
     var c = el("div", "lk-card t-" + h.cls);
@@ -101,12 +95,9 @@
     c.innerHTML =
       '<div class="lk-card-top">' +
         '<span class="lk-chip t-' + h.cls + '">' + (h.cls === "target" ? "🎯 " : "") + h.label + '</span>' +
-        '<span class="lk-card-date">' + shortDate(CUR.dayKey) + '</span>' +
       '</div>' +
-      '<div class="lk-card-k">The answer</div>' +
       '<div class="lk-card-big">' + Q.answer + '<i>%</i></div>' +
-      '<div class="lk-card-you">You said <b>' + g.join(" → ") + '%</b><span class="sep">·</span>' +
-        (g.length > 1 ? 'score <b>' + shown + '</b>' : '<b>' + shown + '</b> off') + '</div>' +
+      '<div class="lk-card-you"><b>' + shown + '</b> off</div>' +
       '<div class="lk-card-foot"><span class="lk-brand">Crowdsense<i>.</i></span><span>No. ' + CUR.puzzleNo + '</span></div>';
     els.reveal.insertBefore(c, els.sourceNote);
     els.reveal.classList.add("lk-has-card");
@@ -145,10 +136,6 @@
       '<p class="lk-small">A new question every day at midnight. Every figure comes from real polling.</p>';
     if (legend) body.querySelector(".lk-legend-slot").appendChild(legend);
   })();
-
-  // ---------- 4. small touches ----------
-  // the guess button says what it does
-  if (els.guessBtn) els.guessBtn.textContent = "Lock in my guess";
 
   window.CS_LOOK = { look: look, paintCard: paintCard };
 })();
