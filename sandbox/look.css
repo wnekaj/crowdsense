@@ -7,6 +7,9 @@
 /* =========================================================================
    SHARED SHAPE LANGUAGE — pills, big radii, bold numbers, big touch targets
    ========================================================================= */
+/* look.js checks for this before doing anything: if this stylesheet didn't
+   load (offline, a failed request), the page keeps the old design */
+html[data-look="c"]{ --lk-on:1 }
 html[data-look]{
   --lk-r:24px;            /* cards and sheets */
   --lk-r-sm:16px;         /* inputs, small cards */
@@ -122,7 +125,7 @@ html[data-look] .modal-card{ border:none; border-radius:var(--lk-r); padding:28p
   }
 }
 @keyframes lk-up{ from{ transform:translateY(40px); opacity:0 } to{ transform:none; opacity:1 } }
-html[data-look] .modal-title{ font-family:var(--lk-head); font-weight:var(--lk-head-w); letter-spacing:var(--lk-head-ls); font-size:28px; margin-bottom:14px }
+html[data-look] .modal-title{ font-family:var(--lk-head); font-weight:var(--lk-head-w); letter-spacing:var(--lk-head-ls); font-size:28px; margin-bottom:14px; padding-right:44px }
 html[data-look] .modal-close{ border:none; background:var(--lk-soft); border-radius:999px; width:40px; height:40px; font-size:16px; top:16px; right:16px; color:var(--ink) }
 html[data-look] .modal-body{ color:#2c2f31; font-size:15.5px }
 html[data-look] .chip{ border-radius:999px; font-weight:800; padding:6px 12px; font-size:12.5px }

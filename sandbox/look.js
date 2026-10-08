@@ -13,6 +13,12 @@
   "use strict";
   var look = document.documentElement.getAttribute("data-look") || "";
   if (look !== "c" || typeof setupGame !== "function") return;
+  // look.css sets --lk-on. Without it (offline, a failed request) keep the
+  // old design rather than add unstyled elements to it.
+  if (!getComputedStyle(document.documentElement).getPropertyValue("--lk-on")){
+    document.documentElement.removeAttribute("data-look");
+    return;
+  }
 
   function el(tag, cls, html){
     var e = document.createElement(tag);
@@ -50,6 +56,11 @@
       '</div>';
     document.body.appendChild(s);
     document.documentElement.classList.add("lk-splashing");
+    // a tour waiting underneath must not take the Enter or Space meant for
+    // Play (stopping propagation leaves the button's own activation alone)
+    document.addEventListener("keydown", function(e){
+      if (s.isConnected && !s.classList.contains("out")) e.stopPropagation();
+    }, true);
     s.querySelector(".lk-play").addEventListener("click", function(){
       s.classList.add("out");
       document.documentElement.classList.remove("lk-splashing");
