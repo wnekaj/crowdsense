@@ -249,6 +249,16 @@ html[data-look="c"] .lk-tagline{ font-size:21px; color:#3a3d40; font-weight:600 
 html[data-look="c"] .lk-card{ border:2px solid #efece8; padding-top:0 }
 html[data-look="c"] .lk-card-top{ margin:0 -18px; padding:12px 18px; background:#fdf1e8 }
 html[data-look="c"] .lk-card-foot{ background:#fdf1e8; color:var(--ink) }
+/* the top and bottom bars take a pale tint of the day's band colour: sage
+   for On the scent, terracotta for Out of touch, and so on (the peach above
+   stays for any browser without color-mix) */
+html[data-look="c"] .lk-card.t-target{ --lk-band:var(--win) }
+html[data-look="c"] .lk-card.t-hot{ --lk-band:var(--hot) }
+html[data-look="c"] .lk-card.t-warm{ --lk-band:var(--warm) }
+html[data-look="c"] .lk-card.t-cool{ --lk-band:var(--cool) }
+html[data-look="c"] .lk-card.t-cold{ --lk-band:var(--cold) }
+html[data-look="c"] .lk-card .lk-card-top,
+html[data-look="c"] .lk-card .lk-card-foot{ background:color-mix(in srgb, var(--lk-band, #f6cdb2) 30%, #fff) }
 html[data-look="c"] .lk-rules i{ background:#fdf1e8 }
 /* the share button in A's warm peach, the colour of the front door */
 html[data-look="c"] .sharebtn{ background:#f6cdb2; color:var(--ink) }
