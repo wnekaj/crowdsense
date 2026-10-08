@@ -225,7 +225,7 @@ html[data-look="c"]{
   --lk-head-ls:-.01em;
   --lk-page:#f3f2ef;
   --lk-soft:#f3f2ef;
-  --lk-splash:linear-gradient(160deg, #ffd9bf 0%, #ffeee2 60%, #f3f2ef 100%);
+  --lk-splash:#f6cdb2;    /* A's warm peach front door */
   --lk-card:#fff;
   --lk-btn:var(--accent);
   --sans:"Nunito", "Helvetica Neue", Arial, sans-serif;
@@ -250,4 +250,5 @@ html[data-look="c"] .lk-card{ border:2px solid #efece8; padding-top:0 }
 html[data-look="c"] .lk-card-top{ margin:0 -18px; padding:12px 18px; background:#fdf1e8 }
 html[data-look="c"] .lk-card-foot{ background:#fdf1e8; color:var(--ink) }
 html[data-look="c"] .lk-rules i{ background:#fdf1e8 }
-html[data-look="c"] .sharebtn{ background:#121212 }
+/* the share button in A's warm peach, the colour of the front door */
+html[data-look="c"] .sharebtn{ background:#f6cdb2; color:var(--ink) }
