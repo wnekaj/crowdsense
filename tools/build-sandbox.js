@@ -43,6 +43,12 @@ var TRIAL = false;
 // Without the trial, the sandbox mirrors the live game from 8 Oct 2026: one
 // guess, with the Menu button (menu.js and nav.js, copied from the root).
 var NAV = !TRIAL;
+// SANDBOX ONLY: a leaderboard with a mock account sign-up, on dummy players
+// (leaderboard.html, and a card under the result). Files in
+// tools/sandbox-board/; front end only, nothing is sent anywhere. Off while
+// the TRIAL is on, which had its own leaderboard.
+var BOARD = !TRIAL;
+var BOARD_DIR = path.join(__dirname, "sandbox-board");
 // The "Cards" design (look.js, look.css) is live from 9 Oct 2026; the
 // sandbox copies it from the root like the rest of the game, and its date
 // switch honours ?day=, so ?day=2026-10-08 still shows the old design.
@@ -201,7 +207,7 @@ var loader = [
   '<script>',
   '    // Never load the game unless the storage shim is provably in place.',
   '    if (window.__SBX_ISOLATED){',
-  '      ' + JSON.stringify(["questions.js", "sandbox-questions.js", "app.js"].concat(TRIAL ? ["points.js", "menu.js", "trial.js", "poll.js"] : NAV ? ["menu.js", "nav.js"] : []).concat(["look.js"])) + '.forEach(function(src){',
+  '      ' + JSON.stringify(["questions.js", "sandbox-questions.js", "app.js"].concat(TRIAL ? ["points.js", "menu.js", "trial.js", "poll.js"] : NAV ? ["menu.js", "nav.js"] : []).concat(["look.js"]).concat(BOARD ? ["board-data.js", "account.js", "board-game.js"] : [])) + '.forEach(function(src){',
   '        var s = document.createElement("script");',
   '        s.src = src + "?sbx=" + Date.now();',
   '        s.async = false;',
@@ -288,6 +294,31 @@ var lookFiles = ["look.js", "look.css"];
 lookFiles.forEach(function(f){ write(f, read(f)); });
 ["looks.js", "looks.css"].forEach(function(f){ try{ fs.unlinkSync(path.join(OUT, f)); }catch(_){} });
 
+// the leaderboard: its stylesheet on the game page (after look.css, which the
+// LOOK block writes at the end of the head), its scripts in the loader above,
+// and its page, which gets the same storage shim as the game
+var boardFiles = ["board-data.js", "account.js", "board-game.js", "board.css", "leaderboard.js", "leaderboard.html"];
+if (BOARD){
+  var hashOf = function(f){
+    return require("crypto").createHash("sha1").update(fs.readFileSync(f)).digest("hex").slice(0, 10);
+  };
+  var boardCss = '<link rel="stylesheet" href="board.css?v=' + hashOf(path.join(BOARD_DIR, "board.css")) + '" />';
+  html = replaceOnce(html, "</head>", "  " + boardCss + "\n</head>", "the closing head tag (board)");
+  boardFiles.forEach(function(f){
+    if (f === "leaderboard.html") return;
+    fs.writeFileSync(path.join(OUT, f), fs.readFileSync(path.join(BOARD_DIR, f), "utf8"));
+  });
+  var page = fs.readFileSync(path.join(BOARD_DIR, "leaderboard.html"), "utf8");
+  page = replaceOnce(page, "<!--SBX-HEAD-->", head, "the leaderboard's head placeholder");
+  page = replaceOnce(page, "<!--SBX-LOOK-->",
+    '<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet" />\n' +
+    '  <link rel="stylesheet" href="look.css?v=' + hashOf(path.join(ROOT, "look.css")) + '" />\n  ' + boardCss,
+    "the leaderboard's look placeholder");
+  write("leaderboard.html", page);
+} else if (!TRIAL){
+  boardFiles.forEach(function(f){ try{ fs.unlinkSync(path.join(OUT, f)); }catch(_){} });
+}
+
 // the live Menu button, as the live game loads it from 8 Oct 2026
 var navFiles = ["menu.js", "nav.js"];
 if (NAV){
@@ -299,9 +330,10 @@ if (NAV){
 write("index.html", html);
 
 console.log("sandbox/ rebuilt from live:");
-["index.html", "app.js", "questions.js", "sandbox-questions.js"].concat(TRIAL ? trialFiles.concat(["leaderboard.html"]) : NAV ? navFiles : []).concat(lookFiles).forEach(function(f){
+["index.html", "app.js", "questions.js", "sandbox-questions.js"].concat(TRIAL ? trialFiles.concat(["leaderboard.html"]) : NAV ? navFiles : []).concat(lookFiles).concat(BOARD ? boardFiles : []).forEach(function(f){
   console.log("  " + f + "  " + fs.statSync(path.join(OUT, f)).size + " bytes");
 });
 console.log("open  https://crowdsense.uk/sandbox/            (today)");
 console.log("      https://crowdsense.uk/sandbox/?day=2026-08-16   (a chosen day)");
 if (TRIAL) console.log("      https://crowdsense.uk/sandbox/leaderboard.html   (the trial's leaderboard)");
+if (BOARD) console.log("      https://crowdsense.uk/sandbox/leaderboard.html   (the leaderboard mock-up)");
