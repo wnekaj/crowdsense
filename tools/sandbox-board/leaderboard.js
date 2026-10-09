@@ -9,11 +9,6 @@
   if (!B || !A) return;
 
   var SHOW = 20;   // rows before the list is cut, with you pinned below if lower
-  var DIMS = {
-    region: { label: "Region", values: B.REGIONS },
-    age:    { label: "Age",    values: B.AGES },
-    gender: { label: "Gender", values: B.GENDERS }
-  };
   function $(id){ return document.getElementById(id); }
   function esc(s){
     return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
@@ -21,6 +16,8 @@
     });
   }
   function num(n){ return (Math.round(n * 10) / 10).toLocaleString("en-GB", { maximumFractionDigits: 1 }); }
+  // a Crowdsense score is an average: always one decimal, so 4.0 sits with 4.3
+  function avg(n){ return n.toFixed(1); }
   // the game's bands, as from 8 Oct 2026, for today's scores
   function band(off){
     if (off <= 3) return "target"; if (off <= 10) return "hot"; if (off <= 15) return "warm";
@@ -66,7 +63,7 @@
   }
 
   // ---------- state ----------
-  var board, you, period = "month", dim = "overall", value = null;
+  var board, you, period = "month";
   function build(){
     board = B.buildBoard({ todayKey: todayKey, account: B.account(), realDays: B.realDays(todayKey) });
     you = board.players.filter(function(p){ return p.you; })[0] || null;
@@ -74,25 +71,6 @@
   build();
 
   $("monthLabel").textContent = B.monthLabel(todayKey) + " · day " + board.dayCount + " of " + board.daysInMonth;
-  $("ruleMissed").textContent = B.MISSED;
-  $("ruleDrop").textContent = B.DROP;
-  if (board.dayCount <= B.DROP){
-    $("ruleEarly").textContent = "It's day " + board.dayCount + ", so every day so far is still being dropped: totals start counting on day " + (B.DROP + 1) + ".";
-    $("ruleEarly").classList.remove("hidden");
-  }
-
-  // ---------- past winners: placeholders for each finished month ----------
-  (function(){
-    var y = board.year, m = board.monthNum, items = [];
-    for (var i = 0; i < 6; i++){
-      m -= 1; if (m < 1){ m = 12; y -= 1; }
-      if (y < 2026 || (y === 2026 && m < 7)) break;      // launched July 2026
-      items.push(B.monthLabel(y + "-" + String(m).padStart(2, "0") + "-01"));
-    }
-    $("past").innerHTML = items.length ? items.map(function(label){
-      return '<li><span>' + esc(label) + '</span><span class="ph">Winner — placeholder</span></li>';
-    }).join("") : '<li><span>No finished months yet</span></li>';
-  })();
 
   // ---------- your card ----------
   function youCard(){
@@ -102,28 +80,27 @@
       card.className = "lb-card lb-you lb-join";
       card.innerHTML = '<div class="lb-join-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></div>' +
         '<h2>Get on the board</h2>' +
-        '<p>Join free with your email to see your name here and play for the monthly prize.</p>' +
+        '<p>Join free with your email to see your name on the leaderboard.</p>' +
         '<button type="button" class="lb-btn" id="joinBtn">Join the leaderboard</button>' +
         '<p class="lb-switch">' + (a ? "Signed out. " : "Already joined? ") + '<button type="button" class="lb-link" id="signinBtn">Sign in</button></p>';
       $("joinBtn").addEventListener("click", function(){ A.open("join"); });
       $("signinBtn").addEventListener("click", function(){ A.open("signin"); });
       return;
     }
-    var month = B.view(board, "month", "overall"), today = B.view(board, "today", "overall");
+    var month = B.view(board, "month"), today = B.view(board, "today");
     var m = month.filter(function(p){ return p.you; })[0];
     var t = today.filter(function(p){ return p.you; })[0];
-    var top = B.topLine(m.rank, month.length);
-    // days so far: today only once it's played
-    var sofar = board.dayCount - (t ? 0 : 1);
+    var top = m ? B.topLine(m.rank, month.length) : "";
     card.className = "lb-card lb-you";
     card.innerHTML =
       '<div class="lb-you-top"><span class="lb-av" aria-hidden="true">' + esc(you.name.charAt(0).toUpperCase()) + '</span>' +
         '<div class="lb-you-name"><b>' + esc(you.name) + '</b><button type="button" class="lb-link" id="acctBtn">Your account</button></div></div>' +
       '<div class="lb-you-stats">' +
-        '<div><b>' + B.ordinal(m.rank) + '</b><span>of ' + month.length + ' this month</span></div>' +
-        '<div><b>' + num(m.total) + '</b><span>points off</span></div>' +
-        '<div><b>' + (sofar > 0 ? m.played + '/' + sofar : "—") + '</b><span>days played</span></div>' +
+        '<div><b>' + (m ? B.ordinal(m.rank) : "—") + '</b><span>of ' + month.length + ' this month</span></div>' +
+        '<div><b>' + (m ? avg(m.avg) : "—") + '</b><span>Crowdsense score</span></div>' +
+        '<div><b>' + you.played + '</b><span>' + (you.played === 1 ? "day" : "days") + ' played</span></div>' +
       '</div>' +
+      (you.played > B.BEST ? '<p class="lb-top">Your lowest ' + B.BEST + ' of ' + you.played + ' scores count.</p>' : "") +
       (top ? '<p class="lb-top">You\'re in the <b>' + top + '</b> of players this month.</p>' : "") +
       (t ? '<p class="lb-today"><span class="lb-dot t-' + band(t.today) + '"></span>Today: <b>' + num(t.today) + ' off</b> · ' + B.ordinal(t.rank) + ' of ' + today.length + '</p>'
          : '<p class="lb-today">Today: not played yet. <a class="lb-link" href="index.html' + q + '">Play today\'s question</a></p>');
@@ -131,11 +108,6 @@
   }
 
   // ---------- the board ----------
-  function defaultValue(d){
-    var mine = you && you[d];
-    if (mine && mine !== B.PNTS && DIMS[d].values.indexOf(mine) > -1) return mine;
-    return DIMS[d].values[0];
-  }
   function row(p){
     var cls = ["lb-row"];
     if (p.you) cls.push("me");
@@ -147,7 +119,7 @@
       : "";
     var score = period === "today"
       ? '<span class="lb-dot t-' + band(p.score) + '" aria-hidden="true"></span><b>' + num(p.score) + '</b><span class="vh"> off today</span>'
-      : '<b>' + num(p.score) + '</b><span class="vh"> points off</span>';
+      : '<b>' + avg(p.score) + '</b><span class="vh"> Crowdsense score</span>';
     return '<li class="' + cls.join(" ") + '"' + (p.you ? ' id="youRow"' : "") + '>' +
       '<span class="lb-rank"><span class="vh">Rank </span>' + p.rank + '</span>' +
       '<span class="lb-name"><span class="lb-n">' + esc(p.name) + '</span>' +
@@ -156,58 +128,37 @@
       '<span class="lb-score">' + score + '</span></li>';
   }
   function render(){
-    var group = B.view(board, period, dim, value);
-    var note = $("groupNote"), msg = "";
-    if (dim !== "overall"){
-      var label = DIMS[dim].label.toLowerCase(), mine = you && you[dim];
-      if (!you) msg = "Join and add your " + label + " to be placed in a group.";
-      else if (!mine) msg = "Add your " + label + " in Your account to be placed in a group.";
-      else if (mine === B.PNTS) msg = "You chose not to say your " + label + ", so you're on the Everyone board only.";
-      else if (mine !== value) msg = "You're not in this group.";
-    }
-    if (period === "today" && you && you.today === null) msg = (msg ? msg + " " : "") + "Play today's question to appear here.";
+    var list = B.view(board, period);
+    var note = $("boardNote"), msg = "";
+    if (period === "today" && you && you.today === null) msg = "Play today's question to appear on today's board.";
     note.textContent = msg;
     note.classList.toggle("hidden", !msg);
 
-    var top = group.slice(0, SHOW), me = group.filter(function(p){ return p.you; })[0];
+    var top = list.slice(0, SHOW), me = list.filter(function(p){ return p.you; })[0];
     var html = top.map(row).join("");
     if (me && me.rank > SHOW) html += '<li class="lb-gap" aria-hidden="true">⋯</li>' + row(me);
-    if (!group.length) html = '<li class="lb-empty">' + (period === "today" ? "Nobody in this group has played today yet." : "No players in this group yet.") + '</li>';
+    if (!list.length) html = '<li class="lb-empty">' + (period === "today" ? "Nobody has played today yet." : "Nobody has played this month yet.") + '</li>';
     $("rows").innerHTML = html;
-    $("colScore").textContent = period === "today" ? "Today" : "Points off";
-    $("caption").textContent = (dim === "overall" ? "Everyone" : DIMS[dim].label + ": " + value) +
-      (period === "today" ? ", today — " : " — ") + group.length + (group.length === 1 ? " player" : " players") +
-      (group.length > SHOW ? ", top " + SHOW + " shown" : "");
+    $("colScore").textContent = period === "today" ? "Points off" : "Crowdsense score";
+    $("caption").textContent = (period === "today" ? "Today" : "This month") + " — " +
+      list.length + (list.length === 1 ? " player" : " players") +
+      (list.length > SHOW ? ", top " + SHOW + " shown" : "");
     youCard();
   }
 
-  var pick = $("pick");
-  function pressed(sel, b){
-    Array.prototype.forEach.call(document.querySelectorAll(sel), function(x){ x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
-  }
   Array.prototype.forEach.call(document.querySelectorAll(".lb-seg button"), function(b){
-    b.addEventListener("click", function(){ period = b.getAttribute("data-period"); pressed(".lb-seg button", b); render(); });
-  });
-  function fillPick(){
-    pick.innerHTML = DIMS[dim].values.map(function(v){
-      return '<option' + (v === value ? " selected" : "") + '>' + esc(v) + '</option>';
-    }).join("");
-  }
-  Array.prototype.forEach.call(document.querySelectorAll(".lb-tabs button"), function(b){
     b.addEventListener("click", function(){
-      dim = b.getAttribute("data-dim");
-      pressed(".lb-tabs button", b);
-      if (dim === "overall"){ value = null; $("pickWrap").classList.add("hidden"); }
-      else { value = defaultValue(dim); $("pickLabel").textContent = DIMS[dim].label; fillPick(); $("pickWrap").classList.remove("hidden"); }
+      period = b.getAttribute("data-period");
+      Array.prototype.forEach.call(document.querySelectorAll(".lb-seg button"), function(x){
+        x.setAttribute("aria-pressed", x === b ? "true" : "false");
+      });
       render();
     });
   });
-  pick.addEventListener("change", function(){ value = pick.value; render(); });
 
-  // signing up, in or out, or editing details, all rebuild the board
+  // signing up, in or out, all rebuild the board
   document.addEventListener("cs-account", function(){
     build();
-    if (dim !== "overall"){ value = defaultValue(dim); fillPick(); }
     render();
     var r = $("youRow");
     if (r && you) try{ r.scrollIntoView({ block: "nearest", behavior: "smooth" }); }catch(_){}

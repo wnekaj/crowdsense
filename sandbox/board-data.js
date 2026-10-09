@@ -3,18 +3,16 @@
    and the mock account. Shared by the game page and leaderboard.html.
 
    Copied into sandbox/ by tools/build-sandbox.js. Nothing here reaches the
-   live game, and nothing is sent anywhere: the account, the details and
-   the ranked plays live in the sandbox's own (prefixed) storage.
+   live game, and nothing is sent anywhere: the account and the ranked
+   plays live in the sandbox's own (prefixed) storage.
 
      ranked plays   today's question, finished on the day in daily mode:
                     cs-ranked-YYYY-MM-DD = { off }. Archive plays never count.
-     monthly board  points off added up over the month so far, a missed day
-                    counting as 50 off (today only once it's played, so
-                    nobody is charged for a day still going), everyone's
-                    3 worst days dropped;
-                    lowest total wins. Ties go to more days played, then
-                    more days On the pulse, then share the rank.
-     today's board  today's points off, lowest first, for those who played.
+     monthly board  your Crowdsense score for the month: the average points
+                    off of your lowest 20 scores this month (all of them,
+                    until you have 20); lowest wins. Ties go to more days
+                    played, then more days On the pulse, then share the rank.
+     daily board    today's points off, lowest first, for those who played.
      dummy board    ~60 made-up players, stable for the month; a signed-up
                     "You" is seeded near 23rd so the board looks lived in,
                     with the days you really played in the sandbox on top.
@@ -65,28 +63,7 @@
     while (v === 0) v = r();
     return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
   }
-  function pickWeighted(r, items){
-    var total = 0, i;
-    for (i = 0; i < items.length; i++) total += items[i][1];
-    var x = r() * total;
-    for (i = 0; i < items.length; i++){ x -= items[i][1]; if (x < 0) return items[i][0]; }
-    return items[items.length - 1][0];
-  }
-
-  // ---------- demographics ----------
-  var PNTS = "Prefer not to say";
-  var AGES = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
-  var GENDERS = ["Male", "Female", "In another way"];
-  var REGIONS = ["North East", "North West", "Yorkshire and the Humber", "East Midlands",
-    "West Midlands", "East of England", "London", "South East", "South West",
-    "Wales", "Scotland", "Northern Ireland", "Outside the UK"];
-  // rough population shares, so the dummy board looks like a UK audience
-  var REGION_W = [["North East",4],["North West",11],["Yorkshire and the Humber",8],
-    ["East Midlands",7],["West Midlands",9],["East of England",9],["London",13],
-    ["South East",14],["South West",8],["Wales",5],["Scotland",8],
-    ["Northern Ireland",3],["Outside the UK",2],[PNTS,3]];
-  var AGE_W = [["18-24",10],["25-34",18],["35-44",18],["45-54",17],["55-64",16],["65+",17],[PNTS,4]];
-  var GENDER_W = [["Male",47],["Female",47],["In another way",2],[PNTS,4]];
+  // ---------- the dummy players' names ----------
   var FIRST = ["Priya","Tom","Aisha","Callum","Grace","Rhys","Fatima","Oliver","Niamh","Jamal",
     "Harriet","Kwame","Sophie","Euan","Leila","Ben","Chloe","Arjun","Megan","Dan","Zara","Owen",
     "Isla","Tariq","Ruth","Josh","Amara","Finn","Hannah","Imran","Molly","Sam","Eilidh","Kai",
@@ -99,26 +76,22 @@
     "YouGovMyHeart", "margin_of_error", "Crowd_Pleaser"];
 
   // ---------- scoring ----------
-  var DROP = 3, MISSED = 50;
-  function monthTotal(days, dayCount, mk){
-    var list = [], played = 0, pulses = 0;
+  var BEST = 20;
+  function monthScore(days, dayCount, mk){
+    var offs = [], pulses = 0;
     for (var d = 1; d <= dayCount; d++){
       var off = days[d];
-      if (off === undefined || off === null){
-        // today isn't missed until it's over
-        if (d < dayCount) list.push({ d: d, off: MISSED });
-        continue;
-      }
-      played++;
+      if (off === undefined || off === null) continue;
       if (pulse(off, mk + "-" + pad(d))) pulses++;
-      list.push({ d: d, off: off });
+      offs.push(off);
     }
-    // worst first; the 3 worst go
-    list.sort(function(a, b){ return b.off - a.off || a.d - b.d; });
-    var total = 0;
-    list.slice(DROP).forEach(function(x){ total += x.off; });
-    return { total: total, played: played, pulses: pulses, counted: list.length,
-             dropped: list.slice(0, DROP).map(function(x){ return x.d; }) };
+    // the lowest 20 count, averaged; to one decimal, as shown, so equal
+    // scores on screen are equal in the ranking too
+    offs.sort(function(a, b){ return a - b; });
+    var best = offs.slice(0, BEST), sum = 0;
+    best.forEach(function(x){ sum += x; });
+    return { avg: best.length ? Math.round(10 * sum / best.length) / 10 : null,
+             played: offs.length, counted: best.length, pulses: pulses };
   }
   function rank(list, key){
     list.sort(function(a, b){
@@ -147,7 +120,6 @@
       } while (used[name.toLowerCase()]);
       used[name.toLowerCase()] = 1;
       players.push({ id: "p" + i, name: name, you: false,
-        age: pickWeighted(r, AGE_W), gender: pickWeighted(r, GENDER_W), region: pickWeighted(r, REGION_W),
         sigma: 4 + r() * 13,             // how far off this player usually is
         turnout: 0.3 + r() * 0.68,       // share of days they play
         days: {} });
@@ -177,37 +149,33 @@
       // seeded from the player sitting 23rd, nudged a touch, so "You" lands
       // around there; the days you really played replace the made-up ones
       var seed = rank(players.map(function(p){
-        var t = monthTotal(p.days, dayCount, mk);
-        return { name: p.name, days: p.days, total: t.total, played: t.played, pulses: t.pulses };
-      }), "total")[22];
+        var t = monthScore(p.days, dayCount, mk);
+        return { name: p.name, days: p.days, avg: t.avg, played: t.played, pulses: t.pulses };
+      }).filter(function(p){ return p.avg !== null; }), "avg")[22];
       var r = rng(hashStr("crowdsense-you-1g-" + mk));
       var days = {};
       for (var d in seed.days) days[d] = Math.max(0, seed.days[d] + Math.round(r() * 2) - 1);
       delete days[dayCount];                // today is only ever a real play
       var real = opts.realDays || {};
       for (var rd in real) days[rd] = real[rd];
-      players.push({ id: "you", name: acct.name, you: true,
-        age: acct.age || null, gender: acct.gender || null, region: acct.region || null,
-        days: days, realDays: real });
+      players.push({ id: "you", name: acct.name, you: true, days: days, realDays: real });
     }
     players.forEach(function(p){
-      var t = monthTotal(p.days, dayCount, mk);
-      p.total = t.total; p.played = t.played; p.pulses = t.pulses; p.dropped = t.dropped; p.counted = t.counted;
+      var t = monthScore(p.days, dayCount, mk);
+      p.avg = t.avg; p.played = t.played; p.pulses = t.pulses; p.counted = t.counted;
       p.today = (p.days[dayCount] === undefined) ? null : p.days[dayCount];
     });
     return { key: key, month: mk, year: y, monthNum: m, dayCount: dayCount,
              daysInMonth: daysInMonth(y, m), players: players };
   }
-  // one board view: a period ("month" or "today") and a group
-  function view(board, period, dim, value){
+  // one board: "month" (everyone with a play this month) or "today"
+  function view(board, period){
     var list = board.players.filter(function(p){
-      if (period === "today" && p.today === null) return false;
-      if (dim === "overall") return true;
-      return p[dim] && p[dim] !== PNTS && p[dim] === value;
+      return period === "today" ? p.today !== null : p.avg !== null;
     }).map(function(p){
       // ranked on copies, so one view can't overwrite another's ranks
       var c = Object.assign({}, p);
-      c.score = period === "today" ? p.today : p.total;
+      c.score = period === "today" ? p.today : p.avg;
       if (period === "today"){ c.played = 0; c.pulses = 0; }
       return c;
     });
@@ -309,6 +277,6 @@
     buildBoard: buildBoard, view: view, topPercent: topPercent, topLine: topLine, ordinal: ordinal,
     account: account, findAccount: findAccount, saveAccount: saveAccount, deleteAccount: deleteAccount,
     recordRanked: recordRanked, rankedToday: rankedToday, realDays: realDays, checkName: checkName,
-    PNTS: PNTS, AGES: AGES, GENDERS: GENDERS, REGIONS: REGIONS, DROP: DROP, MISSED: MISSED
+    BEST: BEST
   };
 })();

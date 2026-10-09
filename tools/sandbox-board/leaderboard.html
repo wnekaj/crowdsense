@@ -26,49 +26,27 @@
         <h1>Leaderboard</h1>
         <p class="lb-month" id="monthLabel"></p>
         <div class="lb-seg" role="group" aria-label="Show">
-          <button type="button" data-period="month" aria-pressed="true">This month</button>
-          <button type="button" data-period="today" aria-pressed="false">Today</button>
+          <button type="button" data-period="month" aria-pressed="true">Monthly</button>
+          <button type="button" data-period="today" aria-pressed="false">Daily</button>
         </div>
       </section>
 
       <section class="lb-card lb-you" id="youCard"></section>
 
       <section class="lb-card lb-board">
-        <div class="lb-tabs" role="group" aria-label="Board for">
-          <button type="button" data-dim="overall" aria-pressed="true">Everyone</button>
-          <button type="button" data-dim="region" aria-pressed="false">Region</button>
-          <button type="button" data-dim="age" aria-pressed="false">Age</button>
-          <button type="button" data-dim="gender" aria-pressed="false">Gender</button>
-        </div>
-        <div class="lb-pick hidden" id="pickWrap">
-          <label for="pick" id="pickLabel"></label>
-          <select id="pick"></select>
-        </div>
-        <p class="lb-note hidden" id="groupNote"></p>
-        <div class="lb-colhead"><span>Player</span><span id="colScore">Points off</span></div>
+        <p class="lb-note hidden" id="boardNote"></p>
+        <div class="lb-colhead"><span>Player</span><span id="colScore">Crowdsense score</span></div>
         <ol class="lb-rows" id="rows"></ol>
         <p class="lb-caption" id="caption" role="status"></p>
-      </section>
-
-      <section class="lb-card lb-prize">
-        <div class="lb-prize-icon" aria-hidden="true">🏆</div>
-        <div><b>This month's prize</b><span>Placeholder: prize, sponsor and terms to be confirmed.</span></div>
       </section>
 
       <section class="lb-card lb-rules">
         <h2>How the leaderboard works</h2>
         <ul>
-          <li><b>Lowest total wins.</b> Your points off for each day add up across the month.</li>
-          <li><b>Bad days are forgiven.</b> A day you miss counts as <span id="ruleMissed"></span> off, and everyone's <span id="ruleDrop"></span> worst days are dropped.</li>
+          <li><b>Lowest Crowdsense score wins.</b> Your average points off for each day apply across the month.</li>
+          <li>Only your lowest 20 scores each month count towards your score.</li>
           <li><b>Play on the day.</b> Only today's question, played today (UK time), counts. Archive games don't.</li>
-          <li><b>Ties</b> go to whoever played more days, then whoever had more 🎯 days On the pulse (within 3).</li>
         </ul>
-        <p class="lb-early hidden" id="ruleEarly"></p>
-      </section>
-
-      <section class="lb-card lb-past">
-        <h2>Past winners</h2>
-        <ul id="past"></ul>
       </section>
 
       <p class="lb-fine">Sandbox mock-up: the other players are made up, and nothing you enter is sent anywhere.</p>

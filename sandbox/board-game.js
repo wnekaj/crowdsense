@@ -7,8 +7,10 @@
                   "On the day" is the London date when the game finishes,
                   not when the page loaded
      menu         Leaderboard, and Sign in / Your account
-     result       a card under the result: where you stand this month, or
-                  an invitation to join; archive games say they don't count
+     stats        the leaderboard takes the place of the daily-email sign-up
+                  at the foot of Your stats: where you stand and a button to
+                  the board, or an invitation to join. Nothing on the game's
+                  own screen.
    ========================================================================= */
 (function(){
   "use strict";
@@ -66,66 +68,58 @@
   }
   paintAcctItem();
 
-  // ---------- ranked plays, and the card under the result ----------
-  function clearCard(){
-    var old = document.getElementById("bgCard");
-    if (old) old.remove();
+  // ---------- the leaderboard, in Your stats ----------
+  // It replaces the "Tomorrow's question straight to your inbox" form there.
+  var subscribe = document.querySelector("#statsModal .subscribe");
+  var box = document.createElement("section");
+  box.id = "bgStats";
+  box.className = "bg-card bg-instats";
+  if (subscribe){
+    subscribe.classList.add("hidden");
+    subscribe.parentNode.insertBefore(box, subscribe);
   }
-  function paintCard(){
-    clearCard();
-    if (!state.done || !CUR) return;
-    var card = document.createElement("section");
-    card.id = "bgCard";
-    card.className = "bg-card";
+  function paintBox(){
+    if (!box.parentNode) return;
     var dayNow = getDayKey();
-    var ranked = MODE === "daily" && CUR.dayKey === dayNow;
-    if (!ranked){
-      card.innerHTML = '<p class="bg-note">Archive games don\'t count towards the leaderboard — only today\'s question, played today.</p>';
-    } else if (!A.signedIn()){
-      var mine = B.rankedToday(dayNow), known = B.account();
-      card.innerHTML = '<div class="bg-head"><span class="bg-k">Leaderboard</span><span class="bg-m">' + esc(B.monthLabel(dayNow)) + '</span></div>' +
-        '<p class="bg-big">How do you rank?</p>' +
-        '<p class="bg-sub">' + (mine ? "Join free to put today's " + num(mine.off) + " off on the monthly leaderboard."
-          : "Join free to get on the monthly leaderboard.") + '</p>' +
-        '<button type="button" class="bg-btn" id="bgJoin">Join the leaderboard</button>' +
-        '<p class="bg-switch">' + (known ? "Signed out. " : "Already joined? ") +
-          '<button type="button" class="bg-linkbtn" id="bgSignin">Sign in</button> · <a class="bg-link" href="' + BOARD_URL + '">See the leaderboard</a></p>';
-    } else {
-      var board = B.buildBoard({ todayKey: dayNow, account: B.account(), realDays: B.realDays(dayNow) });
-      var month = B.view(board, "month", "overall"), today = B.view(board, "today", "overall");
-      var m = month.filter(function(p){ return p.you; })[0], t = today.filter(function(p){ return p.you; })[0];
-      var top = m ? B.topLine(m.rank, month.length) : "";
-      card.innerHTML = '<div class="bg-head"><span class="bg-k">Leaderboard</span><span class="bg-m">' + esc(B.monthLabel(dayNow)) + '</span></div>' +
-        '<div class="bg-stats">' +
-          '<div><b>' + (m ? B.ordinal(m.rank) : "—") + '</b><span>this month</span></div>' +
-          '<div><b>' + (t ? B.ordinal(t.rank) : "—") + '</b><span>today</span></div>' +
-          '<div><b>' + (m ? num(m.total) : "—") + '</b><span>points off</span></div>' +
-        '</div>' +
-        (top ? '<p class="bg-top">You\'re in the ' + top + ' of ' + month.length + ' players this month.</p>' : "") +
-        '<a class="bg-btn" href="' + BOARD_URL + '">See the leaderboard</a>';
+    var head = '<div class="bg-head"><span class="bg-k">Leaderboard</span><span class="bg-m">' + esc(B.monthLabel(dayNow)) + '</span></div>';
+    if (!A.signedIn()){
+      var known = B.account();
+      box.innerHTML = head +
+        '<p class="bg-sub">See how you rank against everyone who plays, this month and today.</p>' +
+        '<a class="bg-btn" href="' + BOARD_URL + '">See the leaderboard</a>' +
+        '<p class="bg-switch"><button type="button" class="bg-linkbtn" id="bgJoin">Join</button> · ' +
+          (known ? "Signed out? " : "Already joined? ") + '<button type="button" class="bg-linkbtn" id="bgSignin">Sign in</button></p>';
+      box.querySelector("#bgJoin").addEventListener("click", function(){ A.open("join"); });
+      box.querySelector("#bgSignin").addEventListener("click", function(){ A.open("signin"); });
+      return;
     }
-    var anchor = document.getElementById("shareBtn");
-    if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(card, anchor.nextSibling);
-    else els.reveal.appendChild(card);
-    // the stats panel would otherwise pop up behind the sheet
-    var join = card.querySelector("#bgJoin"), signin = card.querySelector("#bgSignin");
-    if (join) join.addEventListener("click", function(){ STATS_SEEN = true; A.open("join", paintCard); });
-    if (signin) signin.addEventListener("click", function(){ STATS_SEEN = true; A.open("signin", paintCard); });
+    var board = B.buildBoard({ todayKey: dayNow, account: B.account(), realDays: B.realDays(dayNow) });
+    var month = B.view(board, "month"), today = B.view(board, "today");
+    var m = month.filter(function(p){ return p.you; })[0], t = today.filter(function(p){ return p.you; })[0];
+    box.innerHTML = head +
+      '<div class="bg-stats">' +
+        '<div><b>' + (m ? B.ordinal(m.rank) : "—") + '</b><span>this month</span></div>' +
+        '<div><b>' + (t ? B.ordinal(t.rank) : "—") + '</b><span>today</span></div>' +
+        '<div><b>' + (m ? m.avg.toFixed(1) : "—") + '</b><span>score</span></div>' +
+      '</div>' +
+      '<a class="bg-btn" href="' + BOARD_URL + '">See the leaderboard</a>';
   }
+  // Your stats is drawn fresh each time it opens; the box follows
+  var _renderStats = window.renderStats;
+  window.renderStats = function(){
+    _renderStats.apply(this, arguments);
+    paintBox();
+  };
+  paintBox();
 
+  // ---------- ranked plays ----------
   var _finishGame = window.finishGame;
   window.finishGame = function(alreadyDone){
     _finishGame(alreadyDone);
     // the first finish of today's question, on the day, is the ranked one
     if (!alreadyDone && MODE === "daily" && CUR && CUR.dayKey === getDayKey()) B.recordRanked(CUR.dayKey, state.score);
-    paintCard();
+    paintBox();
   };
-  var _setupGame = window.setupGame;
-  window.setupGame = function(dayKey, mode){
-    clearCard();
-    _setupGame(dayKey, mode);
-  };
-  if (state.done) paintCard();
 
-  document.addEventListener("cs-account", function(){ paintAcctItem(); if (state.done) paintCard(); });
+  document.addEventListener("cs-account", function(){ paintAcctItem(); paintBox(); });
 })();
