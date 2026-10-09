@@ -9,7 +9,9 @@
      ranked plays   today's question, finished on the day in daily mode:
                     cs-ranked-YYYY-MM-DD = { off }. Archive plays never count.
      monthly board  points off added up over the month so far, a missed day
-                    counting as 50 off, everyone's 3 worst days dropped;
+                    counting as 50 off (today only once it's played, so
+                    nobody is charged for a day still going), everyone's
+                    3 worst days dropped;
                     lowest total wins. Ties go to more days played, then
                     more days On the pulse, then share the rank.
      today's board  today's points off, lowest first, for those who played.
@@ -102,7 +104,11 @@
     var list = [], played = 0, pulses = 0;
     for (var d = 1; d <= dayCount; d++){
       var off = days[d];
-      if (off === undefined || off === null){ list.push({ d: d, off: MISSED }); continue; }
+      if (off === undefined || off === null){
+        // today isn't missed until it's over
+        if (d < dayCount) list.push({ d: d, off: MISSED });
+        continue;
+      }
       played++;
       if (pulse(off, mk + "-" + pad(d))) pulses++;
       list.push({ d: d, off: off });
@@ -111,7 +117,7 @@
     list.sort(function(a, b){ return b.off - a.off || a.d - b.d; });
     var total = 0;
     list.slice(DROP).forEach(function(x){ total += x.off; });
-    return { total: total, played: played, pulses: pulses,
+    return { total: total, played: played, pulses: pulses, counted: list.length,
              dropped: list.slice(0, DROP).map(function(x){ return x.d; }) };
   }
   function rank(list, key){
@@ -186,7 +192,7 @@
     }
     players.forEach(function(p){
       var t = monthTotal(p.days, dayCount, mk);
-      p.total = t.total; p.played = t.played; p.pulses = t.pulses; p.dropped = t.dropped;
+      p.total = t.total; p.played = t.played; p.pulses = t.pulses; p.dropped = t.dropped; p.counted = t.counted;
       p.today = (p.days[dayCount] === undefined) ? null : p.days[dayCount];
     });
     return { key: key, month: mk, year: y, monthNum: m, dayCount: dayCount,
@@ -209,20 +215,50 @@
   }
   // "top 38%": the share of the group at or above your rank
   function topPercent(rankN, n){ return Math.max(1, Math.ceil(100 * rankN / n)); }
+  // only worth saying in the top half of a group big enough for it to mean
+  // something: in a group of 3 the leader would read "top 34%"
+  function topLine(rankN, n){
+    var pc = topPercent(rankN, n);
+    return (n >= 10 && pc <= 50) ? "top " + pc + "%" : "";
+  }
   function ordinal(n){
     var s = ["th", "st", "nd", "rd"], v = n % 100;
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
   }
 
   // ---------- storage (the sandbox shim prefixes every key with sbx:) ----------
-  var ACCOUNT_KEY = "cs-account", RANKED_PREFIX = "cs-ranked-";
+  // The mock keeps every account made on this device by email, like the real
+  // thing would, so joining with a second email doesn't wipe the first.
+  //   cs-accounts = { byEmail: { email: account }, current: email|null, last: email|null }
+  var ACCOUNTS_KEY = "cs-accounts", RANKED_PREFIX = "cs-ranked-";
   function readJSON(k){ try{ return JSON.parse(localStorage.getItem(k) || "null"); }catch(_){ return null; } }
   function writeJSON(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(_){} }
-  function account(){ return readJSON(ACCOUNT_KEY); }
-  function saveAccount(a){ writeJSON(ACCOUNT_KEY, a); }
+  function norm(email){ return String(email || "").trim().toLowerCase(); }
+  function store(){
+    var s = readJSON(ACCOUNTS_KEY);
+    return (s && s.byEmail) ? s : { byEmail: {}, current: null, last: null };
+  }
+  function withState(a, signedIn){ return a ? Object.assign({}, a, { signedIn: signedIn }) : null; }
+  // the signed-in account, or the last one used here (signed out), or null
+  function account(){
+    var s = store(), k = s.current || s.last;
+    return withState(k && s.byEmail[k], !!s.current);
+  }
+  function findAccount(email){ return withState(store().byEmail[norm(email)], false); }
+  function saveAccount(a){
+    var s = store(), k = norm(a.email), copy = Object.assign({}, a);
+    delete copy.signedIn;
+    s.byEmail[k] = copy;
+    s.last = k;
+    if (a.signedIn) s.current = k; else if (s.current === k) s.current = null;
+    writeJSON(ACCOUNTS_KEY, s);
+  }
   function deleteAccount(){
+    var s = store();
+    if (s.current) delete s.byEmail[s.current];
+    s.current = null; s.last = null;
+    writeJSON(ACCOUNTS_KEY, s);
     try{
-      localStorage.removeItem(ACCOUNT_KEY);
       var gone = [];
       for (var i = 0; i < localStorage.length; i++){
         var k = localStorage.key(i);
@@ -231,6 +267,7 @@
       gone.forEach(function(k){ localStorage.removeItem(k); });
     }catch(_){}
   }
+  function rankedToday(dayKey){ return readJSON(RANKED_PREFIX + dayKey); }
   function recordRanked(dayKey, off){
     if (readJSON(RANKED_PREFIX + dayKey)) return false;    // the first finish is the one that counts
     writeJSON(RANKED_PREFIX + dayKey, { off: off });
@@ -269,9 +306,9 @@
 
   window.CS_BOARD = {
     todayKey: todayKey, monthLabel: monthLabel, pulse: pulse,
-    buildBoard: buildBoard, view: view, topPercent: topPercent, ordinal: ordinal,
-    account: account, saveAccount: saveAccount, deleteAccount: deleteAccount,
-    recordRanked: recordRanked, realDays: realDays, checkName: checkName,
+    buildBoard: buildBoard, view: view, topPercent: topPercent, topLine: topLine, ordinal: ordinal,
+    account: account, findAccount: findAccount, saveAccount: saveAccount, deleteAccount: deleteAccount,
+    recordRanked: recordRanked, rankedToday: rankedToday, realDays: realDays, checkName: checkName,
     PNTS: PNTS, AGES: AGES, GENDERS: GENDERS, REGIONS: REGIONS, DROP: DROP, MISSED: MISSED
   };
 })();

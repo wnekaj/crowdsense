@@ -31,7 +31,7 @@
   };
 
   // ---------- the sheet ----------
-  var root = null, onDone = null, pending = null;
+  var root = null, onDone = null, pending = null, opener = null, inerted = [];
   function build(){
     if (root) return;
     root = document.createElement("div");
@@ -50,40 +50,84 @@
       if (t.hasAttribute("data-ac-close")) close();
       else show(t.getAttribute("data-ac-go"));
     });
+    // Escape closes the sheet and nothing behind it (the game's own handler
+    // would close an open panel underneath too); Tab stays inside the sheet
     document.addEventListener("keydown", function(e){
-      if (e.key === "Escape" && root && !root.classList.contains("hidden")) close();
+      if (!root || root.classList.contains("hidden")) return;
+      if (e.key === "Escape"){ e.stopPropagation(); close(); }
+      else if (e.key === "Tab") trapTab(e);
+    }, true);
+  }
+  function trapTab(e){
+    var f = Array.prototype.filter.call(root.querySelectorAll("button, a[href], input, select"), function(x){
+      return !x.disabled && x.offsetParent !== null;
     });
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && (document.activeElement === first || !root.contains(document.activeElement))){ e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && (document.activeElement === last || !root.contains(document.activeElement))){ e.preventDefault(); first.focus(); }
+  }
+  // the page behind can't be reached while the sheet is up
+  function setInert(on){
+    if (on){
+      inerted = Array.prototype.filter.call(document.body.children, function(el){
+        return el !== root && el.id !== "acToast" && !el.hasAttribute("inert");
+      });
+      inerted.forEach(function(el){ el.setAttribute("inert", ""); });
+    } else {
+      inerted.forEach(function(el){ el.removeAttribute("inert"); });
+      inerted = [];
+    }
   }
   function open(screen, done){
     build();
-    onDone = done || null;
-    root.classList.remove("hidden");
-    document.documentElement.classList.add("ac-open");
+    // already open: just change screen, keeping where focus goes back to
+    // and what was made inert
+    if (root.classList.contains("hidden")){
+      opener = document.activeElement;
+      onDone = done || null;
+      root.classList.remove("hidden");
+      document.documentElement.classList.add("ac-open");
+      setInert(true);
+    } else if (done) onDone = done;
     show(screen || "join");
   }
+  // However the sheet closes, the page catches up with the account: closing
+  // on the optional "You're in" step still leaves you signed in.
   function close(){
-    if (!root) return;
+    if (!root || root.classList.contains("hidden")) return;
     root.classList.add("hidden");
     document.documentElement.classList.remove("ac-open");
+    setInert(false);
+    var cb = onDone; onDone = null;
+    if (cb) cb();
+    document.dispatchEvent(new CustomEvent("cs-account"));
+    // back to whatever opened the sheet, or its replacement if the page
+    // rebuilt it, or the menu button
+    var back = (opener && document.body.contains(opener)) ? opener
+      : ["#acctBtn", "#joinBtn", "#bgCard .bg-btn", "#tgMenuBtn"].map(function(q){ return document.querySelector(q); })
+          .filter(Boolean)[0];
+    opener = null;
+    if (back) try{ back.focus(); }catch(_){}
   }
   function finish(msg){
     close();
     if (msg) toast(msg);
-    var cb = onDone; onDone = null;
-    if (cb) cb();
-    document.dispatchEvent(new CustomEvent("cs-account"));
   }
+  // the live region is in the page from the start and filled a moment later,
+  // so screen readers announce it
+  var toastEl = document.createElement("div");
+  toastEl.id = "acToast"; toastEl.className = "ac-toast";
+  toastEl.setAttribute("role", "status"); toastEl.setAttribute("aria-atomic", "true");
+  document.body.appendChild(toastEl);
   function toast(msg){
-    var t = document.getElementById("acToast");
-    if (!t){
-      t = document.createElement("div");
-      t.id = "acToast"; t.className = "ac-toast"; t.setAttribute("role", "status");
-      document.body.appendChild(t);
-    }
-    t.textContent = msg;
-    t.classList.add("show");
-    clearTimeout(t._h);
-    t._h = setTimeout(function(){ t.classList.remove("show"); }, 2600);
+    toastEl.textContent = "";
+    clearTimeout(toastEl._h); clearTimeout(toastEl._s);
+    toastEl._s = setTimeout(function(){
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      toastEl._h = setTimeout(function(){ toastEl.classList.remove("show"); }, 2600);
+    }, 60);
   }
   function err(form, msg){
     var e = form.querySelector(".ac-err");
@@ -91,7 +135,8 @@
     e.classList.toggle("hidden", !msg);
   }
   function focusFirst(){
-    var f = root.querySelector(".ac-body input:not([type=hidden]), .ac-body select, .ac-body .ac-btn");
+    var f = root.querySelector(".ac-body [data-ac-focus]") ||
+      root.querySelector(".ac-body input:not([type=hidden]), .ac-body select, .ac-body .ac-btn");
     if (f) setTimeout(function(){ try{ f.focus(); }catch(_){} }, 40);
   }
 
@@ -107,7 +152,7 @@
   }
 
   function chips(name, options, current){
-    return '<div class="ac-chips" role="radiogroup">' + options.map(function(o){
+    return '<div class="ac-chips">' + options.map(function(o){
       return '<label class="ac-chip"><input type="radio" name="' + name + '" value="' + esc(o) + '"' +
         (o === current ? " checked" : "") + '><span>' + esc(o) + '</span></label>';
     }).join("") + '</div>';
@@ -222,7 +267,7 @@
         '<p class="ac-sub">Your name comes off every leaderboard and your scores and details are deleted. This can\'t be undone. ' +
         'Your stats and streak on this device stay as they are.</p>' +
         '<button type="button" class="ac-btn ac-btn-danger" id="acDeleteYes">Delete my account</button>' +
-        '<p class="ac-switch"><button type="button" class="ac-link" data-ac-go="account">Keep my account</button></p>';
+        '<p class="ac-switch"><button type="button" class="ac-link" data-ac-go="account" data-ac-focus>Keep my account</button></p>';
     }
   };
 
@@ -235,8 +280,7 @@
       if (n.error) return err(form, n.error);
       if (!emailOk(email)) return err(form, "That email doesn't look right.");
       if (!form.adult.checked) return err(form, "The leaderboard is for over-18s.");
-      var a = B.account();
-      if (a && a.email.toLowerCase() === email.toLowerCase()) return err(form, "You've already joined with that email — sign in instead.");
+      if (B.findAccount(email)) return err(form, "You've already joined with that email — sign in instead.");
       pending.name = n.name;
       show("check");
     },
@@ -276,9 +320,10 @@
     check: function(body){
       body.querySelector("#acResend").addEventListener("click", function(){ toast("Sent again (sandbox: nothing is sent)"); });
       body.querySelector("#acTapLink").addEventListener("click", function(){
-        var p = pending || {}, a = B.account();
+        var p = pending || {};
         if (p.mode === "signin"){
-          if (!a || a.email.toLowerCase() !== String(p.email).toLowerCase()) return show("nouser");
+          var a = B.findAccount(p.email);
+          if (!a) return show("nouser");
           a.signedIn = true;
           B.saveAccount(a);
           pending = null;

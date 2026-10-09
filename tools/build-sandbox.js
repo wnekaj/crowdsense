@@ -63,7 +63,7 @@ function replaceOnce(src, find, repl, what){
   var parts = src.split(find);
   if (parts.length !== 2){
     throw new Error("build-sandbox: expected exactly one match for " + what +
-      " in index.html, found " + (parts.length - 1) + ". Update tools/build-sandbox.js.");
+      ", found " + (parts.length - 1) + ". Update tools/build-sandbox.js.");
   }
   return parts[0] + repl + parts[1];
 }
@@ -304,16 +304,18 @@ if (BOARD){
   };
   var boardCss = '<link rel="stylesheet" href="board.css?v=' + hashOf(path.join(BOARD_DIR, "board.css")) + '" />';
   html = replaceOnce(html, "</head>", "  " + boardCss + "\n</head>", "the closing head tag (board)");
-  boardFiles.forEach(function(f){
-    if (f === "leaderboard.html") return;
-    fs.writeFileSync(path.join(OUT, f), fs.readFileSync(path.join(BOARD_DIR, f), "utf8"));
-  });
+  // the page is transformed before anything is written, so a failed
+  // rewrite leaves the board files as they were
   var page = fs.readFileSync(path.join(BOARD_DIR, "leaderboard.html"), "utf8");
   page = replaceOnce(page, "<!--SBX-HEAD-->", head, "the leaderboard's head placeholder");
   page = replaceOnce(page, "<!--SBX-LOOK-->",
     '<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet" />\n' +
     '  <link rel="stylesheet" href="look.css?v=' + hashOf(path.join(ROOT, "look.css")) + '" />\n  ' + boardCss,
     "the leaderboard's look placeholder");
+  boardFiles.forEach(function(f){
+    if (f === "leaderboard.html") return;
+    fs.writeFileSync(path.join(OUT, f), fs.readFileSync(path.join(BOARD_DIR, f), "utf8"));
+  });
   write("leaderboard.html", page);
 } else if (!TRIAL){
   boardFiles.forEach(function(f){ try{ fs.unlinkSync(path.join(OUT, f)); }catch(_){} });

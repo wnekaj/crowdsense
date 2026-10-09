@@ -3,7 +3,9 @@
    Loaded after app.js, menu.js, nav.js and look.js; styles in board.css.
 
      ranked play  today's question finished on the day, in daily mode, is
-                  recorded for the board; archive plays and replays aren't
+                  recorded for the board; archive plays and replays aren't.
+                  "On the day" is the London date when the game finishes,
+                  not when the page loaded
      menu         Leaderboard, and Sign in / Your account
      result       a card under the result: where you stand this month, or
                   an invitation to join; archive games say they don't count
@@ -22,6 +24,16 @@
   var dayQ = (function(){ var m = /[?&]day=(\d{4}-\d{2}-\d{2})/.exec(location.search); return m ? "?day=" + m[1] : ""; })();
   var BOARD_URL = "leaderboard.html" + dayQ;
   function num(n){ return (Math.round(n * 10) / 10).toLocaleString("en-GB", { maximumFractionDigits: 1 }); }
+
+  // The leaderboard's Menu links to Archive, Your stats and How to play
+  // land here with the panel open; it shouldn't sit under the front door.
+  try{
+    if (localStorage.getItem("cs-skip-door")){
+      localStorage.removeItem("cs-skip-door");
+      var door = document.querySelector(".lk-splash .lk-play");
+      if (door) door.click();
+    }
+  }catch(_){}
 
   // ---------- the menu ----------
   var SVG = function(p){ return '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>'; };
@@ -65,39 +77,47 @@
     var card = document.createElement("section");
     card.id = "bgCard";
     card.className = "bg-card";
-    var ranked = MODE === "daily" && CUR.dayKey === DAY_KEY;
+    var dayNow = getDayKey();
+    var ranked = MODE === "daily" && CUR.dayKey === dayNow;
     if (!ranked){
       card.innerHTML = '<p class="bg-note">Archive games don\'t count towards the leaderboard — only today\'s question, played today.</p>';
     } else if (!A.signedIn()){
-      card.innerHTML = '<div class="bg-head"><span class="bg-k">Leaderboard</span><span class="bg-m">' + esc(B.monthLabel(DAY_KEY)) + '</span></div>' +
+      var mine = B.rankedToday(dayNow), known = B.account();
+      card.innerHTML = '<div class="bg-head"><span class="bg-k">Leaderboard</span><span class="bg-m">' + esc(B.monthLabel(dayNow)) + '</span></div>' +
         '<p class="bg-big">How do you rank?</p>' +
-        '<p class="bg-sub">Join free to put today\'s ' + num(state.score) + ' off on the monthly leaderboard.</p>' +
+        '<p class="bg-sub">' + (mine ? "Join free to put today's " + num(mine.off) + " off on the monthly leaderboard."
+          : "Join free to get on the monthly leaderboard.") + '</p>' +
         '<button type="button" class="bg-btn" id="bgJoin">Join the leaderboard</button>' +
-        '<a class="bg-link" href="' + BOARD_URL + '">See the leaderboard</a>';
+        '<p class="bg-switch">' + (known ? "Signed out. " : "Already joined? ") +
+          '<button type="button" class="bg-linkbtn" id="bgSignin">Sign in</button> · <a class="bg-link" href="' + BOARD_URL + '">See the leaderboard</a></p>';
     } else {
-      var board = B.buildBoard({ todayKey: DAY_KEY, account: B.account(), realDays: B.realDays(DAY_KEY) });
+      var board = B.buildBoard({ todayKey: dayNow, account: B.account(), realDays: B.realDays(dayNow) });
       var month = B.view(board, "month", "overall"), today = B.view(board, "today", "overall");
       var m = month.filter(function(p){ return p.you; })[0], t = today.filter(function(p){ return p.you; })[0];
-      card.innerHTML = '<div class="bg-head"><span class="bg-k">Leaderboard</span><span class="bg-m">' + esc(B.monthLabel(DAY_KEY)) + '</span></div>' +
+      var top = m ? B.topLine(m.rank, month.length) : "";
+      card.innerHTML = '<div class="bg-head"><span class="bg-k">Leaderboard</span><span class="bg-m">' + esc(B.monthLabel(dayNow)) + '</span></div>' +
         '<div class="bg-stats">' +
           '<div><b>' + (m ? B.ordinal(m.rank) : "—") + '</b><span>this month</span></div>' +
-          '<div><b>' + (t ? B.ordinal(t.rank) : "—") + '</b><span>today, of ' + today.length + '</span></div>' +
-          '<div><b>' + (m ? "top " + B.topPercent(m.rank, month.length) + "%" : "—") + '</b><span>of ' + month.length + ' players</span></div>' +
+          '<div><b>' + (t ? B.ordinal(t.rank) : "—") + '</b><span>today</span></div>' +
+          '<div><b>' + (m ? num(m.total) : "—") + '</b><span>points off</span></div>' +
         '</div>' +
+        (top ? '<p class="bg-top">You\'re in the ' + top + ' of ' + month.length + ' players this month.</p>' : "") +
         '<a class="bg-btn" href="' + BOARD_URL + '">See the leaderboard</a>';
     }
     var anchor = document.getElementById("shareBtn");
     if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(card, anchor.nextSibling);
     else els.reveal.appendChild(card);
-    var join = card.querySelector("#bgJoin");
-    if (join) join.addEventListener("click", function(){ A.open("join", paintCard); });
+    // the stats panel would otherwise pop up behind the sheet
+    var join = card.querySelector("#bgJoin"), signin = card.querySelector("#bgSignin");
+    if (join) join.addEventListener("click", function(){ STATS_SEEN = true; A.open("join", paintCard); });
+    if (signin) signin.addEventListener("click", function(){ STATS_SEEN = true; A.open("signin", paintCard); });
   }
 
   var _finishGame = window.finishGame;
   window.finishGame = function(alreadyDone){
     _finishGame(alreadyDone);
     // the first finish of today's question, on the day, is the ranked one
-    if (!alreadyDone && MODE === "daily" && CUR && CUR.dayKey === DAY_KEY) B.recordRanked(DAY_KEY, state.score);
+    if (!alreadyDone && MODE === "daily" && CUR && CUR.dayKey === getDayKey()) B.recordRanked(CUR.dayKey, state.score);
     paintCard();
   };
   var _setupGame = window.setupGame;

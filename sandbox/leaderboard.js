@@ -42,6 +42,11 @@
       { key: "help", label: "How to play", href: "index.html" + q + "#help" }
     ]});
     var nav = document.querySelector("#tgDrawer nav");
+    // these open a panel in the game: tell it to skip its front door
+    ["archive", "stats", "help"].forEach(function(k){
+      var a = document.querySelector('#tgDrawer [data-item="' + k + '"]');
+      if (a) a.addEventListener("click", function(){ try{ localStorage.setItem("cs-skip-door", "1"); }catch(_){} });
+    });
     var acct = document.createElement("button");
     acct.type = "button";
     acct.className = "tg-drawer-item";
@@ -107,16 +112,19 @@
     var month = B.view(board, "month", "overall"), today = B.view(board, "today", "overall");
     var m = month.filter(function(p){ return p.you; })[0];
     var t = today.filter(function(p){ return p.you; })[0];
+    var top = B.topLine(m.rank, month.length);
+    // days so far: today only once it's played
+    var sofar = board.dayCount - (t ? 0 : 1);
     card.className = "lb-card lb-you";
     card.innerHTML =
       '<div class="lb-you-top"><span class="lb-av" aria-hidden="true">' + esc(you.name.charAt(0).toUpperCase()) + '</span>' +
         '<div class="lb-you-name"><b>' + esc(you.name) + '</b><button type="button" class="lb-link" id="acctBtn">Your account</button></div></div>' +
       '<div class="lb-you-stats">' +
         '<div><b>' + B.ordinal(m.rank) + '</b><span>of ' + month.length + ' this month</span></div>' +
-        '<div><b>top ' + B.topPercent(m.rank, month.length) + '%</b><span>of players</span></div>' +
         '<div><b>' + num(m.total) + '</b><span>points off</span></div>' +
-        '<div><b>' + m.played + '/' + board.dayCount + '</b><span>days played</span></div>' +
+        '<div><b>' + (sofar > 0 ? m.played + '/' + sofar : "—") + '</b><span>days played</span></div>' +
       '</div>' +
+      (top ? '<p class="lb-top">You\'re in the <b>' + top + '</b> of players this month.</p>' : "") +
       (t ? '<p class="lb-today"><span class="lb-dot t-' + band(t.today) + '"></span>Today: <b>' + num(t.today) + ' off</b> · ' + B.ordinal(t.rank) + ' of ' + today.length + '</p>'
          : '<p class="lb-today">Today: not played yet. <a class="lb-link" href="index.html' + q + '">Play today\'s question</a></p>');
     $("acctBtn").addEventListener("click", function(){ A.open("account"); });
@@ -128,20 +136,23 @@
     if (mine && mine !== B.PNTS && DIMS[d].values.indexOf(mine) > -1) return mine;
     return DIMS[d].values[0];
   }
-  function row(p, n){
+  function row(p){
     var cls = ["lb-row"];
     if (p.you) cls.push("me");
     if (p.rank <= 3) cls.push("top" + p.rank);
     var meta = period === "month"
-      ? p.played + (p.played === 1 ? " day" : " days") + (p.pulses ? " · 🎯 " + p.pulses : "")
+      ? p.played + (p.played === 1 ? " day" : " days") +
+        (p.pulses ? ' · <span aria-hidden="true">🎯 ' + p.pulses + '</span><span class="vh">, ' + p.pulses +
+          (p.pulses === 1 ? " day" : " days") + ' On the pulse</span>' : "")
       : "";
     var score = period === "today"
-      ? '<span class="lb-dot t-' + band(p.score) + '"></span><b>' + num(p.score) + '</b>'
-      : '<b>' + num(p.score) + '</b>';
+      ? '<span class="lb-dot t-' + band(p.score) + '" aria-hidden="true"></span><b>' + num(p.score) + '</b><span class="vh"> off today</span>'
+      : '<b>' + num(p.score) + '</b><span class="vh"> points off</span>';
     return '<li class="' + cls.join(" ") + '"' + (p.you ? ' id="youRow"' : "") + '>' +
-      '<span class="lb-rank">' + p.rank + '</span>' +
-      '<span class="lb-name">' + esc(p.name) + (p.you ? ' <span class="lb-youtag">You · top ' + B.topPercent(p.rank, n) + '%</span>' : "") +
+      '<span class="lb-rank"><span class="vh">Rank </span>' + p.rank + '</span>' +
+      '<span class="lb-name"><span class="lb-n">' + esc(p.name) + '</span>' +
         (meta ? '<small>' + meta + '</small>' : "") + '</span>' +
+      (p.you ? '<span class="lb-youtag">You</span>' : "") +
       '<span class="lb-score">' + score + '</span></li>';
   }
   function render(){
@@ -159,8 +170,8 @@
     note.classList.toggle("hidden", !msg);
 
     var top = group.slice(0, SHOW), me = group.filter(function(p){ return p.you; })[0];
-    var html = top.map(function(p){ return row(p, group.length); }).join("");
-    if (me && me.rank > SHOW) html += '<li class="lb-gap" aria-hidden="true">⋯</li>' + row(me, group.length);
+    var html = top.map(row).join("");
+    if (me && me.rank > SHOW) html += '<li class="lb-gap" aria-hidden="true">⋯</li>' + row(me);
     if (!group.length) html = '<li class="lb-empty">' + (period === "today" ? "Nobody in this group has played today yet." : "No players in this group yet.") + '</li>';
     $("rows").innerHTML = html;
     $("colScore").textContent = period === "today" ? "Today" : "Points off";

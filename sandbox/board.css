@@ -13,6 +13,8 @@
   --bd-peach:#f6cdb2; --bd-peach-soft:#fdf1e8;
 }
 .hidden{ display:none !important }
+/* read by screen readers, not shown */
+.vh{ position:absolute !important; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap }
 
 /* =========================================================================
    THE LEADERBOARD PAGE
@@ -55,6 +57,11 @@
   border:2px solid #e4e4e0; background:#fff; color:var(--ink);
 }
 .lb-note{ margin:10px 2px 0; font-size:13.5px; color:#55595c; line-height:1.45 }
+/* on the narrowest phones the tab above already names the group, so the
+   select gets the whole row ("Yorkshire and the Humber" fits) */
+@media (max-width:359px){
+  .lb-pick label{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap }
+}
 
 /* your card */
 .lb-join{ text-align:center; background:var(--bd-peach) }
@@ -78,10 +85,12 @@
 .lb-you-name{ display:flex; flex-direction:column; align-items:flex-start; min-width:0 }
 .lb-you-name b{ font-size:18px; font-weight:900; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100% }
 .lb-you-name .lb-link{ font-size:13.5px }
-.lb-you-stats{ display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; margin-top:14px }
+.lb-you-stats{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; margin-top:14px }
 .lb-you-stats div{ background:#f3f2ef; border-radius:16px; padding:10px 4px 8px; text-align:center; min-width:0 }
 .lb-you-stats b{ display:block; font-size:19px; font-weight:900; font-variant-numeric:tabular-nums; white-space:nowrap }
 .lb-you-stats span{ display:block; font-size:11px; font-weight:700; color:#787c7e; line-height:1.25; margin-top:2px }
+.lb-top{ margin:12px 2px 0; font-size:14.5px; color:#3a3d40 }
+.lb-top b{ color:var(--accent-deep); font-weight:900 }
 .lb-today{ margin:12px 2px 0; font-size:14.5px; color:#3a3d40; display:flex; align-items:center; gap:6px; flex-wrap:wrap }
 
 /* the list */
@@ -96,9 +105,11 @@
 .lb-row.top1 .lb-rank{ background:#f7c948; color:#5a4300 }
 .lb-row.top2 .lb-rank{ background:#d9dde1; color:#3a3d40 }
 .lb-row.top3 .lb-rank{ background:#e8b48a; color:#5b3416 }
-.lb-name{ flex:1; min-width:0; font-size:16px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
-.lb-name small{ display:block; font-size:12px; font-weight:600; color:#8a8d90; margin-top:1px }
-.lb-youtag{ display:inline-block; vertical-align:2px; margin-left:4px; padding:2px 8px; border-radius:999px; background:var(--accent); color:#fff; font-size:11px; font-weight:800 }
+.lb-name{ flex:1; min-width:0; font-size:16px; font-weight:700 }
+.lb-n{ display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.lb-name small{ display:block; font-size:12px; font-weight:600; color:#8a8d90; margin-top:1px; white-space:nowrap }
+/* beside the name, not inside it, so a long name never hides it */
+.lb-youtag{ flex:none; padding:3px 9px; border-radius:999px; background:var(--accent); color:#fff; font-size:11.5px; font-weight:800 }
 .lb-score{ flex:none; display:flex; align-items:center; gap:6px; font-size:18px; font-variant-numeric:tabular-nums }
 .lb-score b{ font-weight:900 }
 .lb-row.me{ background:var(--bd-peach-soft); border-radius:16px; border-bottom-color:transparent }
@@ -137,11 +148,15 @@
 .bg-sub{ margin:0 0 12px; font-size:14.5px; color:#3a3d40; line-height:1.4 }
 .bg-btn{ min-height:48px; font-size:16px }
 .bg-link{ display:inline-block; margin-top:10px; color:var(--accent-deep); font-weight:800; font-size:14.5px }
-.bg-stats{ display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin:6px 0 12px }
+.bg-stats{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; margin:6px 0 12px }
 .bg-stats div{ background:#fff; border-radius:14px; padding:9px 4px 7px }
 .bg-stats b{ display:block; font-size:19px; font-weight:900; white-space:nowrap }
 .bg-stats span{ display:block; font-size:11px; font-weight:700; color:#787c7e }
 .bg-note{ margin:0; font-size:14px; color:#55595c; line-height:1.45 }
+.bg-top{ margin:-4px 0 12px; font-size:14px; color:#3a3d40 }
+.bg-switch{ margin:12px 0 0; font-size:14px; color:#55595c }
+.bg-linkbtn{ border:0; background:none; padding:0; cursor:pointer; font:inherit; font-weight:800; color:var(--accent-deep); text-decoration:underline; text-underline-offset:2px }
+.bg-switch .bg-link{ margin-top:0; font-size:14px }
 
 /* =========================================================================
    THE SIGN-UP SHEETS (both pages)
@@ -186,7 +201,9 @@ html.ac-open body{ overflow:hidden }
 .ac-mock{ padding:14px; border-radius:16px; background:#f3f2ef; text-align:center }
 .ac-mock span{ display:block; font-size:12.5px; font-weight:700; color:#787c7e; text-transform:uppercase; letter-spacing:.06em }
 .ac-mock .ac-btn{ margin-top:10px }
-.ac-body fieldset{ border:0; margin:0; padding:12px 0 2px }
+/* the space goes above each label, so it sits with its own options (a
+   legend sits on its fieldset's border, so padding would land below it) */
+.ac-body fieldset{ border:0; margin:18px 0 0; padding:0 }
 .ac-body legend{ padding:0; margin-bottom:8px; font-size:13px; font-weight:800; color:#55595c }
 .ac-chips{ display:flex; flex-wrap:wrap; gap:6px }
 .ac-chip{ position:relative; cursor:pointer }
