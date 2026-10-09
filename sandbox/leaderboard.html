@@ -58,7 +58,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="look.css?v=c737204cec" />
-  <link rel="stylesheet" href="board.css?v=c3feb03fd8" />
+  <link rel="stylesheet" href="board.css?v=e72e5970b9" />
 </head>
 <body class="lb-page">
   <div class="sbx-bar">SANDBOX — leaderboard mock-up <a id="backTop" href="index.html">← Back to the game</a></div>
@@ -82,7 +82,7 @@
         </div>
       </section>
 
-      <section class="lb-card lb-you" id="youCard"></section>
+      <section class="lb-card lb-you hidden" id="youCard"></section>
 
       <section class="lb-card lb-board">
         <p class="lb-note hidden" id="boardNote"></p>
@@ -95,11 +95,12 @@
         <h2>How the leaderboard works</h2>
         <ul>
           <li><b>Lowest Crowdsense score wins.</b> Your average points off for each day apply across the month.</li>
-          <li>Only your lowest 20 scores each month count towards your score.</li>
-          <li>A day you miss counts as <span id="ruleMissed">25</span> off.</li>
+          <li><b>Play two-thirds of questions.</b> Only your lowest 20 scores each month count towards your score. You can miss 10 days after that a day you miss counts as 25 off.</li>
           <li><b>Play on the day.</b> Only today's question, played today (UK time), counts. Archive games don't.</li>
         </ul>
       </section>
+
+      <section class="lb-card lb-you lb-join hidden" id="joinCard"></section>
 
       <p class="lb-fine">Sandbox mock-up: the other players are made up, and nothing you enter is sent anywhere.</p>
       <a class="lb-back" id="backBottom" href="index.html">← Back to the game</a>

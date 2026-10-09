@@ -71,15 +71,16 @@
   build();
 
   $("monthLabel").textContent = B.monthLabel(todayKey) + " · day " + board.dayCount + " of " + board.daysInMonth;
-  $("ruleMissed").textContent = B.MISSED;
 
   // ---------- your card ----------
   function youCard(){
-    var card = $("youCard");
+    var card = $("youCard"), join = $("joinCard");
+    card.classList.toggle("hidden", !you);
+    join.classList.toggle("hidden", !!you);
     if (!you){
       var a = B.account();
-      card.className = "lb-card lb-you lb-join";
-      card.innerHTML = '<div class="lb-join-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></div>' +
+      card.innerHTML = "";
+      join.innerHTML = '<div class="lb-join-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></div>' +
         '<h2>Get on the board</h2>' +
         '<p>Join free with your email to see your name on the leaderboard.</p>' +
         '<button type="button" class="lb-btn" id="joinBtn">Join the leaderboard</button>' +
@@ -92,7 +93,7 @@
     var m = month.filter(function(p){ return p.you; })[0];
     var t = today.filter(function(p){ return p.you; })[0];
     var top = m ? B.topLine(m.rank, month.length) : "";
-    card.className = "lb-card lb-you";
+    join.innerHTML = "";
     card.innerHTML =
       '<div class="lb-you-top"><span class="lb-av" aria-hidden="true">' + esc(you.name.charAt(0).toUpperCase()) + '</span>' +
         '<div class="lb-you-name"><b>' + esc(you.name) + '</b><button type="button" class="lb-link" id="acctBtn">Your account</button></div></div>' +
@@ -113,18 +114,12 @@
     var cls = ["lb-row"];
     if (p.you) cls.push("me");
     if (p.rank <= 3) cls.push("top" + p.rank);
-    var meta = period === "month"
-      ? p.played + (p.played === 1 ? " day" : " days") +
-        (p.pulses ? ' · <span aria-hidden="true">🎯 ' + p.pulses + '</span><span class="vh">, ' + p.pulses +
-          (p.pulses === 1 ? " day" : " days") + ' On the pulse</span>' : "")
-      : "";
     var score = period === "today"
       ? '<span class="lb-dot t-' + band(p.score) + '" aria-hidden="true"></span><b>' + num(p.score) + '</b><span class="vh"> off today</span>'
       : '<b>' + avg(p.score) + '</b><span class="vh"> Crowdsense score</span>';
     return '<li class="' + cls.join(" ") + '"' + (p.you ? ' id="youRow"' : "") + '>' +
       '<span class="lb-rank"><span class="vh">Rank </span>' + p.rank + '</span>' +
-      '<span class="lb-name"><span class="lb-n">' + esc(p.name) + '</span>' +
-        (meta ? '<small>' + meta + '</small>' : "") + '</span>' +
+      '<span class="lb-name"><span class="lb-n">' + esc(p.name) + '</span></span>' +
       (p.you ? '<span class="lb-youtag">You</span>' : "") +
       '<span class="lb-score">' + score + '</span></li>';
   }

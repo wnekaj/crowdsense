@@ -2,8 +2,11 @@
    account.js — SANDBOX ONLY. A mock of the real sign-up, for the design.
    Shared by the game page and leaderboard.html; styles in board.css.
 
-     Join      display name, email, then age, gender and region (each with
-               "Prefer not to say"), and "I'm 18 or over" -> a sign-in link
+     Join      display name, email, then age, gender, region and political
+               leaning (each with "Prefer not to say"), and "I'm 18 or over"
+               -> a sign-in link. Political opinions are special category
+               data under UK GDPR, so a position on the scale also needs an
+               explicit consent tick.
      Sign in   email -> a sign-in link (back on a new device)
      Check     "we've sent you a link" — the sandbox has a button to
                pretend you tapped it; no email is sent
@@ -148,10 +151,11 @@
     var form = body.querySelector("form");
     if (form && HANDLERS[screen]) form.addEventListener("submit", function(e){ e.preventDefault(); HANDLERS[screen](form); });
     if (WIRE[screen]) WIRE[screen](body);
+    wirePolitics(body);
     focusFirst();
   }
 
-  // ---------- age, gender, region ----------
+  // ---------- age, gender, region, politics ----------
   // Native radios under a fieldset and legend (no extra radiogroup role:
   // the fieldset already names the group), and a select for the region.
   function chips(name, options, current){
@@ -167,13 +171,50 @@
       '<fieldset><legend><label for="acRegion">Where do you live?</label></legend>' +
         '<select id="acRegion" name="region"><option value="">Choose…</option>' +
         B.REGIONS.concat([B.PNTS]).map(function(r){ return '<option' + (r === a.region ? " selected" : "") + '>' + esc(r) + '</option>'; }).join("") +
-        '</select></fieldset>';
+        '</select></fieldset>' +
+      politicsField(a);
+  }
+  // Seven points from left to right, as pollsters ask it: each point is a
+  // radio with its full wording for screen readers, the chosen wording shows
+  // under the scale, and "Don't know" / "Prefer not to say" sit beneath.
+  function politicsField(a){
+    var cur = a.politics, onScale = B.POLITICS.indexOf(cur) > -1;
+    return '<fieldset class="ac-pol"><legend>Politically, where would you put yourself?</legend>' +
+      '<div class="ac-scale">' + B.POLITICS.map(function(o, i){
+        return '<label class="ac-dot" title="' + esc(o) + '"><input type="radio" name="politics" value="' + esc(o) + '"' +
+          (o === cur ? " checked" : "") + '><span class="ac-dot-mark" aria-hidden="true"></span><span class="vh">' + esc(o) + '</span></label>';
+      }).join("") + '</div>' +
+      '<div class="ac-scale-ends" aria-hidden="true"><span>Left</span><span>Centre</span><span>Right</span></div>' +
+      '<p class="ac-scale-pick" id="acPolPick">' + (onScale ? esc(cur) : "Tap a point on the scale") + '</p>' +
+      '<div class="ac-chips">' + [B.DK, B.PNTS].map(function(o){
+        return '<label class="ac-chip"><input type="radio" name="politics" value="' + esc(o) + '"' +
+          (o === cur ? " checked" : "") + '><span>' + esc(o) + '</span></label>';
+      }).join("") + '</div>' +
+      '<label class="ac-check ac-consent' + (onScale ? "" : " hidden") + '" id="acPolConsentWrap">' +
+        '<input type="checkbox" name="polConsent"' + (onScale && a.politicsConsent ? " checked" : "") + '>' +
+        '<span>I agree to Crowdsense keeping my political leaning to compare how different groups guess. ' +
+        'It\'s sensitive information: it\'s never shown to anyone, and you can remove it any time.</span></label>' +
+    '</fieldset>';
+  }
+  // the chosen point's wording, and the consent tick only for a position
+  function wirePolitics(body){
+    var radios = body.querySelectorAll('input[name="politics"]');
+    if (!radios.length) return;
+    function sync(){
+      var v = (body.querySelector('input[name="politics"]:checked') || {}).value;
+      var onScale = B.POLITICS.indexOf(v) > -1;
+      body.querySelector("#acPolPick").textContent = onScale ? v : "Tap a point on the scale";
+      body.querySelector("#acPolConsentWrap").classList.toggle("hidden", !onScale);
+    }
+    Array.prototype.forEach.call(radios, function(r){ r.addEventListener("change", sync); });
   }
   function readAbout(form){
     return {
       age: (form.querySelector('input[name="age"]:checked') || {}).value || null,
       gender: (form.querySelector('input[name="gender"]:checked') || {}).value || null,
-      region: form.querySelector("#acRegion").value || null
+      region: form.querySelector("#acRegion").value || null,
+      politics: (form.querySelector('input[name="politics"]:checked') || {}).value || null,
+      politicsConsent: !!(form.querySelector('input[name="polConsent"]') || {}).checked
     };
   }
   // every question needs an answer, even if it's "Prefer not to say"
@@ -182,10 +223,14 @@
     if (!d.age) m.push("your age");
     if (!d.gender) m.push("your gender");
     if (!d.region) m.push("where you live");
-    return m.length ? "Please choose " + m.join(", ").replace(/, ([^,]*)$/, " and $1") + ' — or "Prefer not to say".' : "";
+    if (!d.politics) m.push("where you are politically");
+    if (m.length) return "Please choose " + m.join(", ").replace(/, ([^,]*)$/, " and $1") + ' — or "Prefer not to say".';
+    if (B.POLITICS.indexOf(d.politics) > -1 && !d.politicsConsent)
+      return 'Please tick the box to let us keep your political leaning — or choose "Prefer not to say".';
+    return "";
   }
   function aboutSummary(a){
-    var d = [a.age, a.gender, a.region].filter(function(x){ return x && x !== B.PNTS; });
+    var d = [a.age, a.gender, a.region, a.politics].filter(function(x){ return x && x !== B.PNTS && x !== B.DK; });
     return d.length ? d.join(" · ") : "Prefer not to say";
   }
 
@@ -304,6 +349,9 @@
     about: function(form){
       var d = readAbout(form), miss = aboutMissing(d);
       if (miss) return err(form, miss);
+      // consent goes with the leaning: dropped with it, dated when first given
+      if (B.POLITICS.indexOf(d.politics) < 0){ d.politicsConsent = false; d.politicsConsentAt = null; }
+      else d.politicsConsentAt = B.account().politicsConsentAt || new Date().toISOString();
       var a = B.account();
       Object.assign(a, d);
       B.saveAccount(a);
@@ -336,7 +384,10 @@
           pending = null;
           return finish("Welcome back, " + a.name);
         }
+        var onScale = B.POLITICS.indexOf(p.politics) > -1;
         B.saveAccount({ name: p.name, email: p.email, age: p.age, gender: p.gender, region: p.region,
+          politics: p.politics, politicsConsent: onScale && p.politicsConsent,
+          politicsConsentAt: onScale && p.politicsConsent ? new Date().toISOString() : null,
           signedIn: true, joined: B.todayKey() });
         pending = null;
         finish("You're on the leaderboard");

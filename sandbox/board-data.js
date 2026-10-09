@@ -74,16 +74,52 @@
     "West Midlands", "East of England", "London", "South East", "South West",
     "Wales", "Scotland", "Northern Ireland", "Outside the UK"];
 
+  // a left-to-right scale, as pollsters ask it
+  var POLITICS = ["Very left-wing", "Fairly left-wing", "Slightly left of centre", "Centre",
+    "Slightly right of centre", "Fairly right-wing", "Very right-wing"];
+  var DK = "Don't know";
+
+  // ---------- the dummy players' names ----------
+  // The mix of styles people really pick (names, initials, handles,
+  // numbers, places, in-jokes), so the board doesn't look generated.
   var FIRST = ["Priya","Tom","Aisha","Callum","Grace","Rhys","Fatima","Oliver","Niamh","Jamal",
     "Harriet","Kwame","Sophie","Euan","Leila","Ben","Chloe","Arjun","Megan","Dan","Zara","Owen",
     "Isla","Tariq","Ruth","Josh","Amara","Finn","Hannah","Imran","Molly","Sam","Eilidh","Kai",
     "Beth","Nathan","Yasmin","George","Freya","Marcus","Rosie","Ade","Lucy","Connor","Nadia",
     "Hugh","Ellie","Rohan","Kate","Liam","Maya","Gareth","Sienna","Yusuf","Poppy","Declan",
-    "Alice","Theo","Carys","Idris"];
-  var INITIALS = "ABCDEFGHJKLMNOPRSTW";
-  // some players pick a handle instead of a name
+    "Alice","Theo","Carys","Idris","Bex","Steve","Jen","Mo","Gemma","Ravi","Siobhan","Pete","Wiktoria","Femi"];
+  var LAST = ["Walker","Patel","Hughes","Okafor","Morgan","Ahmed","Fletcher","Byrne","Campbell","Khan",
+    "Evans","Doyle","Reid","Shah","Price","Murphy","Begum","Clarke","Nowak","Ali","Jones","Kaur",
+    "Davies","Hall","Mensah","Wright","Lewis","Singh","Ward","Owusu"];
+  var ADJ = ["quiet","lucky","grumpy","nosy","sunny","soggy","cosmic","sleepy","tidy","brave",
+    "chunky","salty","fizzy","witty","rogue","smug","feral","polite"];
+  var NOUN = ["otter","pigeon","badger","teapot","crumpet","heron","walrus","biscuit","fox","kipper",
+    "owl","puffin","gnome","scone","wombat","parsnip","hedgehog","seagull"];
+  var PLACE = ["Leeds","Brum","Geordie","Scouse","Cardiff","Bristol","Glasgow","Kent","Norfolk",
+    "Essex","Derry","Hull","Devon","Fife","Wigan","Croydon"];
+  var ROLE = ["Lass","Lad","Guesser","Pundit","Nerd","Mum","Dad","Gran","Oracle","Punter"];
+  var TITLE = ["Big","Dr","Wee","Old","Lil","Captain"];
   var HANDLES = ["pollster_pete", "MedianMum", "the_swingometer", "GuessWho", "Brexit_Bingo",
-    "YouGovMyHeart", "margin_of_error", "Crowd_Pleaser"];
+    "YouGovMyHeart", "margin_of_error", "Crowd_Pleaser", "exit_poll_ellie", "HungParliament",
+    "spoilt_ballot", "BellCurveBev"];
+  function cap(w){ return w.charAt(0).toUpperCase() + w.slice(1); }
+  function makeName(r){
+    function pick(a){ return a[Math.floor(r() * a.length)]; }
+    var f = pick(FIRST), l = pick(LAST);
+    switch (Math.floor(r() * 11)){
+      case 0:  return f + " " + l.charAt(0) + ".";                                   // Priya W.
+      case 1:  return f.toLowerCase() + (r() < 0.5 ? 1958 + Math.floor(r() * 47) : 10 + Math.floor(r() * 90));   // priya1987
+      case 2:  return f + (r() < 0.5 ? "_" : ".") + l;                                // Priya_Walker
+      case 3:  return cap(pick(ADJ)) + cap(pick(NOUN));                                // QuietOtter
+      case 4:  return pick(ADJ) + "_" + pick(NOUN) + (r() < 0.4 ? Math.floor(r() * 100) : "");   // lucky_pigeon42
+      case 5:  return pick(PLACE) + (r() < 0.5 ? "" : "_") + pick(ROLE);               // LeedsLass
+      case 6:  return f + l.charAt(0);                                                 // PriyaW
+      case 7:  return pick(HANDLES);
+      case 8:  return (f.charAt(0) + pick(LAST).charAt(0) + l.charAt(0)).toLowerCase() + "_" + Math.floor(r() * 100);   // pkw_77
+      case 9:  return pick(TITLE) + " " + f;                                           // Auntie Priya
+      default: return f;                                                               // Priya
+    }
+  }
 
   // ---------- scoring ----------
   var BEST = 20, MISSED = 25;
@@ -129,10 +165,7 @@
     var used = {}, players = [];
     for (var i = 0; i < 60; i++){
       var name;
-      do {
-        name = r() < 0.12 ? HANDLES[Math.floor(r() * HANDLES.length)]
-          : FIRST[Math.floor(r() * FIRST.length)] + " " + INITIALS[Math.floor(r() * INITIALS.length)] + ".";
-      } while (used[name.toLowerCase()]);
+      do { name = makeName(r); } while (used[name.toLowerCase()] || name.length > 20);
       used[name.toLowerCase()] = 1;
       players.push({ id: "p" + i, name: name, you: false,
         sigma: 4 + r() * 13,             // how far off this player usually is
@@ -292,6 +325,6 @@
     buildBoard: buildBoard, view: view, topPercent: topPercent, topLine: topLine, ordinal: ordinal,
     account: account, findAccount: findAccount, saveAccount: saveAccount, deleteAccount: deleteAccount,
     recordRanked: recordRanked, rankedToday: rankedToday, realDays: realDays, checkName: checkName,
-    BEST: BEST, MISSED: MISSED, PNTS: PNTS, AGES: AGES, GENDERS: GENDERS, REGIONS: REGIONS
+    BEST: BEST, MISSED: MISSED, PNTS: PNTS, DK: DK, AGES: AGES, GENDERS: GENDERS, REGIONS: REGIONS, POLITICS: POLITICS
   };
 })();
