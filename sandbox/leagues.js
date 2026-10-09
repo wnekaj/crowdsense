@@ -163,9 +163,9 @@
   var made = null;    // the league just created, for its invite screen
   function periodChoice(){
     return '<fieldset><legend>Scores over</legend><div class="lg-periods">' +
-      [["week", "Weekly", "Starts again every Monday. Your lowest 5 days count."],
+      [["week", "Weekly", "Starts again every Monday. Your best two-thirds of days count."],
        ["month", "Monthly", "Starts again on the 1st. Play a minimum of 20 days."],
-       ["all", "All-time", "From the day the league starts. Your lowest two-thirds of days count."]].map(function(o, i){
+       ["all", "All-time", "From the day the league starts. Your best two-thirds of days count."]].map(function(o, i){
         return '<label class="lg-period"><input type="radio" name="period" value="' + o[0] + '"' + (i === 0 ? " checked" : "") + '>' +
           '<span><b>' + o[1] + '</b><small>' + o[2] + '</small></span></label>';
       }).join("") + '</div></fieldset>';
