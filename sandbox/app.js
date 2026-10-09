@@ -1228,9 +1228,24 @@ function shareMeter(err){
   if (cls === "target") out += "🎯";
   return out;
 }
+// The day's teaser, the hand-written hook the daily email uses, so a share
+// tempts people in without giving anything away (the guess is never shared).
+// A question added without one falls back to its own wording, as email.html does.
+function shareTeaser(){
+  if (Q.teaser) return Q.teaser;
+  return String(Q.question || "").replace(/<[^>]*>/g, "").replace(/^What percentage of\s+/i, "How many ");
+}
+// "crowdsense.uk", the address as people say it; chat apps still link it
+function shareLink(){
+  return String(CONFIG.SITE_URL).replace(/^https?:\/\//, "").replace(/\/$/, "");
+}
+// #82: How many Brits like music to fall asleep to?
+// 🟩🟩🟩🟩⬜ 5 off
+// Closer than 55% of players
+// crowdsense.uk
 function shareText(includeUrl){
   var lines = [];
-  lines.push("Crowdsense #" + CUR.puzzleNo);
+  lines.push("#" + CUR.puzzleNo + ": " + shareTeaser());
   // Every day shares the same five-square meter, read off the day's overall
   // score. On a multi-part day that is the mean of the parts, taken exact so
   // the meter agrees with the category shown on the page.
@@ -1241,7 +1256,7 @@ function shareText(includeUrl){
   if (MODE === "daily" && state.crowdPct !== null && state.crowdPct !== undefined){
     lines.push("Closer than " + state.crowdPct + "% of players");
   }
-  if (includeUrl !== false) lines.push(CONFIG.SITE_URL);
+  if (includeUrl !== false) lines.push(shareLink());
   return lines.join("\n");
 }
 // Fallback copy for insecure contexts and older browsers, where the
