@@ -755,6 +755,18 @@ var CS_QUESTIONS = [
     // the screenshot, and the table doesn't name the pollster.
     source: "Online survey of 4,012 UK adults, 26–31 January 2024",
     teaser: "How many Brits like music to fall asleep to?"
+  },
+  {
+    date: "2026-10-10",  // Day 83
+    question: "What percentage of Brits say they would support nuclear power stations being built in the UK?",
+    answer: 49,
+    // read off the first column, taken as the total (the column headings
+    // weren't in the screenshot): slightly 15 + somewhat 15 + strongly
+    // support 19 = 49. Oppose 27 (strongly 9, somewhat 8, slightly 10),
+    // neither 21, don't know 4. Same grid as the wind farms question on
+    // 17 September, whose note has nuclear on 49 from the printed totals.
+    source: "Public First poll of 4,072 GB adults, 14–19 June 2026",
+    teaser: "How many Brits back nuclear power?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
