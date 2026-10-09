@@ -70,7 +70,7 @@
   }
   build();
 
-  $("monthLabel").textContent = B.monthLabel(todayKey) + " · day " + board.dayCount + " of " + board.daysInMonth;
+  $("monthLabel").textContent = B.monthLabel(todayKey);
 
   // ---------- your card ----------
   function youCard(){
