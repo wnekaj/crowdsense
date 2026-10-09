@@ -2,11 +2,12 @@
    account.js — SANDBOX ONLY. A mock of the real sign-up, for the design.
    Shared by the game page and leaderboard.html; styles in board.css.
 
-     Join      display name + email + "I'm 18 or over" -> a sign-in link
+     Join      display name, email, then age, gender and region (each with
+               "Prefer not to say"), and "I'm 18 or over" -> a sign-in link
      Sign in   email -> a sign-in link (back on a new device)
      Check     "we've sent you a link" — the sandbox has a button to
                pretend you tapped it; no email is sent
-     Account   change your name, sign out, delete the account
+     Account   change your name or your answers, sign out, delete the account
 
    No passwords: the real thing signs people in with a one-time link by
    email. Everything here is stored in the sandbox's own storage only.
@@ -150,6 +151,44 @@
     focusFirst();
   }
 
+  // ---------- age, gender, region ----------
+  // Native radios under a fieldset and legend (no extra radiogroup role:
+  // the fieldset already names the group), and a select for the region.
+  function chips(name, options, current){
+    return '<div class="ac-chips">' + options.map(function(o){
+      return '<label class="ac-chip"><input type="radio" name="' + name + '" value="' + esc(o) + '"' +
+        (o === current ? " checked" : "") + '><span>' + esc(o) + '</span></label>';
+    }).join("") + '</div>';
+  }
+  function aboutFields(a){
+    a = a || {};
+    return '<fieldset><legend>Age</legend>' + chips("age", B.AGES.concat([B.PNTS]), a.age) + '</fieldset>' +
+      '<fieldset><legend>Gender</legend>' + chips("gender", B.GENDERS.concat([B.PNTS]), a.gender) + '</fieldset>' +
+      '<fieldset><legend><label for="acRegion">Where do you live?</label></legend>' +
+        '<select id="acRegion" name="region"><option value="">Choose…</option>' +
+        B.REGIONS.concat([B.PNTS]).map(function(r){ return '<option' + (r === a.region ? " selected" : "") + '>' + esc(r) + '</option>'; }).join("") +
+        '</select></fieldset>';
+  }
+  function readAbout(form){
+    return {
+      age: (form.querySelector('input[name="age"]:checked') || {}).value || null,
+      gender: (form.querySelector('input[name="gender"]:checked') || {}).value || null,
+      region: form.querySelector("#acRegion").value || null
+    };
+  }
+  // every question needs an answer, even if it's "Prefer not to say"
+  function aboutMissing(d){
+    var m = [];
+    if (!d.age) m.push("your age");
+    if (!d.gender) m.push("your gender");
+    if (!d.region) m.push("where you live");
+    return m.length ? "Please choose " + m.join(", ").replace(/, ([^,]*)$/, " and $1") + ' — or "Prefer not to say".' : "";
+  }
+  function aboutSummary(a){
+    var d = [a.age, a.gender, a.region].filter(function(x){ return x && x !== B.PNTS; });
+    return d.length ? d.join(" · ") : "Prefer not to say";
+  }
+
   var SCREENS = {
     join: function(){
       var p = pending || {};
@@ -163,6 +202,11 @@
           '<label class="ac-label" for="acEmail">Email</label>' +
           '<input class="ac-input" id="acEmail" name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@email.com" value="' + esc(p.email || "") + '">' +
           '<p class="ac-hint">We\'ll email you a link to sign in — no password to remember.</p>' +
+          '<div class="ac-section"><h3>About you</h3>' +
+            '<p class="ac-hint">Crowdsense is about how well we know each other. Your answers let us compare how different groups guess. ' +
+            'They\'re never shown next to your name.</p>' +
+            aboutFields(p) +
+          '</div>' +
           '<label class="ac-check"><input type="checkbox" name="adult"' + (p.adult ? " checked" : "") + '><span>I\'m 18 or over</span></label>' +
           '<p class="ac-err hidden" role="alert"></p>' +
           '<button type="submit" class="ac-btn">Send my sign-in link</button>' +
@@ -210,15 +254,26 @@
           '<button type="submit" class="ac-btn ac-btn-sm">Save</button></div>' +
           '<p class="ac-err hidden" role="alert"></p>' +
         '</form>' +
-        '<dl class="ac-dl"><dt>Email</dt><dd>' + esc(a.email) + '</dd></dl>' +
+        '<dl class="ac-dl"><dt>Email</dt><dd>' + esc(a.email) + '</dd>' +
+          '<dt>About you</dt><dd>' + esc(aboutSummary(a)) +
+          ' <button type="button" class="ac-link" data-ac-go="about">Edit</button></dd></dl>' +
         '<div class="ac-actions">' +
           '<button type="button" class="ac-btn ac-btn-ghost" id="acSignOut">Sign out</button>' +
           '<button type="button" class="ac-link ac-danger" data-ac-go="delete">Delete my account</button>' +
         '</div>';
     },
+    about: function(a){
+      return '<h2 id="acTitle">About you</h2>' +
+        '<p class="ac-sub">Used to compare how different groups guess. Never shown next to your name.</p>' +
+        '<form novalidate>' + aboutFields(a) +
+          '<p class="ac-err hidden" role="alert"></p>' +
+          '<button type="submit" class="ac-btn">Save</button>' +
+        '</form>' +
+        '<p class="ac-switch"><button type="button" class="ac-link" data-ac-go="account">Back</button></p>';
+    },
     delete: function(){
       return '<h2 id="acTitle">Delete your account?</h2>' +
-        '<p class="ac-sub">Your name comes off every leaderboard and your scores are deleted. This can\'t be undone. ' +
+        '<p class="ac-sub">Your name comes off every leaderboard and your scores and answers are deleted. This can\'t be undone. ' +
         'Your stats and streak on this device stay as they are.</p>' +
         '<button type="button" class="ac-btn ac-btn-danger" id="acDeleteYes">Delete my account</button>' +
         '<p class="ac-switch"><button type="button" class="ac-link" data-ac-go="account" data-ac-focus>Keep my account</button></p>';
@@ -229,10 +284,12 @@
     join: function(form){
       var mk = B.todayKey().slice(0, 7);
       var n = B.checkName(form.name.value, mk);
-      var email = form.email.value.trim();
-      pending = { mode: "join", name: form.name.value, email: email, adult: form.adult.checked };
+      var email = form.email.value.trim(), about = readAbout(form);
+      pending = Object.assign({ mode: "join", name: form.name.value, email: email, adult: form.adult.checked }, about);
       if (n.error) return err(form, n.error);
       if (!emailOk(email)) return err(form, "That email doesn't look right.");
+      var miss = aboutMissing(about);
+      if (miss) return err(form, miss);
       if (!form.adult.checked) return err(form, "The leaderboard is for over-18s.");
       if (B.findAccount(email)) return err(form, "You've already joined with that email — sign in instead.");
       pending.name = n.name;
@@ -243,6 +300,16 @@
       pending = { mode: "signin", email: email };
       if (!emailOk(email)) return err(form, "That email doesn't look right.");
       show("check");
+    },
+    about: function(form){
+      var d = readAbout(form), miss = aboutMissing(d);
+      if (miss) return err(form, miss);
+      var a = B.account();
+      Object.assign(a, d);
+      B.saveAccount(a);
+      toast("Saved");
+      show("account");
+      document.dispatchEvent(new CustomEvent("cs-account"));
     },
     account: function(form){
       var a = B.account();
@@ -269,7 +336,8 @@
           pending = null;
           return finish("Welcome back, " + a.name);
         }
-        B.saveAccount({ name: p.name, email: p.email, signedIn: true, joined: B.todayKey() });
+        B.saveAccount({ name: p.name, email: p.email, age: p.age, gender: p.gender, region: p.region,
+          signedIn: true, joined: B.todayKey() });
         pending = null;
         finish("You're on the leaderboard");
       });

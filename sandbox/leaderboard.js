@@ -71,6 +71,7 @@
   build();
 
   $("monthLabel").textContent = B.monthLabel(todayKey) + " · day " + board.dayCount + " of " + board.daysInMonth;
+  $("ruleMissed").textContent = B.MISSED;
 
   // ---------- your card ----------
   function youCard(){
@@ -100,7 +101,7 @@
         '<div><b>' + (m ? avg(m.avg) : "—") + '</b><span>Crowdsense score</span></div>' +
         '<div><b>' + you.played + '</b><span>' + (you.played === 1 ? "day" : "days") + ' played</span></div>' +
       '</div>' +
-      (you.played > B.BEST ? '<p class="lb-top">Your lowest ' + B.BEST + ' of ' + you.played + ' scores count.</p>' : "") +
+      (you.slots > B.BEST ? '<p class="lb-top">Your lowest ' + B.BEST + ' of the ' + you.slots + ' days so far count.</p>' : "") +
       (top ? '<p class="lb-top">You\'re in the <b>' + top + '</b> of players this month.</p>' : "") +
       (t ? '<p class="lb-today"><span class="lb-dot t-' + band(t.today) + '"></span>Today: <b>' + num(t.today) + ' off</b> · ' + B.ordinal(t.rank) + ' of ' + today.length + '</p>'
          : '<p class="lb-today">Today: not played yet. <a class="lb-link" href="index.html' + q + '">Play today\'s question</a></p>');
