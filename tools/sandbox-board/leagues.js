@@ -23,13 +23,18 @@
   var esc = A.esc;
   var current = null;        // the league open, or null for the list
   var host = null;           // the panel the tab draws into
+  var settle = null;         // after a step: "title" or "list" gets focus and scroll
   var todayKey = B.todayKey();
-  var INVITE = "https://crowdsense.uk/join/";
+  // the sandbox's own leaderboard, which opens Join with the code filled in
+  // (the real thing would have its own crowdsense.uk/join/CODE page)
+  var INVITE = location.origin + location.pathname + "?join=";
+  var pendingCode = (/[?&]join=([A-Za-z0-9-]+)/.exec(location.search) || [])[1] || null;
 
   var TROPHY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>';
   var PEOPLE = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2A5 5 0 0 1 21.5 19"/></svg>';
 
   function score(n){ return n === null || n === undefined ? "—" : n.toFixed(1); }
+  function code(c){ return '<b class="lg-nowrap">' + esc(c) + '</b>'; }
   function members(n){ return n + (n === 1 ? " member" : " members"); }
   function chip(period){ return '<span class="lg-chip lg-' + period + '">' + B.PERIODS[period].label + '</span>'; }
 
@@ -39,7 +44,8 @@
     if (!host) return;
     if (!A.signedIn()){ current = null; return paintSignedOut(); }
     if (current && !B.findLeague(current)) current = null;
-    return current ? paintLeague(B.findLeague(current)) : paintList();
+    if (current) paintLeague(B.findLeague(current)); else paintList();
+    if (settle){ settle = null; focusTop(); }
   }
   function paintSignedOut(){
     var known = B.account();
@@ -70,23 +76,24 @@
         '<h2 class="lg-h">No leagues yet</h2>' +
         '<p class="lg-p">Start one for friends, family or work, or join one with the code someone sent you.</p>' +
         actions() +
-        '<p class="lg-sandbox">Sandbox: join with <b>PUB-QUIZ</b>, <b>OFFICE-POLL</b> or <b>UNI-MATES</b> to see a league with players.</p>';
+        '<p class="lg-sandbox">Sandbox: join with ' + code("PUB-QUIZ") + ', ' + code("OFFICE-POLL") + ' or ' + code("UNI-MATES") + ' to see a league with players.</p>';
       return wireActions();
     }
     host.innerHTML =
       '<h2 class="lg-h lg-h-left">Your leagues</h2>' +
       '<ul class="lg-list">' + list.map(function(lg){
         var st = B.leagueStandings(lg, todayKey), me = st.rows.filter(function(r){ return r.you; })[0];
-        var where = me && me.rank ? "You're " + B.ordinal(me.rank) : "No scores yet";
+        var anyone = st.rows.some(function(r){ return r.rank; });
+        var where = me && me.rank ? "You're " + B.ordinal(me.rank) : anyone ? "You haven't played yet" : "No scores yet";
         return '<li><button type="button" class="lg-item" data-id="' + esc(lg.id) + '">' +
-          '<span class="lg-item-top"><span class="lg-name">' + esc(lg.name) + '</span>' + chip(lg.period) + '</span>' +
-          '<span class="lg-meta">' + members(st.members) + ' · ' + where + '</span>' +
+          '<span class="lg-name">' + esc(lg.name) + '</span>' +
+          '<span class="lg-meta">' + chip(lg.period) + '<span>' + members(st.members) + ' · ' + where + '</span></span>' +
           '<span class="lg-go" aria-hidden="true">›</span></button></li>';
       }).join("") + '</ul>' +
       actions() +
-      '<p class="lg-sandbox">Sandbox: try <b>PUB-QUIZ</b>, <b>OFFICE-POLL</b> or <b>UNI-MATES</b>.</p>';
+      '<p class="lg-sandbox">Sandbox: try ' + code("PUB-QUIZ") + ', ' + code("OFFICE-POLL") + ' or ' + code("UNI-MATES") + '.</p>';
     Array.prototype.forEach.call(host.querySelectorAll(".lg-item"), function(b){
-      b.addEventListener("click", function(){ current = b.getAttribute("data-id"); render(); focusTop(); });
+      b.addEventListener("click", function(){ open(b.getAttribute("data-id")); });
     });
     wireActions();
   }
@@ -100,7 +107,8 @@
         '<span class="lb-rank">' + (r.rank ? '<span class="vh">Rank </span>' + r.rank : '<span class="vh">Not ranked yet</span>–') + '</span>' +
         '<span class="lb-name"><span class="lb-n">' + esc(r.name) + '</span></span>' +
         (r.you ? '<span class="lb-youtag">You</span>' : "") +
-        '<span class="lb-score"><b>' + score(r.score) + '</b><span class="vh"> Crowdsense score</span></span></li>';
+        '<span class="lb-score"><b aria-hidden="' + (r.score === null ? "true" : "false") + '">' + score(r.score) + '</b>' +
+          '<span class="vh">' + (r.score === null ? "No score yet" : " Crowdsense score") + '</span></span></li>';
     }).join("");
     host.innerHTML =
       '<button type="button" class="lg-back" id="lgBack">‹ Your leagues</button>' +
@@ -110,17 +118,38 @@
       '<ol class="lb-rows">' + rows + '</ol>' +
       (st.members === 1 ? '<p class="lg-p lg-alone">Just you so far. Send your invite code to get people in.</p>' : "") +
       '<p class="lg-rule">' + B.PERIODS[lg.period].rule + '</p>' +
-      '<div class="lg-invite"><div><span>Invite code</span><b>' + esc(lg.code) + '</b></div>' +
+      '<div class="lg-invite"><div><span>Invite code</span>' + code(lg.code) + '</div>' +
         '<button type="button" class="lb-btn lg-copy" id="lgCopy">Copy invite link</button></div>' +
       '<button type="button" class="lb-link lg-leave" id="lgLeave">' + (lg.owner ? "Delete this league" : "Leave this league") + '</button>';
-    host.querySelector("#lgBack").addEventListener("click", function(){ current = null; render(); focusTop(); });
+    host.querySelector("#lgBack").addEventListener("click", back);
     host.querySelector("#lgCopy").addEventListener("click", function(){ copyInvite(lg); });
     host.querySelector("#lgLeave").addEventListener("click", function(){ A.open("leagueLeave"); });
   }
   function focusTop(){
+    try{ host.scrollIntoView({ block: "start" }); }catch(_){}
     var t = host.querySelector("#lgTitle, .lg-h");
-    if (t){ if (!t.hasAttribute("tabindex")) t.setAttribute("tabindex", "-1"); try{ t.focus(); }catch(_){} }
+    if (t){ if (!t.hasAttribute("tabindex")) t.setAttribute("tabindex", "-1"); try{ t.focus({ preventScroll: true }); }catch(_){} }
   }
+  // a league has its own address (#league=ID), so the phone's Back button
+  // returns to the list instead of leaving the leaderboard
+  function open(id){
+    current = id;
+    try{ history.pushState({ league: id }, "", location.pathname + location.search + "#league=" + encodeURIComponent(id)); }catch(_){}
+    settle = "title";
+    render();
+  }
+  function back(){
+    if (history.state && history.state.league) history.back();
+    else { current = null; settle = "list"; render(); }
+  }
+  window.addEventListener("popstate", function(){
+    var m = /#league=([^&]+)/.exec(location.hash);
+    current = m ? decodeURIComponent(m[1]) : null;
+    settle = current ? "title" : "list";
+    render();
+  });
+  // opened at #league=ID (a link, or Back/Forward): that league
+  (function(){ var m = /#league=([^&]+)/.exec(location.hash); if (m) current = decodeURIComponent(m[1]); })();
   function copyInvite(lg){
     var text = "Join my Crowdsense league, " + lg.name + ": " + INVITE + lg.code + " (code " + lg.code + ")";
     var done = function(){ A.toast("Invite link copied"); };
@@ -161,6 +190,8 @@
       var period = (form.querySelector('input[name="period"]:checked') || {}).value || "week";
       made = B.createLeague(name, period);
       current = made.id;
+      try{ history.pushState({ league: made.id }, "", location.pathname + location.search + "#league=" + encodeURIComponent(made.id)); }catch(_){}
+      settle = "title";
       A.show("leagueMade");
     }
   });
@@ -169,8 +200,9 @@
       var lg = made || {};
       return '<div class="ac-icon">' + PEOPLE + '</div>' +
         '<h2 id="acTitle">' + esc(lg.name) + ' is ready</h2>' +
-        '<p class="ac-sub">Send people the link, or the code to type in. ' + chip(lg.period || "week") + '</p>' +
-        '<div class="lg-invite lg-invite-big"><div><span>Invite code</span><b>' + esc(lg.code) + '</b></div></div>' +
+        '<p class="lg-ready-chip">' + chip(lg.period || "week") + '</p>' +
+        '<p class="ac-sub">Send people the link, or the code to type in.</p>' +
+        '<div class="lg-invite lg-invite-big"><div><span>Invite code</span>' + code(lg.code) + '</div></div>' +
         '<button type="button" class="ac-btn" id="lgMadeCopy">Copy invite link</button>' +
         '<p class="ac-switch"><button type="button" class="ac-link" id="lgMadeDone" data-ac-focus>Go to the league</button></p>';
     },
@@ -186,8 +218,8 @@
         '<p class="ac-sub">Type the code from your invite.</p>' +
         '<form novalidate>' +
           '<label class="ac-label" for="lgCode">League code</label>' +
-          '<input class="ac-input lg-code-input" id="lgCode" name="code" maxlength="12" placeholder="e.g. PUB-QUIZ" autocomplete="off" autocapitalize="characters" spellcheck="false">' +
-          '<p class="ac-hint">Sandbox: PUB-QUIZ, OFFICE-POLL and UNI-MATES are ready-made leagues.</p>' +
+          '<input class="ac-input lg-code-input" id="lgCode" name="code" placeholder="e.g. PUB-QUIZ" autocomplete="off" autocapitalize="characters" spellcheck="false" value="' + esc(pendingCode || "") + '">' +
+          '<p class="ac-hint">You can paste the whole invite. Sandbox: ' + code("PUB-QUIZ") + ', ' + code("OFFICE-POLL") + ' and ' + code("UNI-MATES") + ' are ready-made leagues.</p>' +
           '<p class="ac-err hidden" role="alert"></p>' +
           '<button type="submit" class="ac-btn">Join league</button>' +
         '</form>';
@@ -195,7 +227,10 @@
     submit: function(form){
       var res = B.joinLeague(form.code.value);
       if (res.error) return A.err(form, res.error);
+      pendingCode = null;
       current = res.league.id;
+      try{ history.pushState({ league: current }, "", location.pathname + location.search + "#league=" + encodeURIComponent(current)); }catch(_){}
+      settle = "title";
       A.finish("You've joined " + res.league.name);
     }
   });
@@ -215,12 +250,25 @@
     wire: function(body){
       body.querySelector("#lgLeaveYes").addEventListener("click", function(){
         var lg = B.findLeague(current);
-        B.leaveLeague(current);
+        if (lg && lg.owner) B.deleteLeague(current); else B.leaveLeague(current);
         current = null;
+        settle = "list";
+        try{ if (history.state && history.state.league) history.replaceState(null, "", location.pathname + location.search); }catch(_){}
         A.finish(lg && lg.owner ? "League deleted" : "You've left " + (lg ? lg.name : "the league"));
       });
     }
   });
 
-  window.CS_LEAGUES = { render: render, reset: function(){ current = null; } };
+  // arriving from an invite link: signed in, the Join sheet opens with the
+  // code in; signed out, it opens once you've joined or signed in
+  function offerPending(){
+    if (pendingCode && A.signedIn()) setTimeout(function(){ A.open("leagueJoin"); }, 0);
+  }
+  document.addEventListener("cs-account", offerPending);
+
+  window.CS_LEAGUES = {
+    render: render, offerPending: offerPending,
+    reset: function(){ if (!/#league=/.test(location.hash)) current = null; },
+    wantsTab: function(){ return !!pendingCode || /#league=/.test(location.hash); }
+  };
 })();

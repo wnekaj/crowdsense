@@ -58,7 +58,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="look.css?v=c737204cec" />
-  <link rel="stylesheet" href="board.css?v=fdda182267" />
+  <link rel="stylesheet" href="board.css?v=aeadd665ef" />
 </head>
 <body class="lb-page">
   <div class="sbx-bar">SANDBOX — leaderboard mock-up <a id="backTop" href="index.html">← Back to the game</a></div>
@@ -83,6 +83,8 @@
         </div>
       </section>
 
+      <!-- not shown; tells screen readers which board they're on when it changes -->
+      <p class="lb-caption vh" id="caption" role="status"></p>
       <section class="lb-card lb-you hidden" id="youCard"></section>
       <section class="lb-card lb-you lb-join hidden" id="joinCard"></section>
 
@@ -92,8 +94,6 @@
         <p class="lb-note hidden" id="boardNote"></p>
         <div class="lb-colhead"><span>Player</span><span id="colScore">Crowdsense score</span></div>
         <ol class="lb-rows" id="rows"></ol>
-        <!-- not shown; tells screen readers which board they're on when it changes -->
-        <p class="lb-caption vh" id="caption" role="status"></p>
       </section>
 
       <section class="lb-card lb-rules" id="rulesCard">

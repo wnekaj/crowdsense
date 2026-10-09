@@ -163,7 +163,7 @@ html.ac-open body{ overflow:hidden }
 .ac-close{ position:absolute; top:14px; right:14px; width:40px; height:40px; border:0; border-radius:999px; background:#f3f2ef; color:var(--ink); font-size:16px; cursor:pointer }
 .ac-icon{ width:52px; height:52px; border-radius:16px; background:var(--bd-peach-soft); display:grid; place-items:center; margin:0 0 12px }
 .ac-icon svg{ width:28px; height:28px; fill:none; stroke:var(--accent); stroke-width:2; stroke-linecap:round; stroke-linejoin:round }
-.ac-body h2{ margin:0 44px 6px 0; font-size:24px; font-weight:900; letter-spacing:-.01em; line-height:1.2 }
+.ac-body h2{ overflow-wrap:anywhere; margin:0 44px 6px 0; font-size:24px; font-weight:900; letter-spacing:-.01em; line-height:1.2 }
 .ac-sub{ margin:0 0 16px; font-size:15px; color:#3a3d40; line-height:1.45 }
 .ac-label{ display:block; margin:12px 0 6px; font-size:13px; font-weight:800; color:#55595c }
 .ac-input{
@@ -235,6 +235,10 @@ html.ac-open body{ overflow:hidden }
 .lg-icon svg{ width:30px; height:30px }
 /* ".lb h2" makes small grey labels; these headings are proper headings */
 .lb .lg-h{ margin:0 0 6px; font-size:22px; font-weight:900; letter-spacing:-.01em; color:var(--ink); text-transform:none }
+.lb .lg-h:focus, .lb .lg-title:focus{ outline:none }
+.lg-nowrap{ white-space:nowrap }
+/* opening a league scrolls its top clear of the sandbox's sticky bar */
+#leaguesPanel{ scroll-margin-top:84px }
 .lb .lg-h-left{ text-align:left; margin:2px 2px 12px; font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#8a8d90 }
 .lg-p{ margin:0 auto 16px; max-width:360px; font-size:15px; line-height:1.45; color:#3a3d40 }
 .lg-actions{ display:flex; flex-direction:column; gap:10px; margin-top:4px }
@@ -247,9 +251,9 @@ html.ac-open body{ overflow:hidden }
 }
 .lg-item:hover{ background:#f1efea }
 .lg-item:focus-visible{ outline:2px solid var(--accent); outline-offset:2px }
-.lg-item-top{ display:flex; align-items:center; gap:8px; min-width:0 }
-.lg-name{ font-size:17px; font-weight:900; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
-.lg-meta{ display:block; margin-top:3px; font-size:13.5px; font-weight:600; color:#787c7e }
+/* the name gets the full width and up to two lines; the period sits with the members */
+.lg-name{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere; font-size:17px; font-weight:900; line-height:1.25 }
+.lg-meta{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:5px; font-size:13.5px; font-weight:600; color:#787c7e }
 .lg-go{ position:absolute; right:16px; top:50%; transform:translateY(-50%); font-size:26px; color:#b9b6b0; line-height:1 }
 
 .lg-chip{ flex:none; display:inline-block; padding:3px 9px; border-radius:999px; font-size:11.5px; font-weight:800; letter-spacing:.02em; vertical-align:1px }
@@ -269,6 +273,7 @@ html.ac-open body{ overflow:hidden }
 .lg-invite b{ display:block; font-size:22px; font-weight:900; letter-spacing:.06em; font-variant-numeric:tabular-nums }
 .lg-invite .lg-copy{ width:100%; min-height:46px; font-size:15px }
 .lg-invite-big{ margin:4px 0 0 }
+.lg-ready-chip{ margin:2px 0 8px }
 .lg-invite-big b{ font-size:28px }
 .lg-leave{ display:inline-block; margin:18px 0 2px; font-size:14px }
 

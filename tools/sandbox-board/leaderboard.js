@@ -173,7 +173,14 @@
     if (r && you) try{ r.scrollIntoView({ block: "nearest", behavior: "smooth" }); }catch(_){}
   });
 
+  if (window.CS_LEAGUES && CS_LEAGUES.wantsTab()){
+    period = "leagues";
+    Array.prototype.forEach.call(document.querySelectorAll(".lb-seg button"), function(x){
+      x.setAttribute("aria-pressed", x.getAttribute("data-period") === "leagues" ? "true" : "false");
+    });
+  }
   render();
+  if (window.CS_LEAGUES) CS_LEAGUES.offerPending();
   // for the sandbox's own tests
   window.__LB = { render: render, get board(){ return board; }, get you(){ return you; } };
 })();

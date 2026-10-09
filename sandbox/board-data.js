@@ -209,7 +209,11 @@
   // One per date, so your score agrees between the board and your leagues.
   function youDummy(dayKey){
     var r = rng(hashStr("crowdsense-you-day-" + dayKey));
-    return r() < 0.85 ? Math.min(60, Math.round(Math.abs(gauss(r)) * 8)) : null;
+    return r() < 0.7 ? Math.min(60, Math.round(Math.abs(gauss(r)) * 10)) : null;
+  }
+  function otherDummy(email, dayKey){
+    var r = rng(hashStr("crowdsense-other-day-" + email + "-" + dayKey));
+    return r() < 0.7 ? Math.min(60, Math.round(Math.abs(gauss(r)) * 10)) : null;
   }
   // a real ranked play if there is one; before today, a made-up one
   function yourDay(dayKey, today, real){
@@ -294,7 +298,13 @@
   }
   function deleteAccount(){
     var s = store();
-    if (s.current) delete s.byEmail[s.current];
+    if (s.current){
+      var all = leagueStore();
+      (all[s.current] || []).forEach(function(l){ if (l.owner) dropEverywhere(all, l.code); });
+      delete all[s.current];
+      writeJSON(LEAGUES_KEY, all);
+      delete s.byEmail[s.current];
+    }
     s.current = null; s.last = null;
     writeJSON(ACCOUNTS_KEY, s);
     try{
@@ -366,6 +376,17 @@
     writeJSON(LEAGUES_KEY, all);
   }
   function normCode(c){ return String(c || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); }
+  // a code on its own, or inside a pasted invite: "...?join=CODE", "(code CODE)"
+  function extractCode(raw){
+    var t = String(raw || "").trim();
+    var m = /[?&#]join=([A-Za-z0-9-]+)/.exec(t) || /\(code\s+([A-Za-z0-9-]+)\)/i.exec(t) || /\/join\/([A-Za-z0-9-]+)/.exec(t);
+    return m ? m[1] : t;
+  }
+  // a league everyone made on this device knows about, by code
+  function dropEverywhere(all, code){
+    var c = normCode(code);
+    for (var e in all) all[e] = (all[e] || []).filter(function(l){ return normCode(l.code) !== c; });
+  }
   function newCode(){
     var A = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", out = "";
     for (var i = 0; i < 8; i++){ out += A.charAt(Math.floor(Math.random() * A.length)); if (i === 3) out += "-"; }
@@ -379,7 +400,7 @@
   }
   // { league } or { error }
   function joinLeague(raw){
-    var c = normCode(raw), mine = leagues();
+    var c = normCode(extractCode(raw)), mine = leagues();
     if (c.length < 4) return { error: "That code looks too short — check it and try again." };
     var demo = null, dc;
     for (var k in DEMO) if (normCode(k) === c){ demo = DEMO[k]; dc = k; }
@@ -393,14 +414,22 @@
     return { league: lg };
   }
   function leaveLeague(id){ saveLeagues(leagues().filter(function(l){ return l.id !== id; })); }
+  // the owner deleting a league: it goes for everyone in it
+  function deleteLeague(id){
+    var lg = findLeague(id), all = leagueStore();
+    if (lg) dropEverywhere(all, lg.code);
+    writeJSON(LEAGUES_KEY, all);
+  }
   function findLeague(id){ return leagues().filter(function(l){ return l.id === id; })[0] || null; }
   function renameLeague(id, name){ saveLeagues(leagues().map(function(l){ return l.id === id ? Object.assign({}, l, { name: name }) : l; })); }
 
   // the window a league scores over, as of today
   function leagueWindow(lg, today){
     var from = lg.period === "week" ? weekStart(today) : lg.period === "month" ? today.slice(0, 8) + "01" : lg.started;
+    var periodStart = from;
     if (from < lg.started) from = lg.started;
-    var label = lg.period === "week"
+    var label = lg.period !== "all" && from > periodStart ? "Since " + shortDate(from, true)
+      : lg.period === "week"
       ? shortDate(weekStart(today), weekStart(today).slice(5, 7) !== addDays(weekStart(today), 6).slice(5, 7)) +
         " – " + shortDate(addDays(weekStart(today), 6), true)
       : lg.period === "month" ? monthLabel(today) : "Since " + longDate(lg.started);
@@ -446,7 +475,13 @@
       }, w.from, today, best);
       return { name: m.name, you: false, score: sc.avg, played: sc.played, pulses: 0 };
     });
-    var a = account(), real = allRanked();
+    var a = account(), real = allRanked(), me = a && a.signedIn ? norm(a.email) : null, all = leagueStore(), people = store().byEmail;
+    for (var e in all){
+      if (e === me || !people[e]) continue;
+      if (!(all[e] || []).some(function(l){ return normCode(l.code) === normCode(lg.code); })) continue;
+      var sc = windowScore(function(k){ return k < lg.started ? null : (k < today ? otherDummy(e, k) : null); }, w.from, today, best);
+      rows.push({ name: people[e].name, you: false, score: sc.avg, played: sc.played, pulses: 0 });
+    }
     if (a && a.signedIn){
       var mine = windowScore(function(k){ return yourDay(k, today, real); }, w.from, today, best);
       rows.push({ name: a.name, you: true, score: mine.avg, played: mine.played, pulses: 0 });
@@ -476,7 +511,7 @@
     buildBoard: buildBoard, view: view, topPercent: topPercent, topLine: topLine, ordinal: ordinal,
     account: account, findAccount: findAccount, saveAccount: saveAccount, deleteAccount: deleteAccount,
     recordRanked: recordRanked, rankedToday: rankedToday, realDays: realDays, checkName: checkName,
-    leagues: leagues, createLeague: createLeague, joinLeague: joinLeague, leaveLeague: leaveLeague,
+    leagues: leagues, createLeague: createLeague, joinLeague: joinLeague, leaveLeague: leaveLeague, deleteLeague: deleteLeague,
     findLeague: findLeague, renameLeague: renameLeague, leagueStandings: leagueStandings, PERIODS: PERIODS, DEMO: DEMO,
     BEST: BEST, MISSED: MISSED, PNTS: PNTS, DK: DK, AGES: AGES, GENDERS: GENDERS, REGIONS: REGIONS, POLITICS: POLITICS
   };
