@@ -409,8 +409,16 @@
     }
   };
 
+  // other sheets (the leagues) use the same sheet, focus handling and all:
+  // register(name, { render(account), submit(form), wire(body) })
+  function register(name, def){
+    SCREENS[name] = def.render;
+    if (def.submit) HANDLERS[name] = def.submit;
+    if (def.wire) WIRE[name] = def.wire;
+  }
+
   window.CS_ACCOUNT = {
-    open: open, close: close, toast: toast,
+    open: open, close: close, toast: toast, register: register, show: show, err: err, finish: finish, esc: esc,
     signedIn: function(){ var a = B.account(); return !!(a && a.signedIn); }
   };
 })();

@@ -124,6 +124,18 @@
       '<span class="lb-score">' + score + '</span></li>';
   }
   function render(){
+    // Leagues: the panel takes the place of the main board and its rules
+    var lg = period === "leagues";
+    $("leaguesPanel").classList.toggle("hidden", !lg);
+    document.querySelector(".lb-board").classList.toggle("hidden", lg);
+    $("rulesCard").classList.toggle("hidden", lg);
+    if (lg){
+      $("youCard").classList.add("hidden");
+      $("joinCard").classList.add("hidden");
+      $("caption").textContent = "Private leagues";
+      if (window.CS_LEAGUES) CS_LEAGUES.render($("leaguesPanel"));
+      return;
+    }
     var list = B.view(board, period);
     var note = $("boardNote"), msg = "";
     if (period === "today" && you && you.today === null) msg = "Play today's question to appear on today's board.";
@@ -145,6 +157,7 @@
   Array.prototype.forEach.call(document.querySelectorAll(".lb-seg button"), function(b){
     b.addEventListener("click", function(){
       period = b.getAttribute("data-period");
+      if (period === "leagues" && window.CS_LEAGUES) CS_LEAGUES.reset();
       Array.prototype.forEach.call(document.querySelectorAll(".lb-seg button"), function(x){
         x.setAttribute("aria-pressed", x === b ? "true" : "false");
       });
