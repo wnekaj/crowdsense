@@ -9,12 +9,11 @@
      ranked plays   today's question, finished on the day in daily mode:
                     cs-ranked-YYYY-MM-DD = { off }. Archive plays never count.
      monthly board  your Crowdsense score for the month: the average of your
-                    scores with your worst 10 days forgiven (so your lowest
-                    20 count in a 30-day month, 21 in a 31-day one), where a
-                    day gone by without a play counts as 25 off (today only
-                    once it's over). Until that many days have passed, every
-                    day so far counts. The rules don't spell out the
-                    forgiving: they say to play at least 20 days. You're on the
+                    best two-thirds of the days so far, rounded up (6 of 9,
+                    14 of 20, 21 of 31), where a day gone by without a play
+                    counts as 25 off (today only once it's played). The
+                    rules don't spell this out: they say to play at least
+                    20 days. You're on the
                     board from your first play. Lowest wins; ties go to more
                     days played, then more days On the pulse, then share.
      daily board    today's points off, lowest first, for those who played.
@@ -22,10 +21,9 @@
                     "You" gets made-up past days so the board looks lived in
                     (the same ones everywhere: the board and every league),
                     with the days you really played in the sandbox on top.
-     leagues        private leagues for friends, scored weekly (lowest 5
-                    days count), monthly (as the board) or all-time (lowest
-                    two-thirds of the days since it began); a missed day is
-                    25 off. Kept per account in the sandbox's storage, with
+     leagues        private leagues for friends, scored over the week, the
+                    month or all-time the same way: your best two-thirds of
+                    the days so far in the period; a missed day is 25 off. Kept per account in the sandbox's storage, with
                     three demo leagues to join by code.
    ========================================================================= */
 (function(){
@@ -143,9 +141,9 @@
   }
 
   // ---------- scoring ----------
-  var FORGIVE = 10, MISSED = 25;
-  // how many of a month's days count: all but the worst 10
-  function monthBest(mk){ return daysInMonth(+mk.slice(0, 4), +mk.slice(5, 7)) - FORGIVE; }
+  var MISSED = 25;
+  // how many of the days so far count: the best two-thirds, rounded up
+  function twoThirds(n){ return Math.ceil(n * 2 / 3); }
   function monthScore(days, dayCount, mk){
     var list = [], played = 0, pulses = 0;
     for (var d = 1; d <= dayCount; d++){
@@ -159,10 +157,10 @@
       list.push(off);
     }
     if (!played) return { avg: null, played: 0, slots: list.length, counted: 0, pulses: 0 };
-    // the lowest count (all but the worst 10 of the month), averaged; to one
-    // decimal, as shown, so equal scores on screen are equal in the ranking too
+    // the best two-thirds of the days so far, averaged; to one decimal, as
+    // shown, so equal scores on screen are equal in the ranking too
     list.sort(function(a, b){ return a - b; });
-    var best = list.slice(0, monthBest(mk)), sum = 0;
+    var best = list.slice(0, twoThirds(list.length)), sum = 0;
     best.forEach(function(x){ sum += x; });
     return { avg: Math.round(10 * sum / best.length) / 10, played: played, slots: list.length,
              counted: best.length, pulses: pulses };
@@ -360,9 +358,9 @@
   //   cs-leagues = { email: [ { id, code, name, period, started, size, owner } ] }
   var LEAGUES_KEY = "cs-leagues";
   var PERIODS = {
-    week:  { label: "Weekly",   best: 5,    rule: "Your lowest 5 days of the week count, and a day you miss counts as 25 off. It starts again every Monday." },
+    week:  { label: "Weekly",   best: null, rule: "Your best two-thirds of the days so far count, and a day you miss counts as 25 off. It starts again every Monday." },
     month: { label: "Monthly",  best: null, rule: "Play a minimum of 20 days in the month; after that a day you miss counts as 25 off. It starts again on the 1st." },
-    all:   { label: "All-time", best: null, rule: "Your lowest two-thirds of days since the league began count, and a day you miss counts as 25 off." }
+    all:   { label: "All-time", best: null, rule: "Your best two-thirds of the days since the league began count, and a day you miss counts as 25 off." }
   };
   // the sandbox's ready-made leagues, to join by code and see one with players
   var DEMO = {
@@ -452,7 +450,7 @@
       list.push(off);
     }
     if (!played) return { avg: null, played: 0 };
-    var n = Math.min(list.length, best || Math.ceil(list.length * 2 / 3));
+    var n = Math.min(list.length, best || twoThirds(list.length));
     list.sort(function(a, b){ return a - b; });
     var sum = 0;
     list.slice(0, n).forEach(function(x){ sum += x; });
@@ -471,9 +469,8 @@
   }
   function leagueStandings(lg, today){
     var w = leagueWindow(lg, today);
-    // weekly: lowest 5; monthly: as the board, all but the worst 10 of the
-    // month; all-time: lowest two-thirds
-    var best = lg.period === "week" ? 5 : lg.period === "month" ? monthBest(today.slice(0, 7)) : null;
+    // every period the same way as the board: the best two-thirds so far
+    var best = null;
     var rows = leagueMembers(lg).map(function(m){
       var sc = windowScore(function(k){
         if (k < lg.started) return null;
@@ -521,6 +518,6 @@
     recordRanked: recordRanked, rankedToday: rankedToday, realDays: realDays, checkName: checkName,
     leagues: leagues, createLeague: createLeague, joinLeague: joinLeague, leaveLeague: leaveLeague, deleteLeague: deleteLeague,
     findLeague: findLeague, renameLeague: renameLeague, leagueStandings: leagueStandings, PERIODS: PERIODS, DEMO: DEMO,
-    FORGIVE: FORGIVE, monthBest: monthBest, MISSED: MISSED, PNTS: PNTS, DK: DK, AGES: AGES, GENDERS: GENDERS, REGIONS: REGIONS, POLITICS: POLITICS
+    twoThirds: twoThirds, MISSED: MISSED, PNTS: PNTS, DK: DK, AGES: AGES, GENDERS: GENDERS, REGIONS: REGIONS, POLITICS: POLITICS
   };
 })();
