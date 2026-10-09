@@ -6,8 +6,7 @@
      Sign in   email -> a sign-in link (back on a new device)
      Check     "we've sent you a link" — the sandbox has a button to
                pretend you tapped it; no email is sent
-     About     age, gender and region, each optional, for the group boards
-     Account   change your name or details, sign out, delete the account
+     Account   change your name, sign out, delete the account
 
    No passwords: the real thing signs people in with a one-time link by
    email. Everything here is stored in the sandbox's own storage only.
@@ -105,7 +104,7 @@
     // back to whatever opened the sheet, or its replacement if the page
     // rebuilt it, or the menu button
     var back = (opener && document.body.contains(opener)) ? opener
-      : ["#acctBtn", "#joinBtn", "#bgCard .bg-btn", "#tgMenuBtn"].map(function(q){ return document.querySelector(q); })
+      : ["#acctBtn", "#joinBtn", "#bgStats .bg-btn", "#tgMenuBtn"].map(function(q){ return document.querySelector(q); })
           .filter(Boolean)[0];
     opener = null;
     if (back) try{ back.focus(); }catch(_){}
@@ -149,29 +148,6 @@
     if (form && HANDLERS[screen]) form.addEventListener("submit", function(e){ e.preventDefault(); HANDLERS[screen](form); });
     if (WIRE[screen]) WIRE[screen](body);
     focusFirst();
-  }
-
-  function chips(name, options, current){
-    return '<div class="ac-chips">' + options.map(function(o){
-      return '<label class="ac-chip"><input type="radio" name="' + name + '" value="' + esc(o) + '"' +
-        (o === current ? " checked" : "") + '><span>' + esc(o) + '</span></label>';
-    }).join("") + '</div>';
-  }
-  function details(a){
-    a = a || {};
-    return '<fieldset><legend>Age</legend>' + chips("age", B.AGES.concat([B.PNTS]), a.age) + '</fieldset>' +
-      '<fieldset><legend>Gender</legend>' + chips("gender", B.GENDERS.concat([B.PNTS]), a.gender) + '</fieldset>' +
-      '<fieldset><legend><label for="acRegion">Where do you live?</label></legend>' +
-        '<select id="acRegion" name="region"><option value="">Choose…</option>' +
-        B.REGIONS.concat([B.PNTS]).map(function(r){ return '<option' + (r === a.region ? " selected" : "") + '>' + esc(r) + '</option>'; }).join("") +
-        '</select></fieldset>';
-  }
-  function readDetails(form){
-    return {
-      age: (form.querySelector('input[name="age"]:checked') || {}).value || null,
-      gender: (form.querySelector('input[name="gender"]:checked') || {}).value || null,
-      region: form.querySelector("#acRegion").value || null
-    };
   }
 
   var SCREENS = {
@@ -225,27 +201,7 @@
         '<button type="button" class="ac-btn" data-ac-go="join">Join the leaderboard</button>' +
         '<p class="ac-switch"><button type="button" class="ac-link" data-ac-go="signin">Try a different email</button></p>';
     },
-    about: function(a){
-      return '<h2 id="acTitle">You\'re in, ' + esc(a && a.name) + '!</h2>' +
-        '<p class="ac-sub">A bit about you, so you can see how you rank against people like you. ' +
-        'All optional, and never shown next to your name.</p>' +
-        '<form novalidate>' + details(a) +
-          '<p class="ac-err hidden" role="alert"></p>' +
-          '<button type="submit" class="ac-btn">Save and see the board</button>' +
-        '</form>' +
-        '<p class="ac-switch"><button type="button" class="ac-link" id="acSkip">Skip for now</button></p>';
-    },
-    details: function(a){
-      return '<h2 id="acTitle">Your details</h2>' +
-        '<p class="ac-sub">Used only to place you in the Region, Age and Gender boards.</p>' +
-        '<form novalidate>' + details(a) +
-          '<p class="ac-err hidden" role="alert"></p>' +
-          '<button type="submit" class="ac-btn">Save</button>' +
-        '</form>' +
-        '<p class="ac-switch"><button type="button" class="ac-link" data-ac-go="account">Back</button></p>';
-    },
     account: function(a){
-      var d = [a.age, a.gender, a.region].filter(function(x){ return x && x !== B.PNTS; });
       return '<div class="ac-icon">' + ICON.person + '</div>' +
         '<h2 id="acTitle">Your account</h2>' +
         '<form novalidate>' +
@@ -254,9 +210,7 @@
           '<button type="submit" class="ac-btn ac-btn-sm">Save</button></div>' +
           '<p class="ac-err hidden" role="alert"></p>' +
         '</form>' +
-        '<dl class="ac-dl"><dt>Email</dt><dd>' + esc(a.email) + '</dd>' +
-          '<dt>Details</dt><dd>' + (d.length ? esc(d.join(" · ")) : "Not given") +
-          ' <button type="button" class="ac-link" data-ac-go="details">Edit</button></dd></dl>' +
+        '<dl class="ac-dl"><dt>Email</dt><dd>' + esc(a.email) + '</dd></dl>' +
         '<div class="ac-actions">' +
           '<button type="button" class="ac-btn ac-btn-ghost" id="acSignOut">Sign out</button>' +
           '<button type="button" class="ac-link ac-danger" data-ac-go="delete">Delete my account</button>' +
@@ -264,7 +218,7 @@
     },
     delete: function(){
       return '<h2 id="acTitle">Delete your account?</h2>' +
-        '<p class="ac-sub">Your name comes off every leaderboard and your scores and details are deleted. This can\'t be undone. ' +
+        '<p class="ac-sub">Your name comes off every leaderboard and your scores are deleted. This can\'t be undone. ' +
         'Your stats and streak on this device stay as they are.</p>' +
         '<button type="button" class="ac-btn ac-btn-danger" id="acDeleteYes">Delete my account</button>' +
         '<p class="ac-switch"><button type="button" class="ac-link" data-ac-go="account" data-ac-focus>Keep my account</button></p>';
@@ -289,20 +243,6 @@
       pending = { mode: "signin", email: email };
       if (!emailOk(email)) return err(form, "That email doesn't look right.");
       show("check");
-    },
-    about: function(form){
-      var a = B.account();
-      Object.assign(a, readDetails(form));
-      B.saveAccount(a);
-      finish("You're on the leaderboard");
-    },
-    details: function(form){
-      var a = B.account();
-      Object.assign(a, readDetails(form));
-      B.saveAccount(a);
-      toast("Details saved");
-      show("account");
-      document.dispatchEvent(new CustomEvent("cs-account"));
     },
     account: function(form){
       var a = B.account();
@@ -329,14 +269,10 @@
           pending = null;
           return finish("Welcome back, " + a.name);
         }
-        B.saveAccount({ name: p.name, email: p.email, age: null, gender: null, region: null,
-          signedIn: true, joined: B.todayKey() });
+        B.saveAccount({ name: p.name, email: p.email, signedIn: true, joined: B.todayKey() });
         pending = null;
-        show("about");
+        finish("You're on the leaderboard");
       });
-    },
-    about: function(body){
-      body.querySelector("#acSkip").addEventListener("click", function(){ finish("You're on the leaderboard"); });
     },
     account: function(body){
       body.querySelector("#acSignOut").addEventListener("click", function(){
