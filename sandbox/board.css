@@ -177,6 +177,20 @@ html.ac-open body{ overflow:hidden }
 .ac-mock{ padding:14px; border-radius:16px; background:#f3f2ef; text-align:center }
 .ac-mock span{ display:block; font-size:12.5px; font-weight:700; color:#787c7e; text-transform:uppercase; letter-spacing:.06em }
 .ac-mock .ac-btn{ margin-top:10px }
+.ac-section{ margin:22px 0 0; padding:16px 16px 18px; border-radius:18px; background:#f7f6f3 }
+.ac-section h3{ margin:0; font-size:16px; font-weight:900 }
+.ac-section > .ac-hint{ margin:4px 0 0 }
+/* a legend sits on its fieldset's border, so the space goes above the
+   fieldset (as margin) and each label stays with its own options */
+.ac-body fieldset{ border:0; margin:16px 0 0; padding:0; min-width:0 }
+.ac-body legend{ padding:0; margin-bottom:8px; font-size:13px; font-weight:800; color:#55595c }
+.ac-chips{ display:flex; flex-wrap:wrap; gap:6px }
+.ac-chip{ position:relative; cursor:pointer }
+.ac-chip input{ position:absolute; opacity:0; inset:0; margin:0; cursor:pointer }
+.ac-chip span{ display:inline-block; padding:8px 13px; border-radius:999px; border:2px solid #e4e4e0; font-size:14px; font-weight:700; background:#fff }
+.ac-chip input:checked + span{ background:var(--ink); border-color:var(--ink); color:#fff }
+.ac-chip input:focus-visible + span{ outline:2px solid var(--accent); outline-offset:2px }
+.ac-body select{ width:100%; min-height:48px; font:inherit; font-size:15px; font-weight:600; padding:10px 12px; border:2px solid #e4e4e0; border-radius:14px; background:#fff; color:var(--ink) }
 .ac-row{ display:flex; gap:8px }
 .ac-row .ac-input{ flex:1; min-width:0 }
 .ac-body .ac-btn-sm{ width:auto; min-height:50px; margin:0; padding:0 18px; font-size:15px }

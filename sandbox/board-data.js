@@ -8,10 +8,12 @@
 
      ranked plays   today's question, finished on the day in daily mode:
                     cs-ranked-YYYY-MM-DD = { off }. Archive plays never count.
-     monthly board  your Crowdsense score for the month: the average points
-                    off of your lowest 20 scores this month (all of them,
-                    until you have 20); lowest wins. Ties go to more days
-                    played, then more days On the pulse, then share the rank.
+     monthly board  your Crowdsense score for the month: the average of your
+                    lowest 20 scores, where a day gone by without a play
+                    counts as 25 off (today only once it's over). Until 20
+                    days have passed, that's every day so far. You're on the
+                    board from your first play. Lowest wins; ties go to more
+                    days played, then more days On the pulse, then share.
      daily board    today's points off, lowest first, for those who played.
      dummy board    ~60 made-up players, stable for the month; a signed-up
                     "You" is seeded near 23rd so the board looks lived in,
@@ -64,6 +66,14 @@
     return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
   }
   // ---------- the dummy players' names ----------
+  // ---------- the questions at sign-up, each with "Prefer not to say" ----------
+  var PNTS = "Prefer not to say";
+  var AGES = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
+  var GENDERS = ["Male", "Female", "In another way"];
+  var REGIONS = ["North East", "North West", "Yorkshire and the Humber", "East Midlands",
+    "West Midlands", "East of England", "London", "South East", "South West",
+    "Wales", "Scotland", "Northern Ireland", "Outside the UK"];
+
   var FIRST = ["Priya","Tom","Aisha","Callum","Grace","Rhys","Fatima","Oliver","Niamh","Jamal",
     "Harriet","Kwame","Sophie","Euan","Leila","Ben","Chloe","Arjun","Megan","Dan","Zara","Owen",
     "Isla","Tariq","Ruth","Josh","Amara","Finn","Hannah","Imran","Molly","Sam","Eilidh","Kai",
@@ -76,22 +86,27 @@
     "YouGovMyHeart", "margin_of_error", "Crowd_Pleaser"];
 
   // ---------- scoring ----------
-  var BEST = 20;
+  var BEST = 20, MISSED = 25;
   function monthScore(days, dayCount, mk){
-    var offs = [], pulses = 0;
+    var list = [], played = 0, pulses = 0;
     for (var d = 1; d <= dayCount; d++){
       var off = days[d];
-      if (off === undefined || off === null) continue;
+      if (off === undefined || off === null){
+        if (d < dayCount) list.push(MISSED);    // today isn't missed until it's over
+        continue;
+      }
+      played++;
       if (pulse(off, mk + "-" + pad(d))) pulses++;
-      offs.push(off);
+      list.push(off);
     }
+    if (!played) return { avg: null, played: 0, slots: list.length, counted: 0, pulses: 0 };
     // the lowest 20 count, averaged; to one decimal, as shown, so equal
     // scores on screen are equal in the ranking too
-    offs.sort(function(a, b){ return a - b; });
-    var best = offs.slice(0, BEST), sum = 0;
+    list.sort(function(a, b){ return a - b; });
+    var best = list.slice(0, BEST), sum = 0;
     best.forEach(function(x){ sum += x; });
-    return { avg: best.length ? Math.round(10 * sum / best.length) / 10 : null,
-             played: offs.length, counted: best.length, pulses: pulses };
+    return { avg: Math.round(10 * sum / best.length) / 10, played: played, slots: list.length,
+             counted: best.length, pulses: pulses };
   }
   function rank(list, key){
     list.sort(function(a, b){
@@ -162,7 +177,7 @@
     }
     players.forEach(function(p){
       var t = monthScore(p.days, dayCount, mk);
-      p.avg = t.avg; p.played = t.played; p.pulses = t.pulses; p.counted = t.counted;
+      p.avg = t.avg; p.played = t.played; p.pulses = t.pulses; p.counted = t.counted; p.slots = t.slots;
       p.today = (p.days[dayCount] === undefined) ? null : p.days[dayCount];
     });
     return { key: key, month: mk, year: y, monthNum: m, dayCount: dayCount,
@@ -277,6 +292,6 @@
     buildBoard: buildBoard, view: view, topPercent: topPercent, topLine: topLine, ordinal: ordinal,
     account: account, findAccount: findAccount, saveAccount: saveAccount, deleteAccount: deleteAccount,
     recordRanked: recordRanked, rankedToday: rankedToday, realDays: realDays, checkName: checkName,
-    BEST: BEST
+    BEST: BEST, MISSED: MISSED, PNTS: PNTS, AGES: AGES, GENDERS: GENDERS, REGIONS: REGIONS
   };
 })();
