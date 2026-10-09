@@ -164,7 +164,7 @@
   function periodChoice(){
     return '<fieldset><legend>Scores over</legend><div class="lg-periods">' +
       [["week", "Weekly", "Starts again every Monday. Your lowest 5 days count."],
-       ["month", "Monthly", "Starts again on the 1st. Your lowest 20 days count."],
+       ["month", "Monthly", "Starts again on the 1st. Play a minimum of 20 days."],
        ["all", "All-time", "From the day the league starts. Your lowest two-thirds of days count."]].map(function(o, i){
         return '<label class="lg-period"><input type="radio" name="period" value="' + o[0] + '"' + (i === 0 ? " checked" : "") + '>' +
           '<span><b>' + o[1] + '</b><small>' + o[2] + '</small></span></label>';

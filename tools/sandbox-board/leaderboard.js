@@ -94,15 +94,26 @@
     var t = today.filter(function(p){ return p.you; })[0];
     var top = m ? B.topLine(m.rank, month.length) : "";
     join.innerHTML = "";
-    card.innerHTML =
-      '<div class="lb-you-top"><span class="lb-av" aria-hidden="true">' + esc(you.name.charAt(0).toUpperCase()) + '</span>' +
-        '<div class="lb-you-name"><b>' + esc(you.name) + '</b><button type="button" class="lb-link" id="acctBtn">Your account</button></div></div>' +
+    var head = '<div class="lb-you-top"><span class="lb-av" aria-hidden="true">' + esc(you.name.charAt(0).toUpperCase()) + '</span>' +
+        '<div class="lb-you-name"><b>' + esc(you.name) + '</b><button type="button" class="lb-link" id="acctBtn">Your account</button></div></div>';
+    if (period === "today"){
+      var ttop = t ? B.topLine(t.rank, today.length) : "";
+      card.innerHTML = head + (t
+        ? '<div class="lb-you-stats lb-you-stats-2">' +
+            '<div><b>' + B.ordinal(t.rank) + '</b><span>of ' + today.length + ' today</span></div>' +
+            '<div><b><span class="lb-dot t-' + band(t.today) + '" aria-hidden="true"></span> ' + num(t.today) + '</b><span>points off</span></div>' +
+          '</div>' +
+          (ttop ? '<p class="lb-top">You\'re in the <b>' + ttop + '</b> of players today.</p>' : "")
+        : '<p class="lb-today">You haven\'t played today\'s question yet. <a class="lb-link" href="index.html' + q + '">Play it now</a></p>');
+      $("acctBtn").addEventListener("click", function(){ A.open("account"); });
+      return;
+    }
+    card.innerHTML = head +
       '<div class="lb-you-stats">' +
         '<div><b>' + (m ? B.ordinal(m.rank) : "—") + '</b><span>of ' + month.length + ' this month</span></div>' +
         '<div><b>' + (m ? avg(m.avg) : "—") + '</b><span>Crowdsense score</span></div>' +
         '<div><b>' + you.played + '</b><span>' + (you.played === 1 ? "day" : "days") + ' played</span></div>' +
       '</div>' +
-      (you.slots > B.BEST ? '<p class="lb-top">Your lowest ' + B.BEST + ' of the ' + you.slots + ' days so far count.</p>' : "") +
       (top ? '<p class="lb-top">You\'re in the <b>' + top + '</b> of players this month.</p>' : "") +
       (t ? '<p class="lb-today"><span class="lb-dot t-' + band(t.today) + '"></span>Today: <b>' + num(t.today) + ' off</b> · ' + B.ordinal(t.rank) + ' of ' + today.length + '</p>'
          : '<p class="lb-today">Today: not played yet. <a class="lb-link" href="index.html' + q + '">Play today\'s question</a></p>');
@@ -128,7 +139,9 @@
     var lg = period === "leagues";
     $("leaguesPanel").classList.toggle("hidden", !lg);
     document.querySelector(".lb-board").classList.toggle("hidden", lg);
-    $("rulesCard").classList.toggle("hidden", lg);
+    // each board has its own rules: monthly on Monthly, daily on Daily
+    $("rulesMonth").classList.toggle("hidden", period !== "month");
+    $("rulesDay").classList.toggle("hidden", period !== "today");
     if (lg){
       $("youCard").classList.add("hidden");
       $("joinCard").classList.add("hidden");
