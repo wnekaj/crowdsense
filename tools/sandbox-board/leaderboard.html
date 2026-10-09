@@ -28,21 +28,24 @@
         <div class="lb-seg" role="group" aria-label="Show">
           <button type="button" data-period="month" aria-pressed="true">Monthly</button>
           <button type="button" data-period="today" aria-pressed="false">Daily</button>
+          <button type="button" data-period="leagues" aria-pressed="false">Leagues</button>
         </div>
       </section>
 
+      <!-- not shown; tells screen readers which board they're on when it changes -->
+      <p class="lb-caption vh" id="caption" role="status"></p>
       <section class="lb-card lb-you hidden" id="youCard"></section>
       <section class="lb-card lb-you lb-join hidden" id="joinCard"></section>
+
+      <section class="lb-card lg-panel hidden" id="leaguesPanel" aria-live="off"></section>
 
       <section class="lb-card lb-board">
         <p class="lb-note hidden" id="boardNote"></p>
         <div class="lb-colhead"><span>Player</span><span id="colScore">Crowdsense score</span></div>
         <ol class="lb-rows" id="rows"></ol>
-        <!-- not shown; tells screen readers which board they're on when it changes -->
-        <p class="lb-caption vh" id="caption" role="status"></p>
       </section>
 
-      <section class="lb-card lb-rules">
+      <section class="lb-card lb-rules" id="rulesCard">
         <h2>How the leaderboard works</h2>
         <ul>
           <li><b>Lowest Crowdsense score wins.</b> Your average points off for each day apply across the month.</li>
@@ -61,7 +64,7 @@
       document.getElementById("sbxBlocked").hidden = false;
       document.getElementById("app").hidden = true;
     } else {
-      ["board-data.js", "menu.js", "account.js", "leaderboard.js"].forEach(function(src){
+      ["board-data.js", "menu.js", "account.js", "leagues.js", "leaderboard.js"].forEach(function(src){
         var s = document.createElement("script");
         s.src = src + "?sbx=" + Date.now();
         s.async = false;

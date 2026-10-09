@@ -130,7 +130,11 @@
 .bg-stats div{ background:#fff; border-radius:14px; padding:9px 4px 7px }
 .bg-stats b{ display:block; font-size:19px; font-weight:900; white-space:nowrap }
 .bg-stats span{ display:block; font-size:11px; font-weight:700; color:#787c7e }
-.bg-switch{ margin:12px 0 0; font-size:14px; color:#55595c }
+.bg-switch{ margin:18px 0 2px; font-size:14px; color:#55595c }
+/* inside Your stats the game's ".modal-body p" margins would win; these
+   are pinned to the box so the spacing holds there too */
+#bgStats .bg-sub{ margin:0 0 12px }
+#bgStats .bg-switch{ margin:18px 0 2px }
 .bg-linkbtn{ border:0; background:none; padding:0; cursor:pointer; font:inherit; font-weight:800; color:var(--accent-deep); text-decoration:underline; text-underline-offset:2px }
 .bg-switch .bg-link{ margin-top:0; font-size:14px }
 
@@ -159,7 +163,7 @@ html.ac-open body{ overflow:hidden }
 .ac-close{ position:absolute; top:14px; right:14px; width:40px; height:40px; border:0; border-radius:999px; background:#f3f2ef; color:var(--ink); font-size:16px; cursor:pointer }
 .ac-icon{ width:52px; height:52px; border-radius:16px; background:var(--bd-peach-soft); display:grid; place-items:center; margin:0 0 12px }
 .ac-icon svg{ width:28px; height:28px; fill:none; stroke:var(--accent); stroke-width:2; stroke-linecap:round; stroke-linejoin:round }
-.ac-body h2{ margin:0 44px 6px 0; font-size:24px; font-weight:900; letter-spacing:-.01em; line-height:1.2 }
+.ac-body h2{ overflow-wrap:anywhere; margin:0 44px 6px 0; font-size:24px; font-weight:900; letter-spacing:-.01em; line-height:1.2 }
 .ac-sub{ margin:0 0 16px; font-size:15px; color:#3a3d40; line-height:1.45 }
 .ac-label{ display:block; margin:12px 0 6px; font-size:13px; font-weight:800; color:#55595c }
 .ac-input{
@@ -220,3 +224,66 @@ html.ac-open body{ overflow:hidden }
   opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; max-width:calc(100vw - 32px); text-align:center;
 }
 .ac-toast.show{ opacity:1; transform:translate(-50%, 0) }
+
+/* =========================================================================
+   PRIVATE LEAGUES (the Leagues tab, and its sheets)
+   ========================================================================= */
+.lb-btn-ghost{ background:#f3f2ef; color:var(--ink) }
+.lg-panel{ text-align:center }
+.lg-icon{ width:56px; height:56px; margin:4px auto 10px; border-radius:18px; background:var(--bd-peach-soft); display:grid; place-items:center }
+.lg-icon svg, .ac-icon svg{ fill:none; stroke:var(--accent); stroke-width:2; stroke-linecap:round; stroke-linejoin:round }
+.lg-icon svg{ width:30px; height:30px }
+/* ".lb h2" makes small grey labels; these headings are proper headings */
+.lb .lg-h{ margin:0 0 6px; font-size:22px; font-weight:900; letter-spacing:-.01em; color:var(--ink); text-transform:none }
+.lb .lg-h:focus, .lb .lg-title:focus{ outline:none }
+.lg-nowrap{ white-space:nowrap }
+/* opening a league scrolls its top clear of the sandbox's sticky bar */
+#leaguesPanel{ scroll-margin-top:84px }
+.lb .lg-h-left{ text-align:left; margin:2px 2px 12px; font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#8a8d90 }
+.lg-p{ margin:0 auto 16px; max-width:360px; font-size:15px; line-height:1.45; color:#3a3d40 }
+.lg-actions{ display:flex; flex-direction:column; gap:10px; margin-top:4px }
+.lg-sandbox{ margin:14px 0 0; font-size:12.5px; color:#8a8d90; line-height:1.45 }
+
+.lg-list{ list-style:none; margin:0 0 16px; padding:0; display:flex; flex-direction:column; gap:8px; text-align:left }
+.lg-item{
+  position:relative; display:block; width:100%; text-align:left; cursor:pointer; font:inherit; color:var(--ink);
+  background:#f7f6f3; border:0; border-radius:18px; padding:14px 40px 14px 16px;
+}
+.lg-item:hover{ background:#f1efea }
+.lg-item:focus-visible{ outline:2px solid var(--accent); outline-offset:2px }
+/* the name gets the full width and up to two lines; the period sits with the members */
+.lg-name{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere; font-size:17px; font-weight:900; line-height:1.25 }
+.lg-meta{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:5px; font-size:13.5px; font-weight:600; color:#787c7e }
+.lg-go{ position:absolute; right:16px; top:50%; transform:translateY(-50%); font-size:26px; color:#b9b6b0; line-height:1 }
+
+.lg-chip{ flex:none; display:inline-block; padding:3px 9px; border-radius:999px; font-size:11.5px; font-weight:800; letter-spacing:.02em; vertical-align:1px }
+.lg-chip.lg-week{ background:#e3eef9; color:#24548f }
+.lg-chip.lg-month{ background:var(--bd-peach-soft); color:var(--accent-deep) }
+.lg-chip.lg-all{ background:#ece6f6; color:#5b3d8a }
+
+.lg-back{ display:block; border:0; background:none; padding:0 0 8px; font:inherit; font-size:14.5px; font-weight:800; color:var(--accent-deep); cursor:pointer; text-align:left }
+.lb .lg-title{ margin:0; font-size:24px; font-weight:900; letter-spacing:-.01em; text-align:left; overflow-wrap:anywhere; color:var(--ink); text-transform:none }
+.lg-title:focus{ outline:none }
+.lg-when{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:6px 0 4px; font-size:14px; font-weight:700; color:#55595c; text-align:left }
+.lg-panel .lb-rows{ text-align:left }
+.lg-alone{ margin:12px auto 0 }
+.lg-rule{ margin:14px 2px 0; padding:12px 14px; border-radius:14px; background:#f7f6f3; font-size:13.5px; line-height:1.45; color:#3a3d40; text-align:left }
+.lg-invite{ display:flex; flex-direction:column; align-items:stretch; gap:10px; margin:14px 0 0; padding:14px 16px; border-radius:18px; border:2px dashed #f2b58f; background:var(--bd-peach-soft); text-align:center }
+.lg-invite span{ display:block; font-size:11.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--accent-deep) }
+.lg-invite b{ display:block; font-size:22px; font-weight:900; letter-spacing:.06em; font-variant-numeric:tabular-nums }
+.lg-invite .lg-copy{ width:100%; min-height:46px; font-size:15px }
+.lg-invite-big{ margin:4px 0 0 }
+.lg-ready-chip{ margin:2px 0 8px }
+.lg-invite-big b{ font-size:28px }
+.lg-leave{ display:inline-block; margin:18px 0 2px; font-size:14px }
+
+/* create: the three periods as cards to pick from */
+.lg-periods{ display:flex; flex-direction:column; gap:8px }
+.lg-period{ position:relative; cursor:pointer; display:block }
+.lg-period input{ position:absolute; opacity:0; inset:0; margin:0; cursor:pointer }
+.lg-period span{ display:block; padding:12px 14px; border-radius:16px; border:2px solid #e4e4e0; background:#fff }
+.lg-period b{ display:block; font-size:16px; font-weight:900 }
+.lg-period small{ display:block; margin-top:2px; font-size:13px; font-weight:600; color:#787c7e; line-height:1.35 }
+.lg-period input:checked + span{ border-color:var(--ink); box-shadow:inset 0 0 0 1px var(--ink) }
+.lg-period input:focus-visible + span{ outline:2px solid var(--accent); outline-offset:2px }
+.lg-code-input{ text-transform:uppercase; letter-spacing:.08em; font-weight:800 }

@@ -15,9 +15,15 @@
                     board from your first play. Lowest wins; ties go to more
                     days played, then more days On the pulse, then share.
      daily board    today's points off, lowest first, for those who played.
-     dummy board    ~60 made-up players, stable for the month; a signed-up
-                    "You" is seeded near 23rd so the board looks lived in,
+     dummy board    ~60 made-up players, stable for the month. A signed-up
+                    "You" gets made-up past days so the board looks lived in
+                    (the same ones everywhere: the board and every league),
                     with the days you really played in the sandbox on top.
+     leagues        private leagues for friends, scored weekly (lowest 5
+                    days count), monthly (lowest 20) or all-time (lowest
+                    two-thirds of the days since it began); a missed day is
+                    25 off. Kept per account in the sandbox's storage, with
+                    three demo leagues to join by code.
    ========================================================================= */
 (function(){
   "use strict";
@@ -35,6 +41,18 @@
     return m ? m[1] : londonKey(new Date());
   }
   function daysInMonth(y, m){ return new Date(Date.UTC(y, m, 0)).getUTCDate(); }
+  function keyUTC(key){ return Date.UTC(+key.slice(0, 4), +key.slice(5, 7) - 1, +key.slice(8, 10)); }
+  function addDays(key, n){ return new Date(keyUTC(key) + n * 86400000).toISOString().slice(0, 10); }
+  function weekStart(key){ return addDays(key, -((new Date(keyUTC(key)).getUTCDay() + 6) % 7)); }   // Monday
+  function shortDate(key, withMonth){
+    var o = {};
+    new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", weekday: "short", day: "numeric", month: "short" })
+      .formatToParts(new Date(keyUTC(key))).forEach(function(x){ o[x.type] = x.value; });
+    return o.weekday + " " + o.day + (withMonth ? " " + o.month : "");
+  }
+  function longDate(key){
+    return new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" }).format(new Date(keyUTC(key)));
+  }
   function pad(n){ return String(n).padStart(2, "0"); }
   function monthLabel(key){
     return new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric", timeZone: "UTC" })
@@ -187,6 +205,22 @@
     return out;
   }
 
+  // ---------- your made-up past days (sandbox only) ----------
+  // One per date, so your score agrees between the board and your leagues.
+  function youDummy(dayKey){
+    var r = rng(hashStr("crowdsense-you-day-" + dayKey));
+    return r() < 0.7 ? Math.min(60, Math.round(Math.abs(gauss(r)) * 10)) : null;
+  }
+  function otherDummy(email, dayKey){
+    var r = rng(hashStr("crowdsense-other-day-" + email + "-" + dayKey));
+    return r() < 0.7 ? Math.min(60, Math.round(Math.abs(gauss(r)) * 10)) : null;
+  }
+  // a real ranked play if there is one; before today, a made-up one
+  function yourDay(dayKey, today, real){
+    if (real[dayKey] !== undefined) return real[dayKey];
+    return dayKey < today ? youDummy(dayKey) : null;
+  }
+
   // ---------- the board ----------
   function buildBoard(opts){
     var key = opts.todayKey, mk = key.slice(0, 7);
@@ -194,19 +228,12 @@
     var players = fakePlayers(mk, dayCount);
     var acct = opts.account;
     if (acct && acct.signedIn){
-      // seeded from the player sitting 23rd, nudged a touch, so "You" lands
-      // around there; the days you really played replace the made-up ones
-      var seed = rank(players.map(function(p){
-        var t = monthScore(p.days, dayCount, mk);
-        return { name: p.name, days: p.days, avg: t.avg, played: t.played, pulses: t.pulses };
-      }).filter(function(p){ return p.avg !== null; }), "avg")[22];
-      var r = rng(hashStr("crowdsense-you-1g-" + mk));
-      var days = {};
-      for (var d in seed.days) days[d] = Math.max(0, seed.days[d] + Math.round(r() * 2) - 1);
-      delete days[dayCount];                // today is only ever a real play
-      var real = opts.realDays || {};
-      for (var rd in real) days[rd] = real[rd];
-      players.push({ id: "you", name: acct.name, you: true, days: days, realDays: real });
+      var real = allRanked(), days = {};
+      for (var d = 1; d <= dayCount; d++){
+        var v = yourDay(mk + "-" + pad(d), key, real);
+        if (v !== null) days[d] = v;
+      }
+      players.push({ id: "you", name: acct.name, you: true, days: days });
     }
     players.forEach(function(p){
       var t = monthScore(p.days, dayCount, mk);
@@ -271,7 +298,13 @@
   }
   function deleteAccount(){
     var s = store();
-    if (s.current) delete s.byEmail[s.current];
+    if (s.current){
+      var all = leagueStore();
+      (all[s.current] || []).forEach(function(l){ if (l.owner) dropEverywhere(all, l.code); });
+      delete all[s.current];
+      writeJSON(LEAGUES_KEY, all);
+      delete s.byEmail[s.current];
+    }
     s.current = null; s.last = null;
     writeJSON(ACCOUNTS_KEY, s);
     try{
@@ -289,6 +322,19 @@
     writeJSON(RANKED_PREFIX + dayKey, { off: off });
     return true;
   }
+  // every ranked play, by date
+  function allRanked(){
+    var out = {};
+    try{
+      for (var i = 0; i < localStorage.length; i++){
+        var k = localStorage.key(i);
+        if (!k || k.indexOf(RANKED_PREFIX) !== 0) continue;
+        var e = readJSON(k);
+        if (e && typeof e.off === "number") out[k.slice(RANKED_PREFIX.length)] = e.off;
+      }
+    }catch(_){}
+    return out;
+  }
   // this month's ranked plays, by day of the month, up to today
   function realDays(key){
     var out = {}, mk = key.slice(0, 7), now = +key.slice(8, 10);
@@ -303,6 +349,146 @@
       }
     }catch(_){}
     return out;
+  }
+
+  // ---------- private leagues (mock) ----------
+  //   cs-leagues = { email: [ { id, code, name, period, started, size, owner } ] }
+  var LEAGUES_KEY = "cs-leagues";
+  var PERIODS = {
+    week:  { label: "Weekly",   best: 5,    rule: "Your lowest 5 days of the week count, and a day you miss counts as 25 off. It starts again every Monday." },
+    month: { label: "Monthly",  best: BEST, rule: "Your lowest 20 days of the month count, and a day you miss counts as 25 off. It starts again on the 1st." },
+    all:   { label: "All-time", best: null, rule: "Your lowest two-thirds of days since the league began count, and a day you miss counts as 25 off." }
+  };
+  // the sandbox's ready-made leagues, to join by code and see one with players
+  var DEMO = {
+    "PUB-QUIZ":    { name: "The Pub Quiz Lot", period: "week",  size: 6, started: "2026-08-03" },
+    "OFFICE-POLL": { name: "Office Pollsters", period: "month", size: 9, started: "2026-07-20" },
+    "UNI-MATES":   { name: "Uni Mates",        period: "all",   size: 5, started: "2026-07-20" }
+  };
+  function leagueStore(){ return readJSON(LEAGUES_KEY) || {}; }
+  function leagues(){
+    var a = account();
+    return (a && a.signedIn) ? (leagueStore()[norm(a.email)] || []) : [];
+  }
+  function saveLeagues(list){
+    var a = account(), all = leagueStore();
+    all[norm(a.email)] = list;
+    writeJSON(LEAGUES_KEY, all);
+  }
+  function normCode(c){ return String(c || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); }
+  // a code on its own, or inside a pasted invite: "...?join=CODE", "(code CODE)"
+  function extractCode(raw){
+    var t = String(raw || "").trim();
+    var m = /[?&#]join=([A-Za-z0-9-]+)/.exec(t) || /\(code\s+([A-Za-z0-9-]+)\)/i.exec(t) || /\/join\/([A-Za-z0-9-]+)/.exec(t);
+    return m ? m[1] : t;
+  }
+  // a league everyone made on this device knows about, by code
+  function dropEverywhere(all, code){
+    var c = normCode(code);
+    for (var e in all) all[e] = (all[e] || []).filter(function(l){ return normCode(l.code) !== c; });
+  }
+  function newCode(){
+    var A = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", out = "";
+    for (var i = 0; i < 8; i++){ out += A.charAt(Math.floor(Math.random() * A.length)); if (i === 3) out += "-"; }
+    return out;
+  }
+  function createLeague(name, period){
+    var code = newCode();
+    var lg = { id: code, code: code, name: name, period: period, started: todayKey(), size: 1, owner: true };
+    saveLeagues(leagues().concat([lg]));
+    return lg;
+  }
+  // { league } or { error }
+  function joinLeague(raw){
+    var c = normCode(extractCode(raw)), mine = leagues();
+    if (c.length < 4) return { error: "That code looks too short — check it and try again." };
+    var demo = null, dc;
+    for (var k in DEMO) if (normCode(k) === c){ demo = DEMO[k]; dc = k; }
+    var made = null;
+    for (var e in leagueStore()) (leagueStore()[e] || []).forEach(function(l){ if (normCode(l.code) === c) made = l; });
+    if (mine.some(function(l){ return normCode(l.code) === c; })) return { error: "You're already in that league." };
+    var lg = demo ? { id: dc, code: dc, name: demo.name, period: demo.period, started: demo.started, size: demo.size, owner: false }
+      : made ? Object.assign({}, made, { owner: false }) : null;
+    if (!lg) return { error: "No league found with that code." };
+    saveLeagues(mine.concat([lg]));
+    return { league: lg };
+  }
+  function leaveLeague(id){ saveLeagues(leagues().filter(function(l){ return l.id !== id; })); }
+  // the owner deleting a league: it goes for everyone in it
+  function deleteLeague(id){
+    var lg = findLeague(id), all = leagueStore();
+    if (lg) dropEverywhere(all, lg.code);
+    writeJSON(LEAGUES_KEY, all);
+  }
+  function findLeague(id){ return leagues().filter(function(l){ return l.id === id; })[0] || null; }
+  function renameLeague(id, name){ saveLeagues(leagues().map(function(l){ return l.id === id ? Object.assign({}, l, { name: name }) : l; })); }
+
+  // the window a league scores over, as of today
+  function leagueWindow(lg, today){
+    var from = lg.period === "week" ? weekStart(today) : lg.period === "month" ? today.slice(0, 8) + "01" : lg.started;
+    var periodStart = from;
+    if (from < lg.started) from = lg.started;
+    var label = lg.period !== "all" && from > periodStart ? "Since " + shortDate(from, true)
+      : lg.period === "week"
+      ? shortDate(weekStart(today), weekStart(today).slice(5, 7) !== addDays(weekStart(today), 6).slice(5, 7)) +
+        " – " + shortDate(addDays(weekStart(today), 6), true)
+      : lg.period === "month" ? monthLabel(today) : "Since " + longDate(lg.started);
+    return { from: from, to: today, label: label };
+  }
+  // a player's score over a window: the lowest N count (N = the period's,
+  // or two-thirds of the days so far for all-time), a missed day is 25 off,
+  // today only once played; no plays, no score
+  function windowScore(dayFn, from, today, best){
+    var list = [], played = 0;
+    for (var k = from; k <= today; k = addDays(k, 1)){
+      var off = dayFn(k);
+      if (off === null || off === undefined){ if (k < today) list.push(MISSED); continue; }
+      played++;
+      list.push(off);
+    }
+    if (!played) return { avg: null, played: 0 };
+    var n = Math.min(list.length, best || Math.ceil(list.length * 2 / 3));
+    list.sort(function(a, b){ return a - b; });
+    var sum = 0;
+    list.slice(0, n).forEach(function(x){ sum += x; });
+    return { avg: Math.round(10 * sum / n) / 10, played: played };
+  }
+  // members other than you: their own names and habits, stable per league
+  function leagueMembers(lg){
+    var r = rng(hashStr("crowdsense-league-" + lg.id)), used = {}, out = [];
+    for (var j = 0; j < (lg.size || 1) - 1; j++){
+      var name;
+      do { name = makeName(r); } while (used[name.toLowerCase()] || name.length > 20);
+      used[name.toLowerCase()] = 1;
+      out.push({ name: name, sigma: 4 + r() * 12, turnout: 0.45 + r() * 0.5, j: j });
+    }
+    return out;
+  }
+  function leagueStandings(lg, today){
+    var w = leagueWindow(lg, today), best = PERIODS[lg.period].best;
+    var rows = leagueMembers(lg).map(function(m){
+      var sc = windowScore(function(k){
+        if (k < lg.started) return null;
+        var rd = rng(hashStr("crowdsense-league-day-" + lg.id + "-" + m.j + "-" + k));
+        // fewer have got round to it yet today
+        return rd() < (k === today ? m.turnout * 0.7 : m.turnout) ? Math.min(60, Math.round(Math.abs(gauss(rd)) * m.sigma)) : null;
+      }, w.from, today, best);
+      return { name: m.name, you: false, score: sc.avg, played: sc.played, pulses: 0 };
+    });
+    var a = account(), real = allRanked(), me = a && a.signedIn ? norm(a.email) : null, all = leagueStore(), people = store().byEmail;
+    for (var e in all){
+      if (e === me || !people[e]) continue;
+      if (!(all[e] || []).some(function(l){ return normCode(l.code) === normCode(lg.code); })) continue;
+      var sc = windowScore(function(k){ return k < lg.started ? null : (k < today ? otherDummy(e, k) : null); }, w.from, today, best);
+      rows.push({ name: people[e].name, you: false, score: sc.avg, played: sc.played, pulses: 0 });
+    }
+    if (a && a.signedIn){
+      var mine = windowScore(function(k){ return yourDay(k, today, real); }, w.from, today, best);
+      rows.push({ name: a.name, you: true, score: mine.avg, played: mine.played, pulses: 0 });
+    }
+    var ranked = rank(rows.filter(function(r){ return r.score !== null; }), "score");
+    var waiting = rows.filter(function(r){ return r.score === null; }).map(function(r){ r.rank = null; return r; });
+    return { window: w, rows: ranked.concat(waiting), members: rows.length };
   }
 
   // ---------- display names ----------
@@ -325,6 +511,8 @@
     buildBoard: buildBoard, view: view, topPercent: topPercent, topLine: topLine, ordinal: ordinal,
     account: account, findAccount: findAccount, saveAccount: saveAccount, deleteAccount: deleteAccount,
     recordRanked: recordRanked, rankedToday: rankedToday, realDays: realDays, checkName: checkName,
+    leagues: leagues, createLeague: createLeague, joinLeague: joinLeague, leaveLeague: leaveLeague, deleteLeague: deleteLeague,
+    findLeague: findLeague, renameLeague: renameLeague, leagueStandings: leagueStandings, PERIODS: PERIODS, DEMO: DEMO,
     BEST: BEST, MISSED: MISSED, PNTS: PNTS, DK: DK, AGES: AGES, GENDERS: GENDERS, REGIONS: REGIONS, POLITICS: POLITICS
   };
 })();

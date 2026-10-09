@@ -105,13 +105,18 @@
     var cb = onDone; onDone = null;
     if (cb) cb();
     document.dispatchEvent(new CustomEvent("cs-account"));
-    // back to whatever opened the sheet, or its replacement if the page
-    // rebuilt it, or the menu button
-    var back = (opener && document.body.contains(opener)) ? opener
-      : ["#acctBtn", "#joinBtn", "#bgStats .bg-btn", "#tgMenuBtn"].map(function(q){ return document.querySelector(q); })
-          .filter(Boolean)[0];
+    // Unless the page has already put focus somewhere (a league it opened),
+    // back to whatever opened the sheet, or the same control if the page
+    // rebuilt it, or the nearest sensible one that's on screen
+    var ae = document.activeElement;
+    if (!ae || ae === document.body || root.contains(ae)){
+      var shown = function(el){ return el && document.body.contains(el) && el.offsetParent !== null; };
+      var back = shown(opener) ? opener : (opener && opener.id && shown(document.getElementById(opener.id))) ? document.getElementById(opener.id) : null;
+      if (!back) back = ["#acctBtn", "#joinBtn", "#bgStats .bg-btn", "#lgTitle", "#tgMenuBtn"]
+        .map(function(q){ return document.querySelector(q); }).filter(shown)[0];
+      if (back) try{ back.focus(); }catch(_){}
+    }
     opener = null;
-    if (back) try{ back.focus(); }catch(_){}
   }
   function finish(msg){
     close();
@@ -409,8 +414,16 @@
     }
   };
 
+  // other sheets (the leagues) use the same sheet, focus handling and all:
+  // register(name, { render(account), submit(form), wire(body) })
+  function register(name, def){
+    SCREENS[name] = def.render;
+    if (def.submit) HANDLERS[name] = def.submit;
+    if (def.wire) WIRE[name] = def.wire;
+  }
+
   window.CS_ACCOUNT = {
-    open: open, close: close, toast: toast,
+    open: open, close: close, toast: toast, register: register, show: show, err: err, finish: finish, esc: esc,
     signedIn: function(){ var a = B.account(); return !!(a && a.signedIn); }
   };
 })();

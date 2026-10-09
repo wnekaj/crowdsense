@@ -85,7 +85,7 @@
     if (!A.signedIn()){
       var known = B.account();
       box.innerHTML = head +
-        '<p class="bg-sub">See how you rank against everyone who plays, this month and today.</p>' +
+        '<p class="bg-sub">See how you rank against everyone who plays, or in a private league with friends.</p>' +
         '<a class="bg-btn" href="' + BOARD_URL + '">See the leaderboard</a>' +
         '<p class="bg-switch"><button type="button" class="bg-linkbtn" id="bgJoin">Join</button> · ' +
           (known ? "Signed out? " : "Already joined? ") + '<button type="button" class="bg-linkbtn" id="bgSignin">Sign in</button></p>';

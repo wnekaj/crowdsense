@@ -297,7 +297,7 @@ lookFiles.forEach(function(f){ write(f, read(f)); });
 // the leaderboard: its stylesheet on the game page (after look.css, which the
 // LOOK block writes at the end of the head), its scripts in the loader above,
 // and its page, which gets the same storage shim as the game
-var boardFiles = ["board-data.js", "account.js", "board-game.js", "board.css", "leaderboard.js", "leaderboard.html"];
+var boardFiles = ["board-data.js", "account.js", "board-game.js", "board.css", "leagues.js", "leaderboard.js", "leaderboard.html"];
 if (BOARD){
   var hashOf = function(f){
     return require("crypto").createHash("sha1").update(fs.readFileSync(f)).digest("hex").slice(0, 10);
