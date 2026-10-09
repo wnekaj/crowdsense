@@ -785,6 +785,7 @@
     })();
   </script>
   <!--/LOOK-->
+  <link rel="stylesheet" href="board.css?v=7970441a1b" />
 </head>
 <body>
   <div class="sbx-bar">
@@ -1065,7 +1066,7 @@
   <script>
       // Never load the game unless the storage shim is provably in place.
       if (window.__SBX_ISOLATED){
-        ["questions.js","sandbox-questions.js","app.js","menu.js","nav.js","look.js"].forEach(function(src){
+        ["questions.js","sandbox-questions.js","app.js","menu.js","nav.js","look.js","board-data.js","account.js","board-game.js"].forEach(function(src){
           var s = document.createElement("script");
           s.src = src + "?sbx=" + Date.now();
           s.async = false;

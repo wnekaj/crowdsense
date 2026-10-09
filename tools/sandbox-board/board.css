@@ -1,0 +1,230 @@
+/* =========================================================================
+   board.css — SANDBOX ONLY. The leaderboard page, the sign-up sheets and
+   the card under the result, in the Cards design (look C). Loaded by the
+   sandbox game and leaderboard.html, after look.css.
+   ========================================================================= */
+
+/* the game's colour tokens, for leaderboard.html (the game page defines the
+   same values itself) */
+:root{
+  --ink:#121212; --muted:#787c7e; --line:#d3d6da; --hairline:#e3e5e8;
+  --accent:#f26522; --accent-deep:#d5541a; --accent-soft:#fdeee4;
+  --cold:#c26d5c; --cool:#d98e54; --warm:#c4ad62; --hot:#7a9e7e; --win:#2eb04c;
+  --bd-peach:#f6cdb2; --bd-peach-soft:#fdf1e8;
+}
+.hidden{ display:none !important }
+/* read by screen readers, not shown */
+.vh{ position:absolute !important; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap }
+
+/* =========================================================================
+   THE LEADERBOARD PAGE
+   ========================================================================= */
+.lb-page{ margin:0; color:var(--ink); background:#f3f2ef; font-family:"Nunito", "Helvetica Neue", Arial, sans-serif; padding-bottom:40px }
+.lb-page *{ box-sizing:border-box }
+.lb-page .sbx-bar{
+  position:sticky; top:0; z-index:80; width:100%; background:#121212; color:#fff; text-align:center;
+  font-size:12px; letter-spacing:.08em; text-transform:uppercase; padding:8px 12px;
+  display:flex; gap:12px; align-items:center; justify-content:center; flex-wrap:wrap;
+}
+.lb-page .sbx-bar a{ color:#fff; font-size:11px; letter-spacing:.06em; text-decoration:none; border:1px solid rgba(255,255,255,.5); border-radius:999px; padding:3px 10px }
+.lb-page .sbx-blocked{ width:min(560px,94vw); margin:24px auto; padding:16px 18px; border:1px solid #d5541a; border-radius:12px; font-size:14px; line-height:1.6; background:#fff }
+.lb-page .app{ width:min(560px, 100%); margin:0 auto; padding:0 16px }
+.lb-bar{ display:flex; align-items:center; gap:14px; padding:14px 0 10px }
+.lb-bar .brand{ color:var(--ink); text-decoration:none; font-weight:900; font-size:22px; letter-spacing:-.01em }
+.lb-bar .brand i{ font-style:normal; color:var(--accent) }
+
+.lb{ display:flex; flex-direction:column; gap:12px }
+.lb-card{
+  background:#fff; border-radius:24px; padding:18px;
+  box-shadow:0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
+}
+.lb h1{ margin:0; font-size:30px; font-weight:900; letter-spacing:-.01em; text-align:center }
+.lb h2{ margin:0 0 8px; font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#8a8d90 }
+.lb-month{ margin:2px 0 14px; text-align:center; color:#55595c; font-weight:600; font-size:14px }
+
+/* segmented pills: This month / Today, and the group tabs */
+.lb-seg, .lb-tabs{ display:flex; gap:4px; padding:4px; border-radius:999px; background:#f3f2ef }
+.lb-seg button, .lb-tabs button{
+  flex:1; border:0; background:transparent; border-radius:999px; padding:9px 6px; cursor:pointer;
+  font:inherit; font-size:14.5px; font-weight:700; color:#55595c; min-height:40px;
+}
+.lb-seg button[aria-pressed="true"]{ background:var(--accent); color:#fff; box-shadow:0 1px 3px rgba(242,101,34,.35) }
+.lb-tabs button[aria-pressed="true"]{ background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.12) }
+.lb-pick{ display:flex; align-items:center; gap:10px; margin-top:10px }
+.lb-pick label{ font-size:13px; font-weight:700; color:#8a8d90; white-space:nowrap }
+.lb-pick select{
+  flex:1; min-width:0; font:inherit; font-size:15px; font-weight:600; padding:10px 12px; border-radius:14px;
+  border:2px solid #e4e4e0; background:#fff; color:var(--ink);
+}
+.lb-note{ margin:10px 2px 0; font-size:13.5px; color:#55595c; line-height:1.45 }
+/* on the narrowest phones the tab above already names the group, so the
+   select gets the whole row ("Yorkshire and the Humber" fits) */
+@media (max-width:359px){
+  .lb-pick label{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap }
+}
+
+/* your card */
+.lb-join{ text-align:center; background:var(--bd-peach) }
+.lb-join h2{ color:var(--ink); font-size:22px; letter-spacing:-.01em; text-transform:none; font-weight:900; margin:6px 0 4px }
+.lb-join p{ margin:0 0 14px; font-size:15px; line-height:1.45; color:#3a3d40 }
+.lb-join-icon{ width:56px; height:56px; margin:0 auto; border-radius:18px; background:#fff; display:grid; place-items:center; box-shadow:0 6px 18px rgba(242,101,34,.25) }
+.lb-join-icon svg{ width:30px; height:30px; fill:none; stroke:var(--accent); stroke-width:2; stroke-linecap:round; stroke-linejoin:round }
+.lb-btn, .bg-btn, .ac-btn{
+  display:inline-flex; align-items:center; justify-content:center; width:100%; min-height:52px;
+  border:0; border-radius:999px; cursor:pointer; text-decoration:none;
+  background:var(--accent); color:#fff; font:inherit; font-size:17px; font-weight:800; padding:0 24px;
+  transition:transform .08s ease, opacity .15s ease;
+}
+.lb-btn:hover, .bg-btn:hover, .ac-btn:hover{ opacity:.9 }
+.lb-btn:active, .bg-btn:active, .ac-btn:active{ transform:scale(.98) }
+.lb-switch{ margin:12px 0 0 !important; font-size:14px !important }
+.lb-link, .ac-link{ border:0; background:none; padding:0; cursor:pointer; font:inherit; font-weight:800; color:var(--accent-deep); text-decoration:underline; text-underline-offset:2px }
+
+.lb-you-top{ display:flex; align-items:center; gap:12px }
+.lb-av{ width:44px; height:44px; border-radius:999px; background:var(--bd-peach); color:var(--ink); display:grid; place-items:center; font-weight:900; font-size:19px; flex:none }
+.lb-you-name{ display:flex; flex-direction:column; align-items:flex-start; min-width:0 }
+.lb-you-name b{ font-size:18px; font-weight:900; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100% }
+.lb-you-name .lb-link{ font-size:13.5px }
+.lb-you-stats{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; margin-top:14px }
+.lb-you-stats div{ background:#f3f2ef; border-radius:16px; padding:10px 4px 8px; text-align:center; min-width:0 }
+.lb-you-stats b{ display:block; font-size:19px; font-weight:900; font-variant-numeric:tabular-nums; white-space:nowrap }
+.lb-you-stats span{ display:block; font-size:11px; font-weight:700; color:#787c7e; line-height:1.25; margin-top:2px }
+.lb-top{ margin:12px 2px 0; font-size:14.5px; color:#3a3d40 }
+.lb-top b{ color:var(--accent-deep); font-weight:900 }
+.lb-today{ margin:12px 2px 0; font-size:14.5px; color:#3a3d40; display:flex; align-items:center; gap:6px; flex-wrap:wrap }
+
+/* the list */
+.lb-colhead{ display:flex; justify-content:space-between; margin:14px 6px 4px; font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#8a8d90 }
+.lb-rows{ list-style:none; margin:0; padding:0 }
+.lb-row{ display:flex; align-items:center; gap:10px; padding:9px 6px; border-bottom:1px solid #efece8; min-height:52px }
+.lb-row:last-child{ border-bottom:0 }
+.lb-rank{
+  flex:none; width:32px; height:32px; border-radius:999px; display:grid; place-items:center;
+  font-weight:900; font-size:14px; color:#55595c; background:#f3f2ef; font-variant-numeric:tabular-nums;
+}
+.lb-row.top1 .lb-rank{ background:#f7c948; color:#5a4300 }
+.lb-row.top2 .lb-rank{ background:#d9dde1; color:#3a3d40 }
+.lb-row.top3 .lb-rank{ background:#e8b48a; color:#5b3416 }
+.lb-name{ flex:1; min-width:0; font-size:16px; font-weight:700 }
+.lb-n{ display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.lb-name small{ display:block; font-size:12px; font-weight:600; color:#8a8d90; margin-top:1px; white-space:nowrap }
+/* beside the name, not inside it, so a long name never hides it */
+.lb-youtag{ flex:none; padding:3px 9px; border-radius:999px; background:var(--accent); color:#fff; font-size:11.5px; font-weight:800 }
+.lb-score{ flex:none; display:flex; align-items:center; gap:6px; font-size:18px; font-variant-numeric:tabular-nums }
+.lb-score b{ font-weight:900 }
+.lb-row.me{ background:var(--bd-peach-soft); border-radius:16px; border-bottom-color:transparent }
+.lb-gap{ text-align:center; color:#8a8d90; padding:2px 0 }
+.lb-empty{ padding:18px 6px; text-align:center; color:#787c7e; font-size:14.5px }
+.lb-caption{ margin:10px 6px 0; font-size:12.5px; color:#8a8d90 }
+.lb-dot{ display:inline-block; width:10px; height:10px; border-radius:999px; background:var(--muted); flex:none }
+.lb-dot.t-target{ background:var(--win) } .lb-dot.t-hot{ background:var(--hot) } .lb-dot.t-warm{ background:var(--warm) }
+.lb-dot.t-cool{ background:var(--cool) } .lb-dot.t-cold{ background:var(--cold) }
+
+.lb-prize{ display:flex; align-items:center; gap:14px; background:var(--bd-peach-soft); box-shadow:none; border:2px dashed #f2b58f }
+.lb-prize-icon{ font-size:30px; line-height:1 }
+.lb-prize b{ display:block; font-size:16px; font-weight:900 }
+.lb-prize span{ display:block; font-size:13.5px; color:#55595c; margin-top:2px }
+.lb-rules ul{ margin:0; padding:0 0 0 18px; font-size:14.5px; line-height:1.5; color:#2c2f31 }
+.lb-rules li{ margin:0 0 6px }
+.lb-early{ margin:8px 0 0; font-size:13.5px; color:#55595c }
+.lb-past ul{ list-style:none; margin:0; padding:0 }
+.lb-past li{ display:flex; justify-content:space-between; gap:10px; padding:10px 2px; border-bottom:1px solid #efece8; font-size:15px; font-weight:600 }
+.lb-past li:last-child{ border-bottom:0 }
+.lb-past .ph{ color:#8a8d90; font-style:italic; font-weight:500 }
+.lb-fine{ margin:6px 0 0; text-align:center; font-size:12.5px; color:#8a8d90 }
+.lb-back{ display:block; text-align:center; margin:4px 0 0; color:var(--accent-deep); font-weight:800; font-size:15px }
+
+/* =========================================================================
+   THE CARD UNDER THE RESULT (game page)
+   ========================================================================= */
+.bg-card{
+  margin:16px auto 0; width:min(100%, 340px); text-align:center;
+  background:var(--bd-peach-soft); border-radius:20px; padding:16px;
+}
+.bg-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px }
+.bg-k{ font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--accent-deep) }
+.bg-m{ font-size:12.5px; font-weight:700; color:#787c7e }
+.bg-big{ margin:2px 0 2px; font-size:20px; font-weight:900 }
+.bg-sub{ margin:0 0 12px; font-size:14.5px; color:#3a3d40; line-height:1.4 }
+.bg-btn{ min-height:48px; font-size:16px }
+.bg-link{ display:inline-block; margin-top:10px; color:var(--accent-deep); font-weight:800; font-size:14.5px }
+.bg-stats{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; margin:6px 0 12px }
+.bg-stats div{ background:#fff; border-radius:14px; padding:9px 4px 7px }
+.bg-stats b{ display:block; font-size:19px; font-weight:900; white-space:nowrap }
+.bg-stats span{ display:block; font-size:11px; font-weight:700; color:#787c7e }
+.bg-note{ margin:0; font-size:14px; color:#55595c; line-height:1.45 }
+.bg-top{ margin:-4px 0 12px; font-size:14px; color:#3a3d40 }
+.bg-switch{ margin:12px 0 0; font-size:14px; color:#55595c }
+.bg-linkbtn{ border:0; background:none; padding:0; cursor:pointer; font:inherit; font-weight:800; color:var(--accent-deep); text-decoration:underline; text-underline-offset:2px }
+.bg-switch .bg-link{ margin-top:0; font-size:14px }
+
+/* =========================================================================
+   THE SIGN-UP SHEETS (both pages)
+   ========================================================================= */
+html.ac-open body{ overflow:hidden }
+.ac-root{ position:fixed; inset:0; z-index:95; font-family:"Nunito", "Helvetica Neue", Arial, sans-serif; color:var(--ink) }
+.ac-back{ position:absolute; inset:0; background:rgba(18,18,18,.42) }
+.ac-card{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:min(440px, calc(100vw - 32px)); max-height:calc(100vh - 48px); overflow-y:auto;
+  background:#fff; border-radius:24px; padding:28px 22px 22px; box-shadow:0 20px 60px rgba(0,0,0,.22);
+}
+@media (max-width:600px){
+  .ac-card{
+    top:auto; bottom:0; left:0; right:0; transform:none; width:100%;
+    border-radius:24px 24px 0 0; max-height:calc(100vh - 56px);
+    padding-bottom:calc(24px + env(safe-area-inset-bottom));
+    animation:ac-up .28s cubic-bezier(.2,.8,.2,1);
+  }
+  .ac-card::before{ content:""; position:absolute; top:8px; left:50%; width:40px; height:5px; margin-left:-20px; border-radius:999px; background:#d9d9d5 }
+}
+@keyframes ac-up{ from{ transform:translateY(40px); opacity:0 } to{ transform:none; opacity:1 } }
+@media (prefers-reduced-motion: reduce){ .ac-card{ animation:none } }
+.ac-close{ position:absolute; top:14px; right:14px; width:40px; height:40px; border:0; border-radius:999px; background:#f3f2ef; color:var(--ink); font-size:16px; cursor:pointer }
+.ac-icon{ width:52px; height:52px; border-radius:16px; background:var(--bd-peach-soft); display:grid; place-items:center; margin:0 0 12px }
+.ac-icon svg{ width:28px; height:28px; fill:none; stroke:var(--accent); stroke-width:2; stroke-linecap:round; stroke-linejoin:round }
+.ac-body h2{ margin:0 44px 6px 0; font-size:24px; font-weight:900; letter-spacing:-.01em; line-height:1.2 }
+.ac-sub{ margin:0 0 16px; font-size:15px; color:#3a3d40; line-height:1.45 }
+.ac-label{ display:block; margin:12px 0 6px; font-size:13px; font-weight:800; color:#55595c }
+.ac-input{
+  width:100%; min-height:50px; font:inherit; font-size:16px; font-weight:600; color:var(--ink);
+  padding:10px 14px; border:2px solid #e4e4e0; border-radius:14px; background:#fff;
+}
+.ac-input:focus{ outline:none; border-color:var(--ink) }
+.ac-hint{ margin:6px 2px 0; font-size:12.5px; color:#787c7e; line-height:1.4 }
+.ac-check{ display:flex; align-items:center; gap:10px; margin:16px 0 0; font-size:15px; font-weight:700; cursor:pointer }
+.ac-check input{ width:22px; height:22px; accent-color:var(--accent); margin:0 }
+.ac-err{ margin:12px 0 0; padding:10px 12px; border-radius:12px; background:#fdecea; color:#a3261d; font-size:14px; font-weight:700 }
+.ac-body .ac-btn{ margin-top:16px }
+.ac-fine{ margin:10px 0 0; font-size:12px; color:#8a8d90; text-align:center }
+.ac-switch{ margin:16px 0 0; text-align:center; font-size:14.5px; color:#55595c }
+.ac-mock{ padding:14px; border-radius:16px; background:#f3f2ef; text-align:center }
+.ac-mock span{ display:block; font-size:12.5px; font-weight:700; color:#787c7e; text-transform:uppercase; letter-spacing:.06em }
+.ac-mock .ac-btn{ margin-top:10px }
+/* the space goes above each label, so it sits with its own options (a
+   legend sits on its fieldset's border, so padding would land below it) */
+.ac-body fieldset{ border:0; margin:18px 0 0; padding:0 }
+.ac-body legend{ padding:0; margin-bottom:8px; font-size:13px; font-weight:800; color:#55595c }
+.ac-chips{ display:flex; flex-wrap:wrap; gap:6px }
+.ac-chip{ position:relative; cursor:pointer }
+.ac-chip input{ position:absolute; opacity:0; inset:0; margin:0; cursor:pointer }
+.ac-chip span{ display:inline-block; padding:8px 13px; border-radius:999px; border:2px solid #e4e4e0; font-size:14px; font-weight:700; background:#fff }
+.ac-chip input:checked + span{ background:var(--ink); border-color:var(--ink); color:#fff }
+.ac-chip input:focus-visible + span{ outline:2px solid var(--accent); outline-offset:2px }
+.ac-body select{ width:100%; min-height:48px; font:inherit; font-size:15px; font-weight:600; padding:10px 12px; border:2px solid #e4e4e0; border-radius:14px; background:#fff; color:var(--ink) }
+.ac-row{ display:flex; gap:8px }
+.ac-row .ac-input{ flex:1; min-width:0 }
+.ac-body .ac-btn-sm{ width:auto; min-height:50px; margin:0; padding:0 18px; font-size:15px }
+.ac-dl{ margin:16px 0 0; display:grid; grid-template-columns:auto 1fr; gap:8px 14px; font-size:15px }
+.ac-dl dt{ font-weight:800; color:#55595c }
+.ac-dl dd{ margin:0; min-width:0; overflow-wrap:anywhere }
+.ac-actions{ display:flex; flex-direction:column; align-items:center; gap:14px; margin-top:20px }
+.ac-body .ac-btn-ghost{ background:#f3f2ef; color:var(--ink); margin-top:0 }
+.ac-danger{ color:#b3261e !important }
+.ac-body .ac-btn-danger{ background:#b3261e }
+.ac-toast{
+  position:fixed; left:50%; bottom:24px; transform:translate(-50%, 20px); z-index:96;
+  background:#121212; color:#fff; padding:12px 18px; border-radius:999px; font:700 14.5px "Nunito", Arial, sans-serif;
+  opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; max-width:calc(100vw - 32px); text-align:center;
+}
+.ac-toast.show{ opacity:1; transform:translate(-50%, 0) }
