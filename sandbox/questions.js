@@ -767,6 +767,19 @@ var CS_QUESTIONS = [
     // 17 September, whose note has nuclear on 49 from the printed totals.
     source: "Public First poll of 4,072 GB adults, 14–19 June 2026",
     teaser: "How many Brits back nuclear power?"
+  },
+  {
+    date: "2026-10-11",  // Day 84
+    question: "What percentage of Brits say they prefer to be the 'little spoon' when cuddling a partner?",
+    answer: 37,
+    // little spoon 37, big spoon 34, don't know 29, of all GB adults
+    // (people without a partner sit in the don't knows). Asked: "When you
+    // and a romantic partner are lying on your sides, with one cuddling the
+    // other from behind, do you prefer to be big spoon (the person behind)
+    // or little spoon (the person in front)?" YouGov daily question; the
+    // source deliberately doesn't name the pollster.
+    source: "Poll of 6,955 GB adults, 21 May 2026",
+    teaser: "How many Brits prefer being the little spoon?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
