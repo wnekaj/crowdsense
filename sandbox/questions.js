@@ -782,6 +782,29 @@ var CS_QUESTIONS = [
     // so anyone who'd already played sees their Boots guess scored here.
     source: "Poll of 6,955 GB adults, 21 May 2026",
     teaser: "How many Brits prefer being the little spoon?"
+  },
+  {
+    date: "2026-10-12",  // Day 85
+    question: "What percentage of Brits agree that modern art is meaningless?",
+    answer: 26,
+    // the printed "Total Agree" off the first column, taken as the total
+    // (the column headings weren't in the screenshot): strongly agree 8 +
+    // agree 17 (26 after rounding). 40 disagree, 31 neither, 3 don't know,
+    // net -15. Same poll as the instruments and opera questions.
+    source: "Public First poll of 4,012 UK adults, 26–31 January 2024",
+    teaser: "How many Brits think modern art is meaningless?"
+  },
+  {
+    date: "2026-10-13",  // Day 86
+    question: "What percentage of Brits say they'd be unlikely to consider going to a music festival for a day out?",
+    answer: 41,
+    // the printed "Total Unlikely" off the first column, taken as the
+    // total: unlikely 18 + very unlikely 23. 37 likely, 21 neither, 0
+    // don't know. Asked: "If you were looking for something to do for a
+    // day out, how likely would you be to consider ... going to a music
+    // festival". Same poll as Monday's.
+    source: "Public First poll of 4,012 UK adults, 26–31 January 2024",
+    teaser: "How many Brits would skip a music festival?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
