@@ -791,19 +791,20 @@ var CS_QUESTIONS = [
     // (the column headings weren't in the screenshot): strongly agree 8 +
     // agree 17 (26 after rounding). 40 disagree, 31 neither, 3 don't know,
     // net -15. Same poll as the instruments and opera questions.
-    source: "Public First poll of 4,012 UK adults, 26–31 January 2024",
+    source: "PF Global poll of 4,012 UK adults, 26–31 January 2024",
     teaser: "How many Brits think modern art is meaningless?"
   },
   {
     date: "2026-10-13",  // Day 86
-    question: "What percentage of Brits say they'd be unlikely to consider going to a music festival for a day out?",
+    question: "What percentage of Brits say they'd be unlikely to go to a music festival in future?",
     answer: 41,
     // the printed "Total Unlikely" off the first column, taken as the
     // total: unlikely 18 + very unlikely 23. 37 likely, 21 neither, 0
     // don't know. Asked: "If you were looking for something to do for a
     // day out, how likely would you be to consider ... going to a music
-    // festival". Same poll as Monday's.
-    source: "Public First poll of 4,012 UK adults, 26–31 January 2024",
+    // festival"; worded "in future" at the owner's request. Same poll as
+    // Monday's, both cited as PF Global at the owner's request.
+    source: "PF Global poll of 4,012 UK adults, 26–31 January 2024",
     teaser: "How many Brits would skip a music festival?"
   }
 
