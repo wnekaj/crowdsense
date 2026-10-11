@@ -770,7 +770,7 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-10-11",  // Day 84
-    question: "What percentage of Brits say they prefer to be the 'little spoon' when cuddling a partner?",
+    question: "What percentage of Brits say they prefer to be the 'little spoon'?",
     answer: 37,
     // little spoon 37, big spoon 34, don't know 29, of all GB adults
     // (people without a partner sit in the don't knows). Asked: "When you
