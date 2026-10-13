@@ -806,6 +806,17 @@ var CS_QUESTIONS = [
     // Monday's, both cited as PF Global at the owner's request.
     source: "PF Global poll of 4,012 UK adults, 26–31 January 2024",
     teaser: "How many Brits would skip a music festival?"
+  },
+  {
+    date: "2026-10-14",  // Day 87
+    question: "What percentage of Brits say they find history interesting?",
+    answer: 77,
+    // the printed "Total Agree" in the Total column: strongly agree 36 +
+    // agree 41. 9 disagree, 14 neither, net +68. Men 80, women 74; 67
+    // among 18-24s up to 81 among 55-64s. Same poll as the modern art and
+    // music festival questions.
+    source: "PF Global poll of 4,012 UK adults, 26–31 January 2024",
+    teaser: "How many Brits find history interesting?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
