@@ -817,6 +817,49 @@ var CS_QUESTIONS = [
     // music festival questions.
     source: "PF Global poll of 4,012 UK adults, 26–31 January 2024",
     teaser: "How many Brits find history interesting?"
+  },
+  {
+    date: "2026-10-15",  // Day 88
+    question: "What percentage of Brits would rather the government kept taxes low than spent more on public services?",
+    answer: 53,
+    // "Which of the following is more important to you?": that the
+    // government keeps taxes on individuals low 53, that it spends more
+    // money on public services 39, don't know 8. Read off the first
+    // column, taken as the total (the headings weren't in the screenshot).
+    source: "PF Global poll of 2,055 UK adults, 11–15 March 2025",
+    teaser: "How many Brits put low taxes first?"
+  },
+  {
+    date: "2026-10-16",  // Day 89
+    question: "What percentage of Brits agree that the UK government has no money?",
+    answer: 39,
+    // the printed "Total Agree" off the first column, taken as the total:
+    // strongly agree 12 + agree 27. 34 disagree, 22 neither, 5 don't know,
+    // net +5. Same poll as Thursday's.
+    source: "PF Global poll of 2,055 UK adults, 11–15 March 2025",
+    teaser: "How many Brits think the government has no money?"
+  },
+  {
+    date: "2026-10-17",  // Day 90
+    question: "What percentage of Brits agree that France shares our values?",
+    answer: 56,
+    // "Thinking about France do you agree or disagree with the following?:
+    // France shares our values". The printed "Total Agree" off the first
+    // column, taken as the total: strongly agree 10 + agree 46. 10
+    // disagree, 24 neither, 9 don't know. Same poll as Thursday's.
+    source: "PF Global poll of 2,055 UK adults, 11–15 March 2025",
+    teaser: "How many Brits think France shares our values?"
+  },
+  {
+    date: "2026-10-18",  // Day 91
+    question: "What percentage of Brits say their friends would judge them if they worked in the defence industry?",
+    answer: 17,
+    // the printed "Total Agree" in the Total column: strongly agree 5 +
+    // agree 12. 52 disagree, 23 neither, 7 don't know. 27 among 18-24s and
+    // 29 among 25-34s, falling to 5 among the over-65s. Same poll as
+    // Thursday's: 2,055 UK adults, online, 11-15 March 2025.
+    source: "PF Global poll of 2,055 UK adults, 11–15 March 2025",
+    teaser: "Would your friends judge you for working in defence?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
