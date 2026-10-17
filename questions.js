@@ -860,6 +860,16 @@ var CS_QUESTIONS = [
     // Thursday's: 2,055 UK adults, online, 11-15 March 2025.
     source: "PF Global poll of 2,055 UK adults, 11–15 March 2025",
     teaser: "Would your friends judge you for working in defence?"
+  },
+  {
+    date: "2026-10-19",  // Day 92
+    question: "What percentage of Brits say they have a negative view of Elon Musk?",
+    answer: 58,
+    // the Total column: very negative 40 + somewhat negative 18. Positive
+    // 19 (very 6, somewhat 13), neither 19, don't know 5. Over-65s 81
+    // negative (62 very), 18-24s 47. Same poll as 15-18 October.
+    source: "PF Global poll of 2,055 UK adults, 11–15 March 2025",
+    teaser: "How many Brits have a negative view of Elon Musk?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
