@@ -870,6 +870,17 @@ var CS_QUESTIONS = [
     // negative (62 very), 18-24s 47. Same poll as 15-18 October.
     source: "PF Global poll of 2,055 UK adults, 11–15 March 2025",
     teaser: "How many Brits have a negative view of Elon Musk?"
+  },
+  {
+    date: "2026-10-20",  // Day 93
+    question: "What percentage of Brits agree the UK government should make a number of civil servants redundant to improve efficiency?",
+    answer: 51,
+    // the printed "Total Agree" in the Total column: strongly agree 18 +
+    // agree 33. 18 disagree, 23 neither, 9 don't know, net +33. Reform
+    // voters 70, Conservative 61, Lib Dem 54, Labour 45; 32 among 18-24s
+    // up to 66 among the over-65s. Same poll as 15-19 October.
+    source: "PF Global poll of 2,055 UK adults, 11–15 March 2025",
+    teaser: "How many Brits back civil service redundancies?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
