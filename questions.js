@@ -881,6 +881,18 @@ var CS_QUESTIONS = [
     // up to 66 among the over-65s. Same poll as 15-19 October.
     source: "PF Global poll of 2,055 UK adults, 11–15 March 2025",
     teaser: "How many Brits back civil service redundancies?"
+  },
+  {
+    date: "2026-10-21",  // Day 94
+    question: "What percentage of Brits say they've heard of Mozart?",
+    answer: 81,
+    // "Which of the following opera composers have you heard of, if any?
+    // Select any which apply", read off the first column, taken as the
+    // total (the headings weren't in the screenshot). Mozart 81, then
+    // Tchaikovsky 68, Wagner 65, Verdi 59, Handel 57, Rossini 47. Same
+    // poll as the opera, modern art and history questions.
+    source: "PF Global poll of 4,012 UK adults, 26–31 January 2024",
+    teaser: "How many Brits have heard of Mozart?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
