@@ -893,6 +893,19 @@ var CS_QUESTIONS = [
     // poll as the opera, modern art and history questions.
     source: "PF Global poll of 4,012 UK adults, 26–31 January 2024",
     teaser: "How many Brits have heard of Mozart?"
+  },
+  {
+    date: "2026-10-22",  // Day 95
+    question: "What percentage of Brits say their political interest or views are important to their personality and who they are?",
+    answer: 33,
+    // "Which of the following, if any, would you consider important to your
+    // personality and who you are? Select any which apply": "My political
+    // interest or views" 33, read off the first column, taken as the total
+    // (the next two, likely men and women, are 38 and 27). Music tops the
+    // list at 57, then food and drink 52, television 47, movies 44, sports
+    // 39, entertainment 36; literature 28, art 20. Same poll as Mozart.
+    source: "PF Global poll of 4,012 UK adults, 26–31 January 2024",
+    teaser: "How many Brits see politics as part of who they are?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
