@@ -910,7 +910,7 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-10-23",  // Day 96
-    question: "What percentage of Brits say they'd be more likely to go to the opera than a football match if given free tickets?",
+    question: "What percentage of Brits say they'd be more likely to go to the opera than a football match?",
     answer: 37,
     // "If you were given free tickets to the following, which would you be
     // more likely to attend": opera performance 37, football match 50,
@@ -918,6 +918,7 @@ var CS_QUESTIONS = [
     // next two, likely men and women, are 27 and 47). Base: "Question
     // randomly assigned to respondents", so a share of the 4,012. Taken
     // to be the same January 2024 poll as the opera and Mozart questions.
+    // "if given free tickets" dropped from the wording at the owner's request.
     source: "PF Global poll of 4,012 UK adults, 26–31 January 2024",
     teaser: "How many Brits would pick the opera over football?"
   }
