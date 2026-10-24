@@ -921,6 +921,21 @@ var CS_QUESTIONS = [
     // "if given free tickets" dropped from the wording at the owner's request.
     source: "PF Global poll of 4,012 UK adults, 26–31 January 2024",
     teaser: "How many Brits would pick the opera over football?"
+  },
+  {
+    date: "2026-10-24",  // Day 97
+    question: "What percentage of Brits say they'd be likely to visit an art gallery on a day out?",
+    answer: 39,
+    // "If you were looking for something to do for a day out, how likely
+    // would you be to consider ..." visiting an art gallery (the item, as
+    // the owner gave it; the statement was cut off in the screenshot).
+    // The printed "Total Likely" in the Total column: very likely 11 +
+    // likely 28. 36 unlikely, 25 neither, 1 don't know. Same day-out grid
+    // as the music festival question. Saturday opened on the Boots backup;
+    // switched to this at about 10:25am at the owner's request, so anyone
+    // who'd already played sees their Boots guess scored here.
+    source: "PF Global poll of 4,012 UK adults, 26–31 January 2024",
+    teaser: "How many Brits would visit an art gallery on a day out?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
