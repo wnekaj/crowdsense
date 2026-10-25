@@ -939,14 +939,15 @@ var CS_QUESTIONS = [
   },
   {
     date: "2026-10-25",  // Day 98
-    question: "What percentage of Brits say golf is one of their hobbies or interests?",
+    question: "What percentage of Brits class golf as one of their hobbies?",
     answer: 9,
     // "Which of the following would you consider to be hobbies or interests
     // you have? Select any which apply": golf 9, read off the first column,
     // taken as the total (the next two, likely men and women, are 15 and 4).
     // The list is led by movies and cinema 51, football 39, pop music 32
     // and video games 30. The screenshot didn't name the poll, its size or
-    // its dates; source to be filled in from the owner.
+    // its dates; source to be filled in from the owner. Worded "class golf
+    // as one of their hobbies" at the owner's request.
     source: "Poll of UK adults",
     teaser: "How many Brits count golf as a hobby?"
   }
