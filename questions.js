@@ -950,6 +950,20 @@ var CS_QUESTIONS = [
     // as one of their hobbies" at the owner's request.
     source: "Poll of UK adults",
     teaser: "How many Brits count golf as a hobby?"
+  },
+  {
+    date: "2026-10-26",  // Day 99
+    question: "What percentage of Brits say they have a back-up stockpile of drinking water in case of a water outage?",
+    answer: 28,
+    // "Does your household have the following things in place in the event
+    // that the UK were involved in a conflict or came under attack?: Stored
+    // drinking water in case mains water is disrupted". Yes 28, no 70,
+    // don't know 3, read off the first column, taken as the total (the
+    // headings weren't in the screenshot). Worded as the owner gave it. The
+    // fieldwork box gives 1,981 UK adults; the same 6-9 March poll is cited
+    // as 1,983 on 25 July.
+    source: "PF Global poll of 1,981 UK adults, 6–9 March 2026",
+    teaser: "How many Brits have stockpiled drinking water?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
