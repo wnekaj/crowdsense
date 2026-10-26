@@ -964,6 +964,18 @@ var CS_QUESTIONS = [
     // as 1,983 on 25 July.
     source: "PF Global poll of 1,981 UK adults, 6–9 March 2026",
     teaser: "How many Brits have stockpiled drinking water?"
+  },
+  {
+    date: "2026-10-27",  // Day 100
+    question: "What percentage of Brits say they're more likely to do their food shop online than in person?",
+    answer: 18,
+    // food and groceries: the printed "Total Positive" (always buy online 6
+    // + mostly buy online 13; 19 before rounding). Equally likely 26,
+    // mostly in person 24, always in person 30 (total in person 54), never
+    // buy 1. PF Global poll for the Startup Coalition; the client isn't
+    // named in the source.
+    source: "PF Global poll of 1,906 UK adults, 24–27 September 2026",
+    teaser: "How many Brits do their food shop online?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
