@@ -976,6 +976,19 @@ var CS_QUESTIONS = [
     // named in the source.
     source: "PF Global poll of 1,906 UK adults, 24–27 September 2026",
     teaser: "How many Brits do their food shop online?"
+  },
+  {
+    date: "2026-10-28",  // Day 101
+    question: "What percentage of Brits say the cost of living is one of the top three issues facing the country?",
+    answer: 68,
+    // "Which of the following do you think are the most important issues
+    // facing the country at this time? Please select up to three." Cost of
+    // living 68, then immigration 41, the NHS 36, the economy 33, crime 19,
+    // housing 16, taxation 15. Single (total) column, weighted base 1,995.
+    // The same question ran on 16 September from the June poll, answer 60;
+    // repeated at the owner's request.
+    source: "PF Global poll of 1,995 UK adults, 24–27 July 2026",
+    teaser: "How many Brits put the cost of living in their top three?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
