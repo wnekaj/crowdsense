@@ -989,6 +989,18 @@ var CS_QUESTIONS = [
     // repeated at the owner's request.
     source: "PF Global poll of 1,995 UK adults, 24–27 July 2026",
     teaser: "How many Brits put the cost of living in their top three?"
+  },
+  {
+    date: "2026-10-29",  // Day 102
+    question: "What percentage of Brits say they've sold something on an online marketplace like Vinted or Facebook Marketplace in the last 12 months?",
+    answer: 33,
+    // "In the last twelve months, have you sold anything through any of the
+    // following?": "A second-hand or resale app (e.g. Vinted, Depop, eBay,
+    // Facebook Marketplace)" 33 in the Total column. 43 among 18-24s down
+    // to 26 among the over-65s; women 38, men 28. Same Startup Coalition
+    // poll as the food shop question.
+    source: "PF Global poll of 1,906 UK adults, 24–27 September 2026",
+    teaser: "How many Brits have sold on Vinted or Marketplace?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
