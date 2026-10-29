@@ -1001,6 +1001,18 @@ var CS_QUESTIONS = [
     // poll as the food shop question.
     source: "PF Global poll of 1,906 UK adults, 24–27 September 2026",
     teaser: "How many Brits have sold on Vinted or Marketplace?"
+  },
+  {
+    date: "2026-10-30",  // Day 103
+    question: "What percentage of Brits say fine dining is one of their hobbies?",
+    answer: 16,
+    // the same hobbies list as the golf question on 25 October: "Fine-
+    // dining" 16, read off the first column, taken as the total (the next
+    // two, likely men and women, are 14 and 18). Tied with tennis; above
+    // sciences 15 and cricket 13. Source as for golf, pending the poll's
+    // details from the owner.
+    source: "Poll of UK adults",
+    teaser: "How many Brits count fine dining as a hobby?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
