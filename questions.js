@@ -1013,6 +1013,31 @@ var CS_QUESTIONS = [
     // details from the owner.
     source: "Poll of UK adults",
     teaser: "How many Brits count fine dining as a hobby?"
+  },
+  {
+    date: "2026-10-31",  // Day 104
+    question: "What percentage of Brits think people should be free to live their lives as they choose, so long as they don't harm others?",
+    answer: 85,
+    // "Do you agree or disagree with the following?: People should be free
+    // to live their lives as they choose, so long as they don't harm
+    // others." Strongly agree 42 + agree 43, read off the first column,
+    // taken as the total. Neither 11, disagree 3 (2 + strongly 1), don't
+    // know 1. Same October 2025 poll as the August questions on 4,005.
+    source: "PF Global poll of 4,005 UK adults, 24–30 October 2025",
+    teaser: "How many Brits back 'live and let live'?"
+  },
+  {
+    date: "2026-11-01",  // Day 105
+    question: "What percentage of Brits think crime is more to do with society than individuals themselves?",
+    answer: 51,
+    // "To what extent do you agree with the following statements?: The
+    // causes of crime are rooted more in wider society than in individuals
+    // themselves". Somewhat agree 38 + strongly agree 13, in a single
+    // (total) column with base 1,999. Neither 30, disagree 19 (somewhat 14
+    // + strongly 5). Worded as the owner gave it. Public First poll for
+    // Community Union and Serco; the clients aren't named in the source.
+    source: "PF Global poll of 1,999 UK adults, 7–10 July 2026",
+    teaser: "How many Brits blame society for crime?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
