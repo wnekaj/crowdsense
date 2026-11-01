@@ -1038,6 +1038,19 @@ var CS_QUESTIONS = [
     // Community Union and Serco; the clients aren't named in the source.
     source: "PF Global poll of 1,999 UK adults, 7–10 July 2026",
     teaser: "How many Brits blame society for crime?"
+  },
+  {
+    date: "2026-11-02",  // Day 106
+    question: "What percentage of Brits say they use YouTube at least once a day?",
+    answer: 54,
+    // "How often do you use the following services and platforms?:
+    // YouTube", read off the first column, taken as the total: over 20
+    // times a day 6 + 11-20 times 5 + 6-10 times 10 + 2-5 times 19 + once
+    // a day 14 = 54 (the next two, likely men and women, sum to 63 and
+    // 48). Multiple times a week 17; never 6. Public First poll for Google
+    // (PF1375); the client isn't named in the source.
+    source: "PF Global poll of 2,017 UK adults, 20–26 March 2026",
+    teaser: "How many Brits use YouTube every day?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
