@@ -1051,6 +1051,17 @@ var CS_QUESTIONS = [
     // (PF1375); the client isn't named in the source.
     source: "PF Global poll of 2,017 UK adults, 20–26 March 2026",
     teaser: "How many Brits use YouTube every day?"
+  },
+  {
+    date: "2026-11-03",  // Day 107
+    question: "What percentage of Brits think AI is making people less intelligent?",
+    answer: 59,
+    // figure as supplied by the owner: "59 per cent agree to some extent
+    // that 'AI is making people less intelligent'" (total agree). No
+    // tables, fieldwork dates or "UK" in what was given; source worded as
+    // supplied.
+    source: "PF Global survey of 2,000 adults",
+    teaser: "How many Brits think AI is dumbing us down?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
