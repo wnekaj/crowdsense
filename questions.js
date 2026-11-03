@@ -1072,6 +1072,112 @@ var CS_QUESTIONS = [
     // 50, don't know 9. PF Global Omnibus (October) for POLITICO UK.
     source: "PF Global poll of 2,050 UK adults, 2–5 October 2026",
     teaser: "How many Brits think the state pension is too generous?"
+  },
+  {
+    date: "2026-11-05",  // Day 109
+    question: "What percentage of Brits say they plan to buy Grand Theft Auto 6?",
+    answer: 36,
+    // "Which of the following statements best applies to you?" Total column:
+    // plan to buy it but not as soon as it releases 19 + plan to buy it on
+    // release 12 + already pre-ordered 5 = 36. Don't plan to buy 56, don't
+    // know 8. The owner's "plan to play" is worded "plan to buy" to match.
+    source: "PF Global poll of 2,050 UK adults, 2–5 October 2026",
+    teaser: "How many Brits plan to buy GTA 6?"
+  },
+  {
+    date: "2026-11-06",  // Day 110
+    question: "What percentage of Brits correctly identified Ed Miliband as the Foreign Secretary?",
+    answer: 25,
+    // "Foreign Secretary?" (asked to name the holder from a list), Total
+    // column: Ed Miliband 25, then Shabana Mahmood and Yvette Cooper 8 each,
+    // Wes Streeting 5; don't know 42. September Omni for POLITICO.
+    source: "PF Global poll of 2,007 UK adults, 4–8 September 2026",
+    teaser: "How many Brits know who the Foreign Secretary is?"
+  },
+  {
+    date: "2026-11-07",  // Day 111
+    question: "What percentage of Brits support the state pension triple lock?",
+    answer: 59,
+    // The question first explained the triple lock (pensions rise by the
+    // highest of inflation, average wage growth or 2.5%). Total column:
+    // strongly support 27 + somewhat support 32. Oppose 11, neither 23,
+    // don't know 7. Same October Omnibus as the 4 November question.
+    source: "PF Global poll of 2,050 UK adults, 2–5 October 2026",
+    teaser: "How many Brits back the triple lock?"
+  },
+  {
+    date: "2026-11-08",  // Day 112
+    question: "What percentage of Brits say they'd find it difficult to pay their housing costs, such as rent or a mortgage?",
+    answer: 23,
+    // "How easy or difficult do you think it would be to... pay for your
+    // current accommodation / housing costs (e.g. rent, mortgage)". Total
+    // column: quite difficult 15 + very difficult 8. Easy 47, neither 27,
+    // don't know 3.
+    source: "PF Global poll of 2,050 UK adults, 2–5 October 2026",
+    teaser: "How many Brits struggle to cover their rent or mortgage?"
+  },
+  {
+    date: "2026-11-09",  // Day 113
+    question: "What percentage of Brits say they've spoken to a stranger while playing an online video game?",
+    answer: 38,
+    // "How recently have you done the following, if ever?: Spoken to someone
+    // you didn't know before while playing a video game". Total column: 62
+    // never, so 38 ever (last two days 6, week 8, month 8, six months 5,
+    // year 3, over a year 8).
+    source: "PF Global poll of 2,050 UK adults, 2–5 October 2026",
+    teaser: "How many Brits have chatted to strangers while gaming?"
+  },
+  {
+    date: "2026-11-10",  // Day 114
+    question: "What percentage of Brits say they have a conversation with a neighbour at least once a week?",
+    answer: 55,
+    // "How often do you speak to your neighbour(s), beyond saying hello?"
+    // Total column: every day or almost 11 + multiple times a week 27 + once
+    // a week 17 = 55. Never 7.
+    source: "PF Global poll of 2,050 UK adults, 2–5 October 2026",
+    teaser: "How many Brits chat to a neighbour every week?"
+  },
+  {
+    date: "2026-11-11",  // Day 115
+    question: "What percentage of Brits say they feel pessimistic about the UK economy?",
+    answer: 60,
+    // "How optimistic or pessimistic do you feel about... the state of the
+    // UK economy". Total column: quite pessimistic 32 + very pessimistic 28.
+    // Optimistic 20, neither 19, don't know 2.
+    source: "PF Global poll of 2,050 UK adults, 2–5 October 2026",
+    teaser: "How many Brits are gloomy about the economy?"
+  },
+  {
+    date: "2026-11-12",  // Day 116
+    question: "What percentage of Brits say they'd find it easy to cover an emergency expense of £500?",
+    answer: 45,
+    // "How easy or difficult do you think it would be to... cover an
+    // emergency expense of around £500". Total column: very easy 20 + quite
+    // easy 25. Difficult 36, neither 16, don't know 2.
+    source: "PF Global poll of 2,050 UK adults, 2–5 October 2026",
+    teaser: "How many Brits could cover a £500 emergency?"
+  },
+  {
+    date: "2026-11-13",  // Day 117
+    question: "What percentage of Brits think climate change is the single most important issue of our time?",
+    answer: 14,
+    // "How seriously do you take the issue of climate change?" Total column:
+    // the single most important issue of our time 14; one of the most
+    // important 35; a concern but other issues matter more right now 33; not
+    // that much of a concern 7; not a concern at all 6; don't know 4.
+    source: "PF Global poll of 2,028 UK adults, 13–15 September 2026",
+    teaser: "How many Brits put climate change above everything?"
+  },
+  {
+    date: "2026-11-14",  // Day 118
+    question: "What percentage of Brits think it's almost certain that AI will destroy humanity?",
+    answer: 12,
+    // "In your view, is there any risk that advanced AI will destroy
+    // humanity?" Total column: "This is almost certain to happen" 12. No
+    // risk 7, very small 22, moderate 28, significant 22, don't know 10. The
+    // owner's "certain" is worded "almost certain" to match.
+    source: "PF Global poll of 2,028 UK adults, 13–15 September 2026",
+    teaser: "How many Brits think AI will almost certainly destroy us?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
