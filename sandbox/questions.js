@@ -1062,6 +1062,16 @@ var CS_QUESTIONS = [
     // supplied.
     source: "PF Global survey of 2,000 adults",
     teaser: "How many Brits think AI is dumbing us down?"
+  },
+  {
+    date: "2026-11-04",  // Day 108
+    question: "What percentage of Brits think the current state pension is too generous?",
+    answer: 4,
+    // "Do you think the current state pension is too generous, about right,
+    // or too low?" Total column: too generous 4, about right 38, too low
+    // 50, don't know 9. PF Global Omnibus (October) for POLITICO UK.
+    source: "PF Global poll of 2,050 UK adults, 2–5 October 2026",
+    teaser: "How many Brits think the state pension is too generous?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
