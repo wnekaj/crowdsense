@@ -1267,6 +1267,30 @@ var CS_QUESTIONS = [
     // book or printed material 6; don't know 2. October Omnibus.
     source: "PF Global poll of 2,050 UK adults, 2–5 October 2026",
     teaser: "How many Brits ask AI before Google?"
+  },
+  {
+    date: "2026-11-23",  // Day 127
+    question: "What percentage of Brits say they like it when politicians show emotion during speeches?",
+    answer: 57,
+    // "Which of the following comes closer to your view?" Total column: "I
+    // like it when politicians show emotion during speeches, as it shows
+    // they genuinely care..." 57; "Politicians shouldn't show emotion during
+    // speeches, as it can seem like a performance..." 32; don't know 11.
+    // October Omnibus for POLITICO UK.
+    source: "PF Global poll of 2,050 UK adults, 2–5 October 2026",
+    teaser: "How many Brits like politicians to show emotion?"
+  },
+  {
+    date: "2026-11-24",  // Day 128
+    question: "What percentage of Brits say they trust doctors completely?",
+    answer: 34,
+    // "To what extent do you trust or distrust these people or
+    // organisations?: Doctors". Total column: trust completely 34, somewhat
+    // 47, a little 15, not at all 3. Richmond Project poll; the same grid
+    // gave the journalists question in September (scientists 26 completely,
+    // teachers 22, MPs 4).
+    source: "PF Global poll of 8,021 UK adults, 3–16 October 2025",
+    teaser: "How many Brits trust doctors completely?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
