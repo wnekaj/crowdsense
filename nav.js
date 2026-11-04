@@ -48,6 +48,9 @@
   // links straight to a panel: #archive, #stats or #help
   var deep = { "#archive": els.archiveBtn, "#stats": els.statsBtn, "#help": els.helpBtn }[location.hash];
   if (deep){
+    // look.js loads after this and skips its front door, so a link from the
+    // email lands on the panel rather than under the splash
+    window.CS_DEEP_LINK = true;
     try{ history.replaceState(null, "", location.pathname + location.search); }catch(_){}
     setTimeout(function(){ deep.click(); }, 0);
   }
