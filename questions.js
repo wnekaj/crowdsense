@@ -1291,6 +1291,16 @@ var CS_QUESTIONS = [
     // teachers 22, MPs 4).
     source: "PF Global poll of 8,021 UK adults, 3–16 October 2025",
     teaser: "How many Brits trust doctors completely?"
+  },
+  {
+    date: "2026-11-25",  // Day 129
+    question: "What percentage of Brits say they currently provide unpaid care for a family member or friend?",
+    answer: 24,
+    // "Which of the following are true for you?: I currently provide unpaid
+    // care for a family member or friend". Total column: true for me 24,
+    // not true 73, don't know 3. October Omnibus for POLITICO UK.
+    source: "PF Global poll of 2,050 UK adults, 2–5 October 2026",
+    teaser: "How many Brits are unpaid carers?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
