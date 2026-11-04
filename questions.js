@@ -1212,6 +1212,61 @@ var CS_QUESTIONS = [
     // adults, 9-14 July 2026.
     source: "PF Global poll of 2,016 UK adults, 9–14 July 2026",
     teaser: "How many Brits rate their local public transport?"
+  },
+  {
+    date: "2026-11-18",  // Day 122
+    question: "What percentage of Brits think the upsides of hotter weather outweigh the downsides?",
+    answer: 20,
+    // "Thinking about the recent hotter weather, which of the following comes
+    // closest to your view?" Total column: the upsides (such as warmer sunnier
+    // summers and more British wine) outweigh the downsides 20; the downsides
+    // (such as overheating and droughts) outweigh the upsides 45; about even
+    // 29; don't know 7. September Omni for POLITICO.
+    source: "PF Global poll of 2,007 UK adults, 4–8 September 2026",
+    teaser: "How many Brits think hotter weather does more good than harm?"
+  },
+  {
+    date: "2026-11-19",  // Day 123
+    question: "What percentage of Brits correctly worked out a 15% tip on a £48 restaurant bill?",
+    answer: 60,
+    // "Michela's restaurant bill comes to £48. She wants to leave a 15% tip.
+    // How much should Michela leave?" Total column: £7.20 (right) 60; £6.20
+    // 24; £9.60 4; £8.60 2; don't know 9. Richmond Project poll, as for the
+    // public speaking and Sudoku questions.
+    source: "PF Global poll of 8,021 UK adults, 3–16 October 2025",
+    teaser: "Could Brits work out a 15% tip on £48?"
+  },
+  {
+    date: "2026-11-20",  // Day 124
+    question: "What percentage of Brits would scrap council tax if they could abolish one tax?",
+    answer: 29,
+    // "If you could abolish one of the following taxes, which, if any, would
+    // you choose to abolish?" Total column: council tax 29 (top), inheritance
+    // tax 22, VAT 14, fuel duty 12, stamp duty 7, capital gains tax 4; none 4,
+    // don't know 6. October Omnibus for POLITICO UK.
+    source: "PF Global poll of 2,050 UK adults, 2–5 October 2026",
+    teaser: "How many Brits would scrap council tax?"
+  },
+  {
+    date: "2026-11-21",  // Day 125
+    question: "What percentage of Brits agree the world is becoming a more dangerous place?",
+    answer: 82,
+    // "Do you agree or disagree with the following?: The world is becoming a
+    // more dangerous place". Total column: strongly agree 42 + agree 40.
+    // Neither 11, disagree 5, don't know 2. Public First for Politico (UK).
+    source: "PF Global poll of 2,028 UK adults, 13–15 September 2026",
+    teaser: "How many Brits think the world is getting more dangerous?"
+  },
+  {
+    date: "2026-11-22",  // Day 126
+    question: "What percentage of Brits say they turn to an AI tool first when looking something up?",
+    answer: 16,
+    // "When you look for information or start researching something, which
+    // of the following do you usually do first?" Total column: use an AI tool
+    // 16; a search engine such as Google 60; ask someone 8; social media 7; a
+    // book or printed material 6; don't know 2. October Omnibus.
+    source: "PF Global poll of 2,050 UK adults, 2–5 October 2026",
+    teaser: "How many Brits ask AI before Google?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
