@@ -88,7 +88,7 @@
       <button class="copybtn" data-copy="bodyMd" type="button">Copy</button>
     </div>
 
-    <p class="note">The email goes out twice a week and catches subscribers up on the questions since the last one: Thursday's has Sunday to Wednesday (four), Sunday's has Thursday to Saturday (three). It never contains an answer; the link opens the archive, where every past question can be played. Paste the HTML into Mailchimp's code view, or the Markdown into Buttondown. Buttondown and Mailchimp append the legally required unsubscribe link automatically, so don't add one by hand. This page is unlisted but public; it never shows an answer.</p>
+    <p class="note">The email goes out twice a week and catches subscribers up on the questions since the last one: Thursday's has Sunday to Wednesday (four), Sunday's has Thursday to Saturday (three). The subject teases that day's own question, by its number and teaser, and the email points to it at the end. It never contains an answer; the link opens the archive, where every past question can be played. Paste the HTML into Mailchimp's code view, or the Markdown into Buttondown. Buttondown and Mailchimp append the legally required unsubscribe link automatically, so don't add one by hand. This page is unlisted but public; it never shows an answer.</p>
   </div>
 
   <div class="toast" id="toast">Copied</div>
@@ -150,6 +150,13 @@
       return String(text || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
     }
 
+    // Subject-line hook: the hand-written teaser, or the question reworded
+    // as a safety net for one added without
+    function teaserFor(q){
+      if (q.teaser) return q.teaser;
+      return plain(q.question).replace(/^What percentage of\s+/i,"How many ");
+    }
+
     var SEND_DAYS = [0, 4];               // Sunday and Thursday
     var WORDS = ["no","one","two","three","four","five","six","seven"];
     var ARCHIVE_URL = SITE_URL + "#archive";
@@ -179,6 +186,8 @@
       days.forEach(function(k){
         if (!hasDated(k)) warns.push(fmtLong(k) + " has no dated question, so the backup is listed. Top up questions.js!");
       });
+      if (!hasDated(key) && daysSince(ANCHOR,key) >= 0)
+        warns.push(fmtLong(key) + " itself has no dated question, so the subject teases the backup. Top up questions.js!");
       if (days.length && days[days.length-1] >= todayKeyLondon())
         warns.push("Not every day here has finished yet — send this on " + fmtLong(key) + ".");
       $("warn").innerHTML = warns.map(esc).join("<br />");
@@ -193,7 +202,9 @@
         " (" + fmtLong(days[0]) + (days.length > 1 ? " to " + fmtLong(days[days.length-1]) : "") + ")";
 
       var n = days.length, word = WORDS[n] || String(n);
-      var subject = "Crowdsense — " + n + " question" + (n === 1 ? "" : "s") + " you might have missed";
+      // the subject teases the send day's own question, as the daily email did
+      var dayNo = daysSince(ANCHOR,key)+1;
+      var subject = "Crowdsense #" + dayNo + " — " + teaserFor(pickForKey(key));
       var intro = "The last " + word + " day" + (n === 1 ? "" : "s") + " of Crowdsense. How many did you play?";
 
       var html = [], md = [];
@@ -207,10 +218,10 @@
         md.push("**" + head + "**  ", "“" + q + "”", "");
       });
       html.push("<p>Missed one? Play them all in the archive: <a href=\"" + ARCHIVE_URL + "\">crowdsense.uk/#archive</a></p>");
-      html.push("<p>And there's a new question every day at midnight: <a href=\"" + SITE_URL + "\">crowdsense.uk</a></p>");
+      html.push("<p>Today's question, #" + dayNo + ", is live now: <a href=\"" + SITE_URL + "\">crowdsense.uk</a></p>");
       html.push("<p>—<br /><i>You're getting this because you subscribed at crowdsense.uk.</i></p>");
       md.push("Missed one? Play them all in the archive: " + ARCHIVE_URL, "");
-      md.push("And there's a new question every day at midnight: " + SITE_URL, "");
+      md.push("Today's question, #" + dayNo + ", is live now: " + SITE_URL, "");
       md.push("—  ");
       md.push("*You're getting this because you subscribed at crowdsense.uk.*");
 
