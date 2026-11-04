@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Crowdsense — daily email composer</title>
+  <title>Crowdsense — email composer</title>
   <meta name="robots" content="noindex" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='white'/%3E%3Crect x='10' y='29' width='44' height='6' rx='3' fill='%23121212'/%3E%3Crect x='40' y='21.5' width='5' height='21' rx='2.5' fill='%23F26522'/%3E%3C/svg%3E" />
   <style>
@@ -60,9 +60,9 @@
 <body>
   <div class="wrap">
     <div class="brand">Crowdsense<span>.</span> <span style="color:var(--muted);letter-spacing:.06em;text-transform:none;font-weight:400">/ email composer</span></div>
-    <div class="sub">Internal tool — writes the daily subscriber email for pasting into Buttondown or Mailchimp</div>
+    <div class="sub">Internal tool — writes the Thursday and Sunday subscriber email for pasting into Buttondown or Mailchimp</div>
 
-    <label for="day">Email for the morning of</label>
+    <label for="day">Email for</label>
     <input type="date" id="day" />
     <div class="meta" id="meta"></div>
     <div class="warn" id="warn"></div>
@@ -88,7 +88,7 @@
       <button class="copybtn" data-copy="bodyMd" type="button">Copy</button>
     </div>
 
-    <p class="note">Paste the HTML into Mailchimp's code view, or the Markdown into Buttondown. The body never contains the day's answer — only the question (plus yesterday's answer as a hook once there is one). Buttondown and Mailchimp append the legally required unsubscribe link automatically, so don't add one by hand. This page is unlisted but public; it reveals nothing a player couldn't already see.</p>
+    <p class="note">The email goes out twice a week and catches subscribers up on the questions since the last one: Thursday's has Sunday to Wednesday (four), Sunday's has Thursday to Saturday (three). It never contains an answer; the link opens the archive, where every past question can be played. Paste the HTML into Mailchimp's code view, or the Markdown into Buttondown. Buttondown and Mailchimp append the legally required unsubscribe link automatically, so don't add one by hand. This page is unlisted but public; it never shows an answer.</p>
   </div>
 
   <div class="toast" id="toast">Copied</div>
@@ -98,11 +98,10 @@
     var ANCHOR = "2026-07-20";
     var SITE_URL = "https://crowdsense.uk/";
   </script>
-  <script src="questions.js?v=92"></script>
+  <script src="questions.js?v=182"></script>
   <script>
   (function(){
     function $(id){ return document.getElementById(id); }
-    function pad(n){ return String(n).padStart(2,"0"); }
     function todayKeyLondon(){
       var p = new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/London",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
       var o = {}; p.forEach(function(x){ o[x.type]=x.value; });
@@ -117,6 +116,10 @@
       var d=new Date(Date.UTC(p[0],p[1]-1,p[2]));
       d.setUTCDate(d.getUTCDate()+days);
       return d.toISOString().slice(0,10);
+    }
+    function weekday(key){   // 0 Sunday … 6 Saturday
+      var p=key.split("-").map(Number);
+      return new Date(Date.UTC(p[0],p[1]-1,p[2])).getUTCDay();
     }
     function pickForKey(key){
       var dated = CS_QUESTIONS.filter(function(q){ return (q.date||"")===key; });
@@ -147,66 +150,67 @@
       return String(text || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
     }
 
-    // "What percentage of Brits support X?" -> "of Brits support X"
-    // Questions phrased any other way carry their own "fact" instead.
-    function factFor(q){
-      if (q.fact) return q.fact;
-      return plain(q.question).replace(/^What percentage\s+/i,"").replace(/\?\s*$/,"");
+    var SEND_DAYS = [0, 4];               // Sunday and Thursday
+    var WORDS = ["no","one","two","three","four","five","six","seven"];
+    var ARCHIVE_URL = SITE_URL + "#archive";
+    // The email covers the days since the last send day, up to the day
+    // before: Thursday's has Sunday to Wednesday, Sunday's has Thursday to
+    // Saturday. Neither shows a question before its day.
+    function coveredDays(key){
+      var from = shiftKey(key,-1);
+      while (SEND_DAYS.indexOf(weekday(from)) === -1) from = shiftKey(from,-1);
+      var days = [];
+      for (var k = from; k < key; k = shiftKey(k,1)) days.push(k);
+      return days;
     }
-    // The reveal sentence: "13% of Londoners say they've attended a protest…"
-    function answerLine(q){
-      return q.answer + "% " + factFor(q) + ". Were you close?";
-    }
-    // Short subject-line hook. Hand-written per question; the derived form is
-    // a safety net for a question added without one.
-    function teaserFor(q){
-      if (q.teaser) return q.teaser;
-      return plain(q.question).replace(/^What percentage of\s+/i,"How many ");
+    // the date picker opens on today if it is a send day, else the next one
+    function nextSendDay(key){
+      while (SEND_DAYS.indexOf(weekday(key)) === -1) key = shiftKey(key,1);
+      return key;
     }
 
     function build(){
       var key = $("day").value;
       if (!key) return;
-      var no = daysSince(ANCHOR,key)+1;
-      var pre = no < 1;
-      var q = pickForKey(key);
-      var warn = "";
-      if (pre) warn = "Pre-launch date — this is the taster question, not a numbered puzzle.";
-      else if (!hasDated(key)) warn = "No dated question for this day — the fallback rotation would run. Top up questions.js!";
-      $("warn").textContent = warn;
-      $("meta").textContent = (pre ? "Taster" : "Puzzle #" + no) + " · " + fmtLong(key);
+      var days = coveredDays(key).filter(function(k){ return daysSince(ANCHOR,k) >= 0; });
+      var warns = [];
+      if (SEND_DAYS.indexOf(weekday(key)) === -1)
+        warns.push("Emails go out on Thursdays and Sundays — this date is neither.");
+      days.forEach(function(k){
+        if (!hasDated(k)) warns.push(fmtLong(k) + " has no dated question, so the backup is listed. Top up questions.js!");
+      });
+      if (days.length && days[days.length-1] >= todayKeyLondon())
+        warns.push("Not every day here has finished yet — send this on " + fmtLong(key) + ".");
+      $("warn").innerHTML = warns.map(esc).join("<br />");
 
-      // yesterday's answer is the hook, once yesterday was a real (dated) puzzle
-      var yKey = shiftKey(key,-1);
-      var yq = hasDated(yKey) ? pickForKey(yKey) : null;
-
-      // The subject always teases today's question — the one the email is
-      // asking — so the number and the hook describe the same puzzle.
-      var subject = pre
-        ? "Crowdsense — today's taster question"
-        : "Crowdsense #" + no + " — " + teaserFor(q);
-
-      var question = plain(q.question);
-
-      var html = [];
-      html.push("<p><b>Today's question:</b></p>");
-      html.push("<p>“" + esc(question) + "”</p>");
-      html.push("<p>Play now: <a href=\"" + SITE_URL + "\">" + SITE_URL + "</a></p>");
-      if (yq) html.push("<p><b>Yesterday's answer:</b> " + esc(answerLine(yq)) + "</p>");
-      html.push("<p>—<br /><i>You're getting this because you subscribed at crowdsense.uk.</i></p>");
-
-      var md = [];
-      md.push("**Today's question:**");
-      md.push("");
-      md.push("“" + question + "”");
-      md.push("");
-      md.push("Play now: " + SITE_URL);
-      if (yq){
-        md.push("");
-        md.push("**Yesterday's answer:** " + answerLine(yq));
+      if (!days.length){
+        $("meta").textContent = "Nothing to send — no puzzles in this range.";
+        $("subject").value = ""; $("bodyHtml").value = ""; $("bodyMd").value = ""; $("preview").innerHTML = "";
+        return;
       }
-      md.push("");
-      // two trailing spaces keep the rule and the sign-off on separate lines
+      var first = daysSince(ANCHOR,days[0])+1, last = daysSince(ANCHOR,days[days.length-1])+1;
+      $("meta").textContent = fmtLong(key) + " · covers #" + first + (last > first ? "–" + last : "") +
+        " (" + fmtLong(days[0]) + (days.length > 1 ? " to " + fmtLong(days[days.length-1]) : "") + ")";
+
+      var n = days.length, word = WORDS[n] || String(n);
+      var subject = "Crowdsense — " + n + " question" + (n === 1 ? "" : "s") + " you might have missed";
+      var intro = "The last " + word + " day" + (n === 1 ? "" : "s") + " of Crowdsense. How many did you play?";
+
+      var html = [], md = [];
+      html.push("<p>" + esc(intro) + "</p>");
+      md.push(intro, "");
+      days.forEach(function(k){
+        var head = fmtLong(k) + " · #" + (daysSince(ANCHOR,k)+1);
+        var q = plain(pickForKey(k).question);
+        html.push("<p><b>" + esc(head) + "</b><br />“" + esc(q) + "”</p>");
+        // two trailing spaces keep the date and the question on separate lines
+        md.push("**" + head + "**  ", "“" + q + "”", "");
+      });
+      html.push("<p>Missed one? Play them all in the archive: <a href=\"" + ARCHIVE_URL + "\">crowdsense.uk/#archive</a></p>");
+      html.push("<p>And there's a new question every day at midnight: <a href=\"" + SITE_URL + "\">crowdsense.uk</a></p>");
+      html.push("<p>—<br /><i>You're getting this because you subscribed at crowdsense.uk.</i></p>");
+      md.push("Missed one? Play them all in the archive: " + ARCHIVE_URL, "");
+      md.push("And there's a new question every day at midnight: " + SITE_URL, "");
       md.push("—  ");
       md.push("*You're getting this because you subscribed at crowdsense.uk.*");
 
@@ -236,7 +240,7 @@
       } else { document.execCommand("copy"); done(); }
     });
 
-    $("day").value = todayKeyLondon();
+    $("day").value = nextSendDay(todayKeyLondon());
     $("day").addEventListener("input", build);
     build();
   })();

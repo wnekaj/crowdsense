@@ -69,7 +69,7 @@
   paintAcctItem();
 
   // ---------- the leaderboard, in Your stats ----------
-  // It replaces the "Tomorrow's question straight to your inbox" form there.
+  // It replaces the email sign-up form there.
   var subscribe = document.querySelector("#statsModal .subscribe");
   var box = document.createElement("section");
   box.id = "bgStats";

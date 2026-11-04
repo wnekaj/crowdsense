@@ -41,7 +41,8 @@
 
   // ---------- 1. the front door ----------
   (function(){
-    if (MODE !== "daily" || !CUR) return;
+    // not on a link straight to the archive, stats or how to play (nav.js)
+    if (MODE !== "daily" || !CUR || window.CS_DEEP_LINK) return;
     var done = !!state.done;
     var s = el("div", "lk-splash");
     s.setAttribute("role", "dialog");
