@@ -88,7 +88,7 @@
       <button class="copybtn" data-copy="bodyMd" type="button">Copy</button>
     </div>
 
-    <p class="note">The email goes out twice a week and catches subscribers up on the questions since the last one: Thursday's has Sunday to Wednesday (four), Sunday's has Thursday to Saturday (three). The subject teases that day's own question, by its number and teaser, and the email points to it at the end. It never contains an answer; the link opens the archive, where every past question can be played. Paste the HTML into Mailchimp's code view, or the Markdown into Buttondown. Buttondown and Mailchimp append the legally required unsubscribe link automatically, so don't add one by hand. This page is unlisted but public; it never shows an answer.</p>
+    <p class="note">The email goes out twice a week with the questions since the last one, ending with that day's: Thursday's has Monday to Thursday (four), Sunday's has Friday to Sunday (three). The subject teases that day's question, by its number and teaser. It never contains an answer; the link opens the archive, where every past question can be played. Paste the HTML into Mailchimp's code view, or the Markdown into Buttondown. Buttondown and Mailchimp append the legally required unsubscribe link automatically, so don't add one by hand. This page is unlisted but public; it never shows an answer.</p>
   </div>
 
   <div class="toast" id="toast">Copied</div>
@@ -160,14 +160,15 @@
     var SEND_DAYS = [0, 4];               // Sunday and Thursday
     var WORDS = ["no","one","two","three","four","five","six","seven"];
     var ARCHIVE_URL = SITE_URL + "#archive";
-    // The email covers the days since the last send day, up to the day
-    // before: Thursday's has Sunday to Wednesday, Sunday's has Thursday to
-    // Saturday. Neither shows a question before its day.
+    // The email covers the days since the last send day, up to and
+    // including its own: Thursday's has Monday to Thursday, Sunday's has
+    // Friday to Sunday. The last of them is the day's question, the one the
+    // subject teases. Neither shows a question before its day.
     function coveredDays(key){
       var from = shiftKey(key,-1);
       while (SEND_DAYS.indexOf(weekday(from)) === -1) from = shiftKey(from,-1);
       var days = [];
-      for (var k = from; k < key; k = shiftKey(k,1)) days.push(k);
+      for (var k = shiftKey(from,1); k <= key; k = shiftKey(k,1)) days.push(k);
       return days;
     }
     // the date picker opens on today if it is a send day, else the next one
@@ -184,12 +185,11 @@
       if (SEND_DAYS.indexOf(weekday(key)) === -1)
         warns.push("Emails go out on Thursdays and Sundays — this date is neither.");
       days.forEach(function(k){
-        if (!hasDated(k)) warns.push(fmtLong(k) + " has no dated question, so the backup is listed. Top up questions.js!");
+        if (!hasDated(k)) warns.push(fmtLong(k) + " has no dated question, so the backup is listed" +
+          (k === key ? " and teased in the subject" : "") + ". Top up questions.js!");
       });
-      if (!hasDated(key) && daysSince(ANCHOR,key) >= 0)
-        warns.push(fmtLong(key) + " itself has no dated question, so the subject teases the backup. Top up questions.js!");
-      if (days.length && days[days.length-1] >= todayKeyLondon())
-        warns.push("Not every day here has finished yet — send this on " + fmtLong(key) + ".");
+      if (key > todayKeyLondon())
+        warns.push(fmtLong(key) + "'s question isn't live yet — send this on the day.");
       $("warn").innerHTML = warns.map(esc).join("<br />");
 
       if (!days.length){
@@ -205,23 +205,24 @@
       // the subject teases the send day's own question, as the daily email did
       var dayNo = daysSince(ANCHOR,key)+1;
       var subject = "Crowdsense #" + dayNo + " — " + teaserFor(pickForKey(key));
-      var intro = "The last " + word + " day" + (n === 1 ? "" : "s") + " of Crowdsense. How many did you play?";
+      var intro = n === 1 ? "Here's today's Crowdsense question:"
+        : "Here are the last " + word + " Crowdsense questions. How many have you played?";
 
       var html = [], md = [];
       html.push("<p>" + esc(intro) + "</p>");
       md.push(intro, "");
       days.forEach(function(k){
-        var head = fmtLong(k) + " · #" + (daysSince(ANCHOR,k)+1);
+        var head = (k === key ? "Today, " : "") + fmtLong(k) + " · #" + (daysSince(ANCHOR,k)+1);
         var q = plain(pickForKey(k).question);
         html.push("<p><b>" + esc(head) + "</b><br />“" + esc(q) + "”</p>");
         // two trailing spaces keep the date and the question on separate lines
         md.push("**" + head + "**  ", "“" + q + "”", "");
       });
-      html.push("<p>Missed one? Play them all in the archive: <a href=\"" + ARCHIVE_URL + "\">crowdsense.uk/#archive</a></p>");
-      html.push("<p>Today's question, #" + dayNo + ", is live now: <a href=\"" + SITE_URL + "\">crowdsense.uk</a></p>");
+      html.push("<p>Play today's now: <a href=\"" + SITE_URL + "\">crowdsense.uk</a></p>");
+      if (n > 1) html.push("<p>Missed one of the others? They're all in the archive: <a href=\"" + ARCHIVE_URL + "\">crowdsense.uk/#archive</a></p>");
       html.push("<p>—<br /><i>You're getting this because you subscribed at crowdsense.uk.</i></p>");
-      md.push("Missed one? Play them all in the archive: " + ARCHIVE_URL, "");
-      md.push("Today's question, #" + dayNo + ", is live now: " + SITE_URL, "");
+      md.push("Play today's now: " + SITE_URL, "");
+      if (n > 1) md.push("Missed one of the others? They're all in the archive: " + ARCHIVE_URL, "");
       md.push("—  ");
       md.push("*You're getting this because you subscribed at crowdsense.uk.*");
 
