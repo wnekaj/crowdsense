@@ -1203,6 +1203,15 @@ var CS_QUESTIONS = [
     // 15 November question.
     source: "PF Global poll of 8,021 UK adults, 3–16 October 2025",
     teaser: "How many Brits do a Sudoku every day?"
+  },
+  {
+    date: "2026-11-17",  // Day 121
+    question: "What percentage of Brits say public transport is good in their local area?",
+    answer: 57,
+    // figure as supplied by the owner (no table seen): PF Global, 2,016
+    // adults, 9-14 July 2026.
+    source: "PF Global poll of 2,016 UK adults, 9–14 July 2026",
+    teaser: "How many Brits rate their local public transport?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
