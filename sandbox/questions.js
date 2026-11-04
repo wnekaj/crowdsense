@@ -1178,6 +1178,31 @@ var CS_QUESTIONS = [
     // owner's "certain" is worded "almost certain" to match.
     source: "PF Global poll of 2,028 UK adults, 13–15 September 2026",
     teaser: "How many Brits think AI will almost certainly destroy us?"
+  },
+  {
+    date: "2026-11-15",  // Day 119
+    question: "What percentage of Brits say they feel very confident about public speaking?",
+    answer: 18,
+    // "How confident are you in your ability to do them well?: When speaking
+    // or presenting to a group of people". Total column: very confident 18,
+    // somewhat 33, not very 25, not at all 21, don't know 3. Men 21, women
+    // 14. Public First poll for the Richmond Project; the client isn't
+    // named in the source. Same poll as the maths and puzzles questions in
+    // September.
+    source: "PF Global poll of 8,021 UK adults, 3–16 October 2025",
+    teaser: "How many Brits are very confident public speakers?"
+  },
+  {
+    date: "2026-11-16",  // Day 120
+    question: "What percentage of Brits say they play Sudoku or similar number puzzles every day or nearly every day?",
+    answer: 10,
+    // "How often do you usually do each of the following?: Play number-based
+    // puzzles or games (e.g. Sudoku, logic puzzles)". Total column: every
+    // day or nearly every day 10; most days (3-4 times a week) 13; once or
+    // twice a week 21; never 18. Men and women both 10. Same poll as the
+    // 15 November question.
+    source: "PF Global poll of 8,021 UK adults, 3–16 October 2025",
+    teaser: "How many Brits do a Sudoku every day?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
