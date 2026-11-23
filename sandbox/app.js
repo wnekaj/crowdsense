@@ -844,6 +844,14 @@ function crowdFlow(finalGuess, isFresh){
    .catch(function(err){ console.warn("Crowd layer unavailable", err); });
 }
 
+// A bar's tooltip gives its share of the day's players rather than a
+// headcount: "12% of players", "under 1%" for a sliver, "no players" for none.
+function shareOfPlayers(n, total){
+  if (!n || !total) return "no players";
+  var p = Math.round(100 * n / total);
+  return (p < 1 ? "under 1%" : p + "%") + " of players";
+}
+
 // Multi-part day: counts are indexed by day score (0-100, lower is better),
 // so "further away" means a higher score than yours.
 function renderCrowdScore(dist, myScore){
@@ -872,7 +880,7 @@ function renderCrowdScore(dist, myScore){
     bar.className = "hbar" + (bnd === youBin ? " you" : "") + (bnd === 0 ? " truth" : "");
     bar.style.height = Math.max(4, Math.round(100 * bins[bnd] / maxBin)) + "%";
     bar.title = (bnd === BINS - 1 ? (BINS - 1) + "+ off: " : bnd + " off: ") +
-      bins[bnd] + (bins[bnd] === 1 ? " player" : " players");
+      shareOfPlayers(bins[bnd], total);
     els.histo.appendChild(bar);
   }
   els.crowdBlock.classList.remove("hidden");
@@ -906,7 +914,7 @@ function renderCrowd(dist, myGuess){
     var bar = document.createElement("div");
     bar.className = "hbar" + (b === youBin ? " you" : "") + (b === truthBin ? " truth" : "");
     bar.style.height = Math.max(4, Math.round(100 * bins[b] / maxBin)) + "%";
-    bar.title = (b*5) + "–" + (b === 19 ? 100 : b*5+4) + "%: " + bins[b] + (bins[b] === 1 ? " player" : " players");
+    bar.title = (b*5) + "–" + (b === 19 ? 100 : b*5+4) + "%: " + shareOfPlayers(bins[b], total);
     els.histo.appendChild(bar);
   }
   els.crowdBlock.classList.remove("hidden");
