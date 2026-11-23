@@ -844,12 +844,18 @@ function crowdFlow(finalGuess, isFresh){
    .catch(function(err){ console.warn("Crowd layer unavailable", err); });
 }
 
-// A bar's tooltip gives its share of the day's players rather than a
-// headcount: "12% of players", "under 1%" for a sliver, "no players" for none.
+// A bar's tooltip gives its share of the day's players: "12% of players",
+// "under 1%" for a sliver, "no players" for none. Once more than
+// SHOW_COUNTS_ABOVE have played that day it gives the real count too:
+// "152 players (30%)".
+var SHOW_COUNTS_ABOVE = 500;
 function shareOfPlayers(n, total){
   if (!n || !total) return "no players";
   var p = Math.round(100 * n / total);
-  return (p < 1 ? "under 1%" : p + "%") + " of players";
+  var share = p < 1 ? "under 1%" : p + "%";
+  if (total > SHOW_COUNTS_ABOVE)
+    return n.toLocaleString("en-GB") + (n === 1 ? " player" : " players") + " (" + share + ")";
+  return share + " of players";
 }
 
 // Multi-part day: counts are indexed by day score (0-100, lower is better),
