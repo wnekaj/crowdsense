@@ -1301,6 +1301,18 @@ var CS_QUESTIONS = [
     // not true 73, don't know 3. October Omnibus for POLITICO UK.
     source: "PF Global poll of 2,050 UK adults, 2–5 October 2026",
     teaser: "How many Brits are unpaid carers?"
+  },
+  {
+    date: "2026-11-26",  // Day 130
+    question: "What percentage of Brits say they don't own or have regular access to a car or motorbike?",
+    answer: 23,
+    // "No, I do not own or have regular access to either of these" 23, the
+    // single (total) column, base 2,011. A petrol / diesel car or
+    // motorcycle 69; an electric car or motorcycle 11 (multi-choice, so
+    // these overlap). The table names no pollster; its weighting note is
+    // Public First's. Fieldwork 17-20 November 2025.
+    source: "PF Global poll of 2,011 UK adults, 17–20 November 2025",
+    teaser: "How many Brits get by without a car?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
