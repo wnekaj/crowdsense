@@ -96,9 +96,10 @@
   <script>
     // Keep in sync with CS_CONFIG in index.html
     var ANCHOR = "2026-07-20";
-    // TEMPORARY, as SHOW_FROM in index.html: the numbers start on 16 Nov (#1)
-    // and the email lists nothing earlier. Set to "" to go back to ANCHOR.
-    var SHOW_FROM = "2026-11-16";
+    // TEMPORARY, as SHOW_PICKS and SHOW_FROM in index.html: ten curated days
+    // are #1–#10, so days from 26 Nov count on from #11 and the email lists
+    // nothing earlier. Set SHOW_FROM to "" and SHOW_OFFSET to 0 to go back.
+    var SHOW_FROM = "2026-11-26", SHOW_OFFSET = 10;
     var SITE_URL = "https://crowdsense.uk/";
   </script>
   <script src="questions.js?v=191"></script>
@@ -162,6 +163,7 @@
 
     // the numbers and the first day shown, as in the game
     var FROM = (SHOW_FROM && SHOW_FROM > ANCHOR) ? SHOW_FROM : ANCHOR;
+    var OFFSET = FROM === ANCHOR ? 0 : SHOW_OFFSET;
     var SEND_DAYS = [0, 4];               // Sunday and Thursday
     var WORDS = ["no","one","two","three","four","five","six","seven"];
     var ARCHIVE_URL = SITE_URL + "#archive";
@@ -202,13 +204,13 @@
         $("subject").value = ""; $("bodyHtml").value = ""; $("bodyMd").value = ""; $("preview").innerHTML = "";
         return;
       }
-      var first = daysSince(FROM,days[0])+1, last = daysSince(FROM,days[days.length-1])+1;
+      var first = OFFSET+daysSince(FROM,days[0])+1, last = OFFSET+daysSince(FROM,days[days.length-1])+1;
       $("meta").textContent = fmtLong(key) + " · covers #" + first + (last > first ? "–" + last : "") +
         " (" + fmtLong(days[0]) + (days.length > 1 ? " to " + fmtLong(days[days.length-1]) : "") + ")";
 
       var n = days.length, word = WORDS[n] || String(n);
       // the subject teases the send day's own question, as the daily email did
-      var dayNo = daysSince(FROM,key)+1;
+      var dayNo = OFFSET+daysSince(FROM,key)+1;
       var subject = "Crowdsense #" + dayNo + " — " + teaserFor(pickForKey(key));
       var intro = n === 1 ? "Here's today's Crowdsense question:"
         : "Here are the last " + word + " Crowdsense questions. How many have you played?";
@@ -217,7 +219,7 @@
       html.push("<p>" + esc(intro) + "</p>");
       md.push(intro, "");
       days.forEach(function(k){
-        var head = (k === key ? "Today, " : "") + fmtLong(k) + " · #" + (daysSince(FROM,k)+1);
+        var head = (k === key ? "Today, " : "") + fmtLong(k) + " · #" + (OFFSET+daysSince(FROM,k)+1);
         var q = plain(pickForKey(k).question);
         html.push("<p><b>" + esc(head) + "</b><br />“" + esc(q) + "”</p>");
         // two trailing spaces keep the date and the question on separate lines

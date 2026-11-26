@@ -23,6 +23,9 @@ var CONFIG = {
   // ANCHOR (YYYY-MM-DD; that day shows as #1). Empty = ANCHOR. Only what is
   // shown changes: crowd data, question choice and saved games stay on ANCHOR.
   SHOW_FROM: "",
+  // Optional curated archive: past days (YYYY-MM-DD) shown first as #1, #2…
+  // and listed instead of the calendar; days from SHOW_FROM follow them.
+  SHOW_PICKS: [],
   // Pretend a given day (YYYY-MM-DD) is today. Only the sandbox at /sandbox/
   // sets this, so it lets us preview a future question without waiting for it.
   // The live index.html never sets it, so live always uses the real date.
@@ -76,7 +79,19 @@ function keyForPuzzle(n){
 function puzzleNoForKey(key){ return Math.max(1, daysSince(CONFIG.ANCHOR, key) + 1); }
 // what players see: counted from SHOW_FROM when that is set and after ANCHOR
 function showFrom(){ return (CONFIG.SHOW_FROM && CONFIG.SHOW_FROM > CONFIG.ANCHOR) ? CONFIG.SHOW_FROM : CONFIG.ANCHOR; }
-function shownNoForKey(key){ return Math.max(1, daysSince(showFrom(), key) + 1); }
+function showPicks(){ return Array.isArray(CONFIG.SHOW_PICKS) ? CONFIG.SHOW_PICKS : []; }
+function shownNoForKey(key){
+  var picks = showPicks(), i = picks.indexOf(key);
+  if (i >= 0) return i + 1;
+  return Math.max(1, picks.length + daysSince(showFrom(), key) + 1);
+}
+// With SHOW_PICKS: the days the archive offers, in order — the picks, then
+// each day from showFrom() up to yesterday
+function archiveDays(){
+  var out = showPicks().filter(function(k){ return k >= CONFIG.ANCHOR && k < DAY_KEY; });
+  for (var k = showFrom(); k < DAY_KEY; k = shiftDayKey(k, 1)) if (out.indexOf(k) < 0) out.push(k);
+  return out;
+}
 function shiftDayKey(key, n){
   var p = key.split("-").map(Number);
   var d = new Date(Date.UTC(p[0], p[1]-1, p[2]));
@@ -1384,12 +1399,44 @@ function renderArchive(){
     list.appendChild(p);
     return;
   }
+  if (showPicks().length){ renderPickList(); return; }
   // opens on the month of the day being played: a past one if you're on it
   if (calY === null){
     var tp = ((MODE === "practice" && CUR) ? CUR.dayKey : DAY_KEY).split("-").map(Number);
     calY = tp[0]; calM = tp[1];
   }
   renderCalendar();
+}
+
+// the curated archive: #1, #2… with each day's teaser, then today
+function renderPickList(){
+  var list = els.archiveList;
+  list.innerHTML = "";
+  var box = document.createElement("div");
+  box.className = "picklist";
+  archiveDays().concat([DAY_KEY]).forEach(function(k){
+    var isToday = k === DAY_KEY, q = pickQuestionForKey(k);
+    var row = document.createElement("button");
+    row.type = "button";
+    row.className = "pickrow" + (isToday ? " today" : "");
+    row.innerHTML = '<span class="pickno"></span><span class="picktext"></span><span class="pickmark"></span>';
+    row.querySelector(".pickno").textContent = "#" + shownNoForKey(k);
+    row.querySelector(".picktext").textContent = isToday ? "Today's question"
+      : (q.teaser || String(q.question || "").replace(/\*\*/g, ""));
+    var played = false;
+    try{ var st = JSON.parse(localStorage.getItem("cs-state-" + k) || "null"); played = !!(st && st.done); }catch(_){}
+    if (played) row.querySelector(".pickmark").textContent = "Played";
+    if (CUR && k === CUR.dayKey && (isToday ? MODE === "daily" : MODE === "practice")){
+      row.classList.add("current");
+      row.setAttribute("aria-current", "true");
+    }
+    row.addEventListener("click", function(){
+      closeModal("archiveModal");
+      setupGame(k, isToday ? "daily" : "practice");
+    });
+    box.appendChild(row);
+  });
+  list.appendChild(box);
 }
 
 function renderCalendar(){
@@ -1488,6 +1535,13 @@ function paintDayNav(key){
   }
   var prevKey = shiftDayKey(key, -1), nextKey = shiftDayKey(key, 1);
   var hasPrev = prevKey >= showFrom(), hasNext = nextKey < DAY_KEY;
+  // the curated archive steps through its own list; its last day hands
+  // over to the Today button
+  if (showPicks().length){
+    var seq = archiveDays(), i = seq.indexOf(key);
+    prevKey = i > 0 ? seq[i - 1] : ""; nextKey = (i >= 0 && i < seq.length - 1) ? seq[i + 1] : "";
+    hasPrev = !!prevKey; hasNext = !!nextKey;
+  }
   els.prevDay.disabled = !hasPrev;
   point(els.prevDay, hasPrev ? prevKey : "", "Previous");
   els.nextDay.classList.toggle("hidden", !hasNext);
