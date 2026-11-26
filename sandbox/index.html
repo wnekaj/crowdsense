@@ -567,6 +567,9 @@
       white-space:nowrap; letter-spacing:.04em;
     }
     .practicebar button:hover{ color:var(--ink) }
+    .practicebar button:disabled{ color:var(--line); cursor:default }
+    .practicebar #practiceLabel{ flex:1 }
+    .practicenav{ display:flex; align-items:center; gap:16px }
 
     /* ---------- Crowd histogram ---------- */
     .crowd{
@@ -637,6 +640,10 @@
       transition:background .15s ease;
     }
     .cal-day.today:hover{ background:var(--accent-soft) }
+    /* the past day being played when the archive opens */
+    .cal-day.current{ background:var(--accent); color:#fff }
+    .cal-day.current:hover{ background:var(--accent-deep) }
+    .cal-day.current.done::after{ background:#fff }
     .cal-day.done::after{
       content:""; position:absolute; bottom:5px; left:50%;
       transform:translateX(-50%);
@@ -856,8 +863,12 @@
   <main class="app">
     <div class="card" id="card">
       <div class="practicebar hidden" id="practiceBar">
+        <button id="prevDay" type="button">‹ Previous day</button>
         <span id="practiceLabel"></span>
-        <button id="backToday" type="button">Today →</button>
+        <span class="practicenav">
+          <button id="nextDay" type="button">Next day ›</button>
+          <button id="backToday" type="button">Today →</button>
+        </span>
       </div>
       <div class="datebar">
         <span id="puzzleNo"></span>
