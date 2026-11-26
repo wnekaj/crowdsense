@@ -24,7 +24,8 @@ var CONFIG = {
   // shown changes: crowd data, question choice and saved games stay on ANCHOR.
   SHOW_FROM: "",
   // Optional curated archive: past days (YYYY-MM-DD) shown first as #1, #2…
-  // and listed instead of the calendar; days from SHOW_FROM follow them.
+  // and placed on the calendar's days just before SHOW_FROM; days from
+  // SHOW_FROM follow them.
   SHOW_PICKS: [],
   // Pretend a given day (YYYY-MM-DD) is today. Only the sandbox at /sandbox/
   // sets this, so it lets us preview a future question without waiting for it.
@@ -84,6 +85,18 @@ function shownNoForKey(key){
   var picks = showPicks(), i = picks.indexOf(key);
   if (i >= 0) return i + 1;
   return Math.max(1, picks.length + daysSince(showFrom(), key) + 1);
+}
+// With SHOW_PICKS the calendar keeps its usual shape: the picks sit on the
+// days just before SHOW_FROM (#1 on the first), and a click there opens the
+// pick itself, which shows its own date
+function calFirst(){ var n = showPicks().length; return n ? shiftDayKey(showFrom(), -n) : showFrom(); }
+function calTarget(cellKey){
+  var picks = showPicks(), i = daysSince(calFirst(), cellKey);
+  return (picks.length && i >= 0 && i < picks.length) ? picks[i] : cellKey;
+}
+function calCellFor(dayKey){
+  var i = showPicks().indexOf(dayKey);
+  return i >= 0 ? shiftDayKey(calFirst(), i) : dayKey;
 }
 // With SHOW_PICKS: the days the archive offers, in order — the picks, then
 // each day from showFrom() up to yesterday
@@ -1399,50 +1412,18 @@ function renderArchive(){
     list.appendChild(p);
     return;
   }
-  if (showPicks().length){ renderPickList(); return; }
   // opens on the month of the day being played: a past one if you're on it
   if (calY === null){
-    var tp = ((MODE === "practice" && CUR) ? CUR.dayKey : DAY_KEY).split("-").map(Number);
+    var tp = ((MODE === "practice" && CUR) ? calCellFor(CUR.dayKey) : DAY_KEY).split("-").map(Number);
     calY = tp[0]; calM = tp[1];
   }
   renderCalendar();
 }
 
-// the curated archive: #1, #2… with each day's teaser, then today
-function renderPickList(){
-  var list = els.archiveList;
-  list.innerHTML = "";
-  var box = document.createElement("div");
-  box.className = "picklist";
-  archiveDays().concat([DAY_KEY]).forEach(function(k){
-    var isToday = k === DAY_KEY, q = pickQuestionForKey(k);
-    var row = document.createElement("button");
-    row.type = "button";
-    row.className = "pickrow" + (isToday ? " today" : "");
-    row.innerHTML = '<span class="pickno"></span><span class="picktext"></span><span class="pickmark"></span>';
-    row.querySelector(".pickno").textContent = "#" + shownNoForKey(k);
-    row.querySelector(".picktext").textContent = isToday ? "Today's question"
-      : (q.teaser || String(q.question || "").replace(/\*\*/g, ""));
-    var played = false;
-    try{ var st = JSON.parse(localStorage.getItem("cs-state-" + k) || "null"); played = !!(st && st.done); }catch(_){}
-    if (played) row.querySelector(".pickmark").textContent = "Played";
-    if (CUR && k === CUR.dayKey && (isToday ? MODE === "daily" : MODE === "practice")){
-      row.classList.add("current");
-      row.setAttribute("aria-current", "true");
-    }
-    row.addEventListener("click", function(){
-      closeModal("archiveModal");
-      setupGame(k, isToday ? "daily" : "practice");
-    });
-    box.appendChild(row);
-  });
-  list.appendChild(box);
-}
-
 function renderCalendar(){
   var list = els.archiveList;
   list.innerHTML = "";
-  var anchorMK = showFrom().slice(0, 7);
+  var anchorMK = calFirst().slice(0, 7);
   var todayMK = DAY_KEY.slice(0, 7);
   var curMK = monthKeyOf(calY, calM);
 
@@ -1488,7 +1469,7 @@ function renderCalendar(){
     cell.type = "button";
     cell.className = "cal-day";
     cell.textContent = d;
-    var playable = key >= showFrom() && key < DAY_KEY;
+    var playable = key >= calFirst() && key < DAY_KEY;
     if (key === DAY_KEY){
       cell.classList.add("today");
       cell.title = "Today's question";
@@ -1501,14 +1482,15 @@ function renderCalendar(){
       cell.disabled = true;
     } else {
       cell.classList.add("avail");
-      cell.title = "#" + shownNoForKey(key);
-      if (MODE === "practice" && CUR && key === CUR.dayKey){
+      var target = calTarget(key);
+      cell.title = "#" + shownNoForKey(target);
+      if (MODE === "practice" && CUR && key === calCellFor(CUR.dayKey)){
         cell.classList.add("current");
         cell.setAttribute("aria-current", "date");
         cell.title += " · the one you're on";
       }
       try{
-        var st = JSON.parse(localStorage.getItem("cs-state-" + key) || "null");
+        var st = JSON.parse(localStorage.getItem("cs-state-" + target) || "null");
         if (st && st.done) cell.classList.add("done");
       }catch(_){}
       (function(k){
@@ -1516,7 +1498,7 @@ function renderCalendar(){
           closeModal("archiveModal");
           setupGame(k, "practice");
         });
-      })(key);
+      })(target);
     }
     grid.appendChild(cell);
   }

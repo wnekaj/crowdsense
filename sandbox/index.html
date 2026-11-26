@@ -650,21 +650,6 @@
       width:4px; height:4px; border-radius:50%;
       background:var(--ink);
     }
-    /* the curated archive (SHOW_PICKS): a numbered list instead of the calendar */
-    .picklist{ display:flex; flex-direction:column; gap:6px }
-    .pickrow{
-      display:flex; align-items:center; gap:12px; width:100%;
-      border:none; border-radius:8px; background:#fafafa; padding:11px 12px;
-      font-family:inherit; font-size:14px; line-height:1.35; text-align:left;
-      color:var(--ink); cursor:pointer; transition:background .15s ease;
-    }
-    .pickrow:hover{ background:var(--accent-soft) }
-    .pickno{ flex:0 0 2.4em; font-weight:600; color:var(--accent-deep); font-variant-numeric:tabular-nums }
-    .picktext{ flex:1 }
-    .pickmark{ flex:0 0 auto; font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted) }
-    .pickrow.today{ background:#fff; outline:1px solid var(--hairline) }
-    .pickrow.current{ background:var(--accent); color:#fff }
-    .pickrow.current .pickno, .pickrow.current .pickmark{ color:#fff }
     .archive-empty{ color:var(--muted); font-size:13.5px; text-align:center; padding:10px 0 }
 
     /* ---------- Toast ---------- */
