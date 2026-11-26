@@ -1011,12 +1011,17 @@
     // need to edit that file. See worker/README.md for the crowd layer.
     window.CS_CONFIG = Object.assign({
       ANCHOR: "2026-07-20",              // launch day — puzzle No. 1 (a taster question runs before this)
+      // TEMPORARY: the numbers players see, and the archive, start on 16 Nov
+      // (#1), so the archive holds the previous ten. Delete this line to bring
+      // back the full archive and the numbering from launch. Crowd data,
+      // saved games and stats are unaffected either way.
+      SHOW_FROM: "2026-11-16",
       SITE_URL: "https://crowdsense.uk/",
       CROWD_API_URL: "https://crowdsense-crowd.crowdsense-game.workers.dev"
     }, window.CS_CONFIG || {});
   </script>
   <script src="questions.js?v=191"></script>
-  <script src="app.js?v=192"></script>
+  <script src="app.js?v=193"></script>
   <!--TWO-GUESS-SCRIPTS-->
   <script>
     if (window.CS_TWO_GUESS){
@@ -1028,7 +1033,7 @@
   </script>
   <!--/TWO-GUESS-SCRIPTS-->
   <!--LOOK-SCRIPT-->
-  <script src="look.js?v=183"></script>
+  <script src="look.js?v=193"></script>
   <!--/LOOK-SCRIPT-->
   <script>
     if ("serviceWorker" in navigator){
