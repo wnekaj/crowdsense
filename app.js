@@ -1179,11 +1179,22 @@ function startTour(){
   els.tour.classList.remove("hidden");
   paintTourStep();
   window.addEventListener("resize", paintTourStep);
+  window.addEventListener("scroll", repaintTour, { passive: true });
 }
-function paintTourStep(){
+// scrolling only moves the spotlight and card along with the button
+function repaintTour(){ paintTourStep(false); }
+function paintTourStep(bringIntoView){
   var step = TOUR_STEPS[TOUR_STEP];
   if (!step) return;
   var r = step.el.getBoundingClientRect();
+  // A new player is often reading their result further down when the tour
+  // starts, with the button scrolled out of sight: bring it back, or all
+  // they would see is the screen going dark.
+  if (bringIntoView !== false && (r.top < 0 || r.bottom > window.innerHeight)){
+    try{ step.el.scrollIntoView({ block: "center", behavior: "instant" }); }
+    catch(_){ step.el.scrollIntoView(); }
+    r = step.el.getBoundingClientRect();
+  }
   var pad = 6;
   els.tourSpot.style.top = (r.top - pad) + "px";
   els.tourSpot.style.left = (r.left - pad) + "px";
@@ -1191,11 +1202,18 @@ function paintTourStep(){
   els.tourSpot.style.height = (r.height + pad*2) + "px";
   els.tourText.innerHTML = step.text;
   els.tourNext.textContent = (TOUR_STEP === TOUR_STEPS.length - 1) ? "Got it" : "Next";
-  // card sits under the highlighted button, kept inside the viewport
-  var cardW = Math.min(280, window.innerWidth * 0.8);
+  // card sits under the highlighted button (above it if there's no room),
+  // kept inside the viewport, with its arrow pointing at the button
+  var cardW = Math.min(300, window.innerWidth * 0.84);
   var left = Math.min(Math.max(8, r.left + r.width/2 - cardW/2), window.innerWidth - cardW - 8);
-  els.tourCard.style.top = (r.bottom + 14) + "px";
+  var cardH = els.tourCard.offsetHeight || 120;
+  var top = r.bottom + 16, above = false;
+  if (top + cardH > window.innerHeight - 8 && r.top - cardH - 16 >= 8){ top = r.top - cardH - 16; above = true; }
+  top = Math.min(Math.max(8, top), Math.max(8, window.innerHeight - cardH - 8));
+  els.tourCard.style.top = top + "px";
   els.tourCard.style.left = left + "px";
+  els.tourCard.classList.toggle("above", above);
+  els.tourCard.style.setProperty("--arrow-x", Math.min(Math.max(18, r.left + r.width/2 - left), cardW - 18) + "px");
 }
 function advanceTour(){
   if (TOUR_STEP < 0) return;
@@ -1208,6 +1226,7 @@ function endTour(){
   markTourSeen();
   if (els.tour) els.tour.classList.add("hidden");
   window.removeEventListener("resize", paintTourStep);
+  window.removeEventListener("scroll", repaintTour);
 }
 
 // ===== guessing =====

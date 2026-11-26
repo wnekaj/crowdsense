@@ -43,6 +43,7 @@
     els.tour.classList.remove("hidden");
     paintTourStep();
     window.addEventListener("resize", paintTourStep);
+    window.addEventListener("scroll", repaintTour, { passive: true });
   };
 
   // links straight to a panel: #archive, #stats or #help
