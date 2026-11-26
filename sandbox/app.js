@@ -70,6 +70,12 @@ function keyForPuzzle(n){
   return d.toISOString().slice(0,10);
 }
 function puzzleNoForKey(key){ return Math.max(1, daysSince(CONFIG.ANCHOR, key) + 1); }
+function shiftDayKey(key, n){
+  var p = key.split("-").map(Number);
+  var d = new Date(Date.UTC(p[0], p[1]-1, p[2]));
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0,10);
+}
 function formatKey(key){
   var p = key.split("-").map(Number);
   return new Intl.DateTimeFormat("en-GB", { timeZone:"UTC", day:"numeric", month:"short", year:"numeric" })
@@ -85,6 +91,7 @@ var els = {
   puzzleNo: $("puzzleNo"), dailyDate: $("dailyDate"), streakBadge: $("streakBadge"),
   questionText: $("questionText"), kicker: $("kicker"),
   practiceBar: $("practiceBar"), practiceLabel: $("practiceLabel"), backToday: $("backToday"),
+  prevDay: $("prevDay"), nextDay: $("nextDay"),
   guessRow: $("guessRow"), input: $("guessInput"), slider: $("guessSlider"), guessBtn: $("guessBtn"),
   guessDots: $("guessDots"),
   track: $("track"), trackWindow: $("trackWindow"), answerMarker: $("answerMarker"),
@@ -1369,8 +1376,9 @@ function renderArchive(){
     list.appendChild(p);
     return;
   }
+  // opens on the month of the day being played: a past one if you're on it
   if (calY === null){
-    var tp = DAY_KEY.split("-").map(Number);
+    var tp = ((MODE === "practice" && CUR) ? CUR.dayKey : DAY_KEY).split("-").map(Number);
     calY = tp[0]; calM = tp[1];
   }
   renderCalendar();
@@ -1439,6 +1447,11 @@ function renderCalendar(){
     } else {
       cell.classList.add("avail");
       cell.title = "#" + puzzleNoForKey(key);
+      if (MODE === "practice" && CUR && key === CUR.dayKey){
+        cell.classList.add("current");
+        cell.setAttribute("aria-current", "date");
+        cell.title += " · the one you're on";
+      }
       try{
         var st = JSON.parse(localStorage.getItem("cs-state-" + key) || "null");
         if (st && st.done) cell.classList.add("done");
@@ -1453,6 +1466,24 @@ function renderCalendar(){
     grid.appendChild(cell);
   }
   list.appendChild(grid);
+}
+
+// The past-question bar steps a day either way. Day 1 has no day before
+// it; the day after yesterday is today, which the Today button covers.
+function paintDayNav(key){
+  if (!els.prevDay || !els.nextDay) return;
+  function point(btn, k, word){
+    btn.setAttribute("data-day", k || "");
+    var where = k ? "#" + puzzleNoForKey(k) + ", " + formatDayShort(k) : "";
+    btn.title = where;
+    btn.setAttribute("aria-label", k ? word + " day: " + where : word + " day");
+  }
+  var prevKey = shiftDayKey(key, -1), nextKey = shiftDayKey(key, 1);
+  var hasPrev = prevKey >= CONFIG.ANCHOR, hasNext = nextKey < DAY_KEY;
+  els.prevDay.disabled = !hasPrev;
+  point(els.prevDay, hasPrev ? prevKey : "", "Previous");
+  els.nextDay.classList.toggle("hidden", !hasNext);
+  point(els.nextDay, hasNext ? nextKey : "", "Next");
 }
 
 // ===== question selection (same question for everyone, everywhere) =====
@@ -1523,6 +1554,7 @@ function setupGame(dayKey, mode){
 
   els.practiceBar.classList.toggle("hidden", mode !== "practice");
   els.practiceLabel.textContent = "";
+  if (mode === "practice") paintDayNav(dayKey);
   // reset the multi-round furniture: a single-question day must never inherit
   // a hidden share button, a stale group table or a pending auto-advance
   clearRoundTimer();
@@ -1712,6 +1744,12 @@ els.slider.addEventListener("input", function(){
   els.slider.style.setProperty("--fill", els.slider.value + "%");
 });
 if (els.backToday) els.backToday.addEventListener("click", function(){ setupGame(DAY_KEY, "daily"); });
+[els.prevDay, els.nextDay].forEach(function(btn){
+  if (btn) btn.addEventListener("click", function(){
+    var k = btn.getAttribute("data-day");
+    if (k) setupGame(k, "practice");
+  });
+});
 if (els.shareBtn) els.shareBtn.addEventListener("click", doShare);
 Array.prototype.forEach.call(document.querySelectorAll("form.email-form"), function(f){
   f.addEventListener("submit", handleEmailSubmit);
