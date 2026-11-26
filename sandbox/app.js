@@ -19,6 +19,10 @@ var CONFIG = {
   // Leave empty to use questions.js only (recommended — a published sheet is
   // publicly readable, so anyone can peek at tomorrow's answer).
   SHEET_PUBLISHED_URL: "",
+  // Start the numbers players see, and the archive, on a later day than
+  // ANCHOR (YYYY-MM-DD; that day shows as #1). Empty = ANCHOR. Only what is
+  // shown changes: crowd data, question choice and saved games stay on ANCHOR.
+  SHOW_FROM: "",
   // Pretend a given day (YYYY-MM-DD) is today. Only the sandbox at /sandbox/
   // sets this, so it lets us preview a future question without waiting for it.
   // The live index.html never sets it, so live always uses the real date.
@@ -70,6 +74,9 @@ function keyForPuzzle(n){
   return d.toISOString().slice(0,10);
 }
 function puzzleNoForKey(key){ return Math.max(1, daysSince(CONFIG.ANCHOR, key) + 1); }
+// what players see: counted from SHOW_FROM when that is set and after ANCHOR
+function showFrom(){ return (CONFIG.SHOW_FROM && CONFIG.SHOW_FROM > CONFIG.ANCHOR) ? CONFIG.SHOW_FROM : CONFIG.ANCHOR; }
+function shownNoForKey(key){ return Math.max(1, daysSince(showFrom(), key) + 1); }
 function shiftDayKey(key, n){
   var p = key.split("-").map(Number);
   var d = new Date(Date.UTC(p[0], p[1]-1, p[2]));
@@ -84,6 +91,7 @@ function formatKey(key){
 
 var DAY_KEY = getDayKey();
 var PUZZLE_NO = puzzleNoForKey(DAY_KEY);
+var SHOWN_NO = shownNoForKey(DAY_KEY);
 
 // ===== elements =====
 function $(id){ return document.getElementById(id); }
@@ -770,7 +778,7 @@ function setKickerForTurn(){
   if (state.done){
     els.kicker.textContent = (MODE === "practice")
       ? "Pick another from the archive, or head back to today."
-      : "Come back tomorrow for question #" + (PUZZLE_NO + 1) + ".";
+      : "Come back tomorrow for question #" + (SHOWN_NO + 1) + ".";
     return;
   }
   if (isMulti()){
@@ -1266,7 +1274,7 @@ function shareLink(){
 // crowdsense.uk
 function shareText(includeUrl){
   var lines = [];
-  lines.push("#" + CUR.puzzleNo + ": " + shareTeaser());
+  lines.push("#" + CUR.shownNo + ": " + shareTeaser());
   // Every day shares the same five-square meter, read off the day's overall
   // score. On a multi-part day that is the mean of the parts, taken exact so
   // the meter agrees with the category shown on the page.
@@ -1369,7 +1377,7 @@ function monthKeyOf(y, m){ return y + "-" + String(m).padStart(2, "0"); }
 function renderArchive(){
   var list = els.archiveList;
   list.innerHTML = "";
-  if (PUZZLE_NO <= 1){
+  if (SHOWN_NO <= 1){
     var p = document.createElement("p");
     p.className = "archive-empty";
     p.textContent = "No past questions yet — today's is #1. Come back tomorrow and the calendar starts filling up.";
@@ -1387,7 +1395,7 @@ function renderArchive(){
 function renderCalendar(){
   var list = els.archiveList;
   list.innerHTML = "";
-  var anchorMK = CONFIG.ANCHOR.slice(0, 7);
+  var anchorMK = showFrom().slice(0, 7);
   var todayMK = DAY_KEY.slice(0, 7);
   var curMK = monthKeyOf(calY, calM);
 
@@ -1433,7 +1441,7 @@ function renderCalendar(){
     cell.type = "button";
     cell.className = "cal-day";
     cell.textContent = d;
-    var playable = key >= CONFIG.ANCHOR && key < DAY_KEY;
+    var playable = key >= showFrom() && key < DAY_KEY;
     if (key === DAY_KEY){
       cell.classList.add("today");
       cell.title = "Today's question";
@@ -1446,7 +1454,7 @@ function renderCalendar(){
       cell.disabled = true;
     } else {
       cell.classList.add("avail");
-      cell.title = "#" + puzzleNoForKey(key);
+      cell.title = "#" + shownNoForKey(key);
       if (MODE === "practice" && CUR && key === CUR.dayKey){
         cell.classList.add("current");
         cell.setAttribute("aria-current", "date");
@@ -1474,12 +1482,12 @@ function paintDayNav(key){
   if (!els.prevDay || !els.nextDay) return;
   function point(btn, k, word){
     btn.setAttribute("data-day", k || "");
-    var where = k ? "#" + puzzleNoForKey(k) + ", " + formatDayShort(k) : "";
+    var where = k ? "#" + shownNoForKey(k) + ", " + formatDayShort(k) : "";
     btn.title = where;
     btn.setAttribute("aria-label", k ? word + " day: " + where : word + " day");
   }
   var prevKey = shiftDayKey(key, -1), nextKey = shiftDayKey(key, 1);
-  var hasPrev = prevKey >= CONFIG.ANCHOR, hasNext = nextKey < DAY_KEY;
+  var hasPrev = prevKey >= showFrom(), hasNext = nextKey < DAY_KEY;
   els.prevDay.disabled = !hasPrev;
   point(els.prevDay, hasPrev ? prevKey : "", "Previous");
   els.nextDay.classList.toggle("hidden", !hasNext);
@@ -1523,12 +1531,13 @@ function renderQuestionText(text){
 // ===== game setup (daily or practice) =====
 function setupGame(dayKey, mode){
   MODE = mode;
-  CUR = { dayKey: dayKey, puzzleNo: puzzleNoForKey(dayKey), q: pickQuestionForKey(dayKey) };
+  // puzzleNo keys the crowd data; shownNo is the number players see
+  CUR = { dayKey: dayKey, puzzleNo: puzzleNoForKey(dayKey), shownNo: shownNoForKey(dayKey), q: pickQuestionForKey(dayKey) };
   Q = CUR.q;
   state = { guesses: [], done: false, win: false, score: 0, crowdPct: null };
   minAllowed = 0; maxAllowed = 100;
 
-  els.puzzleNo.textContent = "#" + CUR.puzzleNo;
+  els.puzzleNo.textContent = "#" + CUR.shownNo;
   // the date has to follow the day being played, not the wall clock, or a past
   // question shows today's date beside that day's puzzle number
   paintDayDate(dayKey);

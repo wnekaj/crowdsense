@@ -53,7 +53,7 @@
         '<h1 class="lk-title">Crowdsense</h1>' +
         '<p class="lk-tagline">How well do you know Britain?</p>' +
         '<button type="button" class="lk-btn lk-play">' + (done ? "See your result" : "Play") + '</button>' +
-        '<p class="lk-when"><b>' + longDate(CUR.dayKey) + '</b><span>No. ' + CUR.puzzleNo + '</span></p>' +
+        '<p class="lk-when"><b>' + longDate(CUR.dayKey) + '</b><span>No. ' + (CUR.shownNo || CUR.puzzleNo) + '</span></p>' +
       '</div>';
     document.body.appendChild(s);
     document.documentElement.classList.add("lk-splashing");
@@ -90,7 +90,7 @@
       '</div>' +
       '<div class="lk-card-big">' + Q.answer + '<i>%</i></div>' +
       '<div class="lk-card-you"><b>' + shown + '</b> off</div>' +
-      '<div class="lk-card-foot"><span class="lk-brand">Crowdsense<i>.</i></span><span>No. ' + CUR.puzzleNo + '</span></div>';
+      '<div class="lk-card-foot"><span class="lk-brand">Crowdsense<i>.</i></span><span>No. ' + (CUR.shownNo || CUR.puzzleNo) + '</span></div>';
     els.reveal.insertBefore(c, els.sourceNote);
     els.reveal.classList.add("lk-has-card");
   }
