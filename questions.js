@@ -1313,6 +1313,30 @@ var CS_QUESTIONS = [
     // Public First's. Fieldwork 17-20 November 2025.
     source: "PF Global poll of 2,011 UK adults, 17–20 November 2025",
     teaser: "How many Brits get by without a car?"
+  },
+  {
+    date: "2026-11-27",  // Day 131
+    question: "What percentage of Brits say they currently play sport?",
+    answer: 45,
+    // "Do you currently participate in any sports activities?" Total column:
+    // occasionally engage in casual sports 26 + regularly participate 16 +
+    // heavily involved 3 = 45; do not currently participate 52, don't know
+    // 3. Worded "play" at the owner's request. Friday opened on the Boots
+    // backup; switched to this at about 6am at the owner's request.
+    source: "PF Global poll of 2,010 UK adults, 3 December 2024",
+    teaser: "How many Brits still play sport?"
+  },
+  {
+    date: "2026-11-28",  // Day 132
+    question: "What percentage of Brits say they have a strong network of friends?",
+    answer: 46,
+    // "To what extent do you feel this statement applies to you?: I have a
+    // strong network of friends". The printed "Total Agree" in the Total
+    // column: strongly agree 11 + agree 35. Disagree 30, neither 23. Highest
+    // among the over-65s (54) and 18-24s (52), lowest among 45-54s (37).
+    // Same poll as Friday's.
+    source: "PF Global poll of 2,010 UK adults, 3 December 2024",
+    teaser: "How many Brits have a strong network of friends?"
   }
 
   /* ---------- SPARES (verified, unscheduled — slot in when needed) ----------
